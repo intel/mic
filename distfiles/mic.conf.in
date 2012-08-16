@@ -1,0 +1,36 @@
+[common]
+; general settings
+distro_name = Tizen
+
+plugin_dir = @PREFIX@/lib/mic/plugins
+
+[create]
+; settings for create subcommand
+tmpdir= /var/tmp/mic
+cachedir= /var/tmp/mic/cache
+outdir= ./mic-output
+bootstrapdir= /var/tmp/mic/bootstrap
+
+pkgmgr = zypp
+
+# to set global proxy for repos
+#proxy = http://proxy.yourcompany.com:8080/
+#no_proxy = localhost,127.0.0.0/8,.yourcompany.com
+
+# prefix will be added in front of generated files
+#name_prefix = output
+
+# to skip all ssl verification for repos
+#ssl_verify = no
+
+[convert]
+; settings for convert subcommand
+
+[chroot]
+; settings for chroot subcommand
+
+[bootstrap1]
+name=micbootstrap
+bootstrap=http://download.tizen.org/tools/micbootstrap/
+; bootstrap_proxy=http://proxy.yourcompany.com:port
+

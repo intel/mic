@@ -1,0 +1,235 @@
+.\" Man page generated from reStructeredText.
+.
+.TH MIC 1 "2012-03-02" "0.1" "System"
+.SH NAME
+mic \- mic Means Image Creator for Linux distributions
+.
+.nr rst2man-indent-level 0
+.
+.de1 rstReportMargin
+\\$1 \\n[an-margin]
+level \\n[rst2man-indent-level]
+level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
+-
+\\n[rst2man-indent0]
+\\n[rst2man-indent1]
+\\n[rst2man-indent2]
+..
+.de1 INDENT
+.\" .rstReportMargin pre:
+. RS \\$1
+. nr rst2man-indent\\n[rst2man-indent-level] \\n[an-margin]
+. nr rst2man-indent-level +1
+.\" .rstReportMargin post:
+..
+.de UNINDENT
+. RE
+.\" indent \\n[an-margin]
+.\" old: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.nr rst2man-indent-level -1
+.\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.in \\n[rst2man-indent\\n[rst2man-indent-level]]u
+..
+.SH SYNOPSIS
+.nf
+mic create SUBCOMMAND <ksfile> [OPTION]
+mic chroot [OPTION] <imgfile>
+mic convert [OPTION] <imgfile> <format>
+.fi
+.sp
+.SH DESCRIPTION
+.sp
+The tools \fImic\fP is used to create and manipulate images for Linux distributions.
+It is composed of three subcommand: \fIcreate\fP, \fIconvert\fP, \fIchroot\fP.
+.SH USAGE
+.SS create
+.sp
+This command is used to create various images, including live CD, live USB,
+loop, raw.
+.sp
+Usage:
+.INDENT 0.0
+.INDENT 3.5
+.nf
+mic create(cr) SUBCOMMAND <ksfile> [OPTION]
+.fi
+.sp
+.UNINDENT
+.UNINDENT
+.sp
+Subcommands:
+.INDENT 0.0
+.INDENT 3.5
+.nf
+help(?)      give detailed help on a specific sub\-command
+fs           create fs image, which is also chroot directory
+livecd       create live CD image, used for CD booting
+liveusb      create live USB image, used for USB booting
+loop         create loop image, including multi\-partitions
+raw          create raw image, containing multi\-partitions
+.fi
+.sp
+.UNINDENT
+.UNINDENT
+.sp
+Options:
+.INDENT 0.0
+.INDENT 3.5
+.INDENT 0.0
+.TP
+.B \-h,  \-\-help
+show the help message
+.TP
+.BI \-\-logfile\fB= LOGFILE
+specify the path of logfile, save the output to logfile LOGFILE
+.TP
+.BI \-c \ CONFIG, \ \-\-config\fB= CONFIG
+specify configure file for mic, default is /etc/mic/mic.conf
+.TP
+.BI \-k \ CACHEDIR, \ \-\-cachedir\fB= CACHEDIR
+cache directory used to store the downloaded files and packages
+.TP
+.BI \-o \ OUTDIR, \ \-\-outdir\fB= OUTDIR
+directory used to locate the output image and files
+.TP
+.BI \-A \ ARCH, \ \-\-arch\fB= ARCH
+specify repo architecture, genarally mic would detect the architecture, if existed more than one architecture, mic would give hint to you
+.TP
+.BI \-\-local\-pkgs\-path\fB= LOCAL_PKGS_PATH
+specify the path for local rpm packages, which would be stored your own rpm packages
+.TP
+.BI \-\-pkgmgr\fB= PKGMGR
+specify backend package mananger, currently yum and zypp available
+.TP
+.BI \-\-record\-pkgs\fB= RECORD_PKGS
+record the info of installed packages, multiple values can be specified which joined by ",", valid values: "name", "content", "license"
+.TP
+.B \-\-copy\-kernel
+Copy kernel files from image /boot directory to the image output directory.
+.TP
+.BI \-\-compress\-disk\-image\fB= COMPRESS_DISK_IMAGE
+Sets the disk image compression. NOTE: The available values might depend on the used filesystem type.
+.TP
+.BI \-\-release\fB= RID
+Generate a release of RID with all necessary files, when @BUILD_ID@ is contained in kickstart file, it will be replaced by RID. sample values: "latest", "tizen_20120101.1"
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.sp
+Examples:
+.INDENT 0.0
+.INDENT 3.5
+.nf
+mic create loop tizen.ks
+mic create livecd tizen.ks \-\-release=latest
+mic cr fs tizen.ks \-\-local\-pkgs\-path=localrpm
+.fi
+.sp
+.UNINDENT
+.UNINDENT
+.SS chroot
+.sp
+This command is used to chroot inside the image, it\(aqs a great enhancement of chroot command in linux system.
+.sp
+Usage:
+.INDENT 0.0
+.INDENT 3.5
+.nf
+mic chroot(ch) <imgfile>
+.fi
+.sp
+.UNINDENT
+.UNINDENT
+.sp
+Options:
+.INDENT 0.0
+.INDENT 3.5
+.INDENT 0.0
+.TP
+.B \-h,  \-\-help
+show the help message
+.TP
+.BI \-s \ SAVETO, \ \-\-saveto\fB= SAVETO
+save the unpacked image to specified directory SAVETO
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.sp
+Examples:
+.INDENT 0.0
+.INDENT 3.5
+.nf
+mic chroot loop.img
+mic chroot tizen.iso
+mic ch \-s tizenfs tizen.usbimg
+.fi
+.sp
+.UNINDENT
+.UNINDENT
+.SS convert
+.sp
+This command is used for converting an image to another format.
+.sp
+Usage:
+.INDENT 0.0
+.INDENT 3.5
+.nf
+mic convert(cv) <imagefile> <destformat>
+.fi
+.sp
+.UNINDENT
+.UNINDENT
+.sp
+Options:
+.INDENT 0.0
+.INDENT 3.5
+.INDENT 0.0
+.TP
+.B \-h,  \-\-help
+show the help message
+.TP
+.B \-S,  \-\-shell
+launch interactive shell before packing the new image in the converting
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.sp
+Examples:
+.INDENT 0.0
+.INDENT 3.5
+.nf
+mic convert tizen.iso liveusb
+mic convert tizen.usbimg livecd
+mic cv \-\-shell tizen.iso liveusb
+.fi
+.sp
+.UNINDENT
+.UNINDENT
+.SH KNOWN ISSUES
+.SS Bug of latest syslinux package
+.sp
+In some new Linux distributions, the "syslinux" package in their official
+software repositories is the version 4.04. It will cause segment fault for
+a fatal bug, and mic will failed with syslinux installation errors.
+.sp
+The solution is to install the patched "syslinux" package in MeeGo or Tizen\(aqs
+tools repos, until the official released one being fixed.
+.SS Failed to create btrfs image in openSUSE
+.sp
+When creating btrfs image in openSUSE, it would hang up with showing image kernel
+panic. This issue impact all openSUSE distributions: 12.1, 11.4, 11.3, etc
+.SH REPORTING BUGS
+.sp
+The source code is tracked in github.com:
+.INDENT 0.0
+.INDENT 3.5
+\fI\%https://github.com/jfding/mic\fP
+.UNINDENT
+.UNINDENT
+.sp
+Please report issues for bugs or feature requests.
+.SH COPYRIGHT
+GPLv2
+.\" Generated by docutils manpage writer.
+.\" 
+.
