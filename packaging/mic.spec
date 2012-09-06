@@ -8,43 +8,25 @@ License:    GPLv2
 BuildArch:  noarch
 URL:        http://www.tizen.org
 Source0:    %{name}-%{version}.tar.gz
+Requires:   rpm-python
 Requires:   util-linux
 Requires:   coreutils
 Requires:   python >= 2.5
 Requires:   e2fsprogs
 Requires:   dosfstools >= 2.11-8
-Requires:   yum >= 3.2.24
 Requires:   syslinux >= 3.82
 Requires:   kpartx
 Requires:   parted
 Requires:   device-mapper
-Requires:   /usr/bin/genisoimage
 Requires:   cpio
-Requires:   isomd5sum
 Requires:   gzip
 Requires:   bzip2
-Requires:   squashfs-tools >= 4.0
 Requires:   qemu-arm-static
 Requires:   python-urlgrabber
-%if 0%{?suse_version}
-Requires:   btrfsprogs
-%else
-Requires:   btrfs-progs
-%endif
+#Requires:   btrfs-progs
 
-%if 0%{?fedora_version} || "0%{?meego_version}" != "0"
-Requires:   m2crypto
-%else
-%if 0%{?suse_version} == 1210
-Requires:   python-M2Crypto
-%else
-Requires:   python-m2crypto
-%endif
-%endif
 
-%if 0%{?fedora_version} > 13
 Requires:   syslinux-extlinux
-%endif
 
 Requires:   python-zypp
 BuildRequires:  python-devel
