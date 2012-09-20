@@ -77,13 +77,13 @@ if prefix.lstrip('/') == 'usr':
 else:
     etc_prefix = os.path.join(prefix, 'etc')
 
-conffile = 'distfiles/mic.conf'
-bsconf = 'distfiles/bootstrap.conf'
+conffile = 'etc/mic.conf'
+bsconf = 'etc/bootstrap.conf'
 if os.path.isfile('%s/mic/mic.conf' % etc_prefix):
     conffile += '.new'
 
 # apply prefix to mic.conf.in to generate actual mic.conf
-conf_str = file('distfiles/mic.conf.in').read()
+conf_str = file('etc/mic.conf.in').read()
 conf_str = conf_str.replace('@PREFIX@', prefix)
 with file(conffile, 'w') as wf:
     wf.write(conf_str)

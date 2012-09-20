@@ -15,14 +15,7 @@ Requires:   coreutils
 Requires:   python >= 2.5
 Requires:   e2fsprogs
 Requires:   dosfstools >= 2.11-8
-%if 0%{is_tizen} == 0
-Requires:   yum >= 3.2.24
-%endif
-%if 0%{?suse_version} == 1210
-Requires:   syslinux == 4.04.1
-%else
 Requires:   syslinux >= 3.82
-%endif
 Requires:   kpartx
 Requires:   parted
 Requires:   device-mapper
@@ -32,7 +25,11 @@ Requires:   isomd5sum
 Requires:   gzip
 Requires:   bzip2
 Requires:   squashfs-tools >= 4.0
+Requires:   qemu-arm-static
 Requires:   python-urlgrabber
+%if 0%{is_tizen} == 0
+Requires:   yum >= 3.2.24
+%endif
 %if 0%{?suse_version}
 Requires:   btrfsprogs
 %else
@@ -49,15 +46,11 @@ Requires:   python-m2crypto
 %endif
 %endif
 
-%if 0%{?fedora_version} == 16
+%if 0%{?fedora_version} > 13 || 0%{is_tizen} == 1
 Requires:   syslinux-extlinux
 %endif
 
-%if 0%{?suse_version} == 1210
-Requires:   python-zypp == 0.5.50
-%else
-Requires:   python-zypp >= 0.5.9.1
-%endif
+Requires:   python-zypp
 BuildRequires:  python-devel
 
 Obsoletes:  mic2
@@ -76,7 +69,6 @@ an image.
 %prep
 %setup -q -n %{name}-%{version}
 
-
 %build
 CFLAGS="$RPM_OPT_FLAGS" %{__python} setup.py build
 
@@ -93,10 +85,10 @@ rm -rf $RPM_BUILD_ROOT
 # remove yum backend for tizen
 %if 0%{is_tizen} == 1
 rm -rf %{buildroot}/%{_prefix}/lib/%{name}/plugins/backend/yumpkgmgr.py
+rm -rf %{buildroot}/%{_sysconfdir}/%{name}/bootstrap.conf
 %endif
 mkdir -p %{buildroot}/%{_prefix}/share/man/man1
 install -m644 doc/mic.1 %{buildroot}/%{_prefix}/share/man/man1
-
 
 %files
 %defattr(-,root,root,-)
@@ -104,6 +96,9 @@ install -m644 doc/mic.1 %{buildroot}/%{_prefix}/share/man/man1
 %{_mandir}/man1/*
 %dir %{_sysconfdir}/%{name}
 %config(noreplace) %{_sysconfdir}/%{name}/%{name}.conf
+%if 0%{is_tizen} == 0
+%config %{_sysconfdir}/%{name}/bootstrap.conf
+%endif
 %{python_sitelib}/*
 %dir %{_prefix}/lib/%{name}
 %{_prefix}/lib/%{name}/*
