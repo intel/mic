@@ -64,12 +64,12 @@ Options for fs image:
 
 Options for loop image:
   --shrink       whether to shrink loop images to minimal size
-  --compress-image=COMPRESS_IMAGE compress all loop images with 'gz' or 'bz2'
-  --compress-disk-image=COMPRESS_DISK_IMAGE same with --compress-image
+  --compress-image=COMPRESS_IMAGE  compress all loop images with 'gz' or 'bz2'
+  --compress-disk-image=COMPRESS_DISK_IMAGE  same with --compress-image
 
 Options for raw image:
-  --compress-image=COMPRESS_IMAGE compress all raw images with 'gz' or 'bz2'
-  --compress-disk-image=COMPRESS_DISK_IMAGE same with --compress-image
+  --compress-image=COMPRESS_IMAGE  compress all raw images with 'gz' or 'bz2'
+  --compress-disk-image=COMPRESS_DISK_IMAGE  same with --compress-image
 
 Examples:
 
@@ -127,14 +127,20 @@ chroot environment with the customized rpm.
 
 Now mic will use bootstrap to create image by default, and to meet your requirement, you can
 also change the setting for bootstrap (/etc/mic/bootstrap.conf):
-[main]
-distro_name = tizen  # which distro will be used for creating bootstrap
-rootdir = /var/tmp/mic-bootstrap  # which dir will be located when creating bootstrap
-enable = true # whether to enable the bootstrap mode
 
-[tizen] # the supported distro for creating bootstrap
-optional:  # which packages will be optional when creating bootstrap for this distro
-packages:  # which packages will be required when creating bootstrap for this distro
+| [main]
+| # which distro will be used for creating bootstrap
+| distro_name = tizen
+| # which dir will be located when creating bootstrap
+| rootdir = /var/tmp/mic-bootstrap
+| # whether to enable the bootstrap mode
+| enable = true
+| 
+| [tizen] # the supported distro for creating bootstrap
+| # which packages will be optional when creating bootstrap for this distro
+| optional:
+| # which packages will be required when creating bootstrap for this distro
+| packages:
 
 KNOWN ISSUES
 ============
