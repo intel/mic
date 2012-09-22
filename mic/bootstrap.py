@@ -192,7 +192,7 @@ class Bootstrap(object):
             pkgmgr.arch = self.arch
             pkgmgr.repomd = repomd
             pkgmgr.optionals = optlist
-            map(pkgmgr.selectPackage, pkglist)
+            map(pkgmgr.selectPackage, pkglist + optlist)
             pkgmgr.runInstall()
 
             # make /tmp path
