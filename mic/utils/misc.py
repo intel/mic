@@ -699,6 +699,7 @@ def get_package(pkg, repometadata, arch = None):
                 for row in con.execute(sql):
                     tmpver = "%s-%s" % (row[0], row[1])
                     if tmpver > ver:
+                        ver = tmpver
                         pkgpath = "%s" % row[2]
                         target_repo = repo
                     break
@@ -708,6 +709,7 @@ def get_package(pkg, repometadata, arch = None):
                 for row in con.execute(sql):
                     tmpver = "%s-%s" % (row[0], row[1])
                     if tmpver > ver:
+                        ver = tmpver
                         pkgpath = "%s" % row[2]
                         target_repo = repo
                     break
