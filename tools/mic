@@ -69,6 +69,13 @@ class MicCmd(cmdln.Cmdln):
 
         self.print_version()
 
+    def optparser_setup(func):
+        """Setup optparser for a function"""
+        if not hasattr(func, "optparser"):
+            func.optparser = cmdln.SubCmdOptionParser()
+            func.optparser.disable_interspersed_args()
+        return func
+
     def help_create(self):
         cr = creator.Creator()
         cr.optparser = cr.get_optparser()
@@ -166,11 +173,12 @@ class MicCmd(cmdln.Cmdln):
     @cmdln.option('-s', '--saveto',
                   action='store', dest='saveto', default=None,
                   help="Save the unpacked image to specified dir")
+    @optparser_setup
     def do_chroot(self, subcmd, opts, *args):
         """${cmd_name}: chroot into an image
 
         Usage:
-            mic chroot <imagefile>
+            mic chroot [options] <imagefile> [command [arg]...]
 
         ${cmd_option_list}
         """
@@ -181,11 +189,8 @@ class MicCmd(cmdln.Cmdln):
             if hasattr(handler, "optparser"):
                 handler.optparser.print_help()
             return 1
-
-        if len(args) == 1:
-            targetimage = args[0]
-        else:
-            raise errors.Usage("Extra argument given")
+        
+        targetimage = args[0]
 
         if not os.path.exists(targetimage):
             raise errors.CreatorError("Cannot find the image: %s"
@@ -209,7 +214,7 @@ class MicCmd(cmdln.Cmdln):
             raise errors.CreatorError("Cannot support image type: %s" \
                                       % imagetype)
 
-        chrootclass.do_chroot(targetimage)
+        chrootclass.do_chroot(targetimage, args[1:])
 
 if __name__ == "__main__":
     try:

@@ -131,7 +131,7 @@ class LoopPlugin(ImagerPlugin):
         return 0
 
     @classmethod
-    def _do_chroot_tar(cls, target):
+    def _do_chroot_tar(cls, target, cmd):
         mountfp_xml = os.path.splitext(target)[0] + '.xml'
         if not os.path.exists(mountfp_xml):
             raise errors.CreatorError("No mount point file found for this tar "
@@ -178,7 +178,11 @@ class LoopPlugin(ImagerPlugin):
             loops.append(loop)
 
         try:
-            chroot.chroot(mntdir, None, "/usr/bin/env HOME=/root /bin/bash")
+            if len(cmd) != 0:
+                cmdline = "/usr/bin/env HOME=/root " + ' '.join(cmd)
+            else:
+                cmdline = "/usr/bin/env HOME=/root /bin/bash"
+            chroot.chroot(mntdir, None, cmdline)
         except:
             raise errors.CreatorError("Failed to chroot to %s." % target)
         finally:
@@ -188,11 +192,11 @@ class LoopPlugin(ImagerPlugin):
             shutil.rmtree(tmpdir, ignore_errors=True)
 
     @classmethod
-    def do_chroot(cls, target):
+    def do_chroot(cls, target, cmd):
         if target.endswith('.tar'):
             import tarfile
             if tarfile.is_tarfile(target):
-                LoopPlugin._do_chroot_tar(target)
+                LoopPlugin._do_chroot_tar(target, cmd)
                 return
             else:
                 raise errors.CreatorError("damaged tarball for loop images")
@@ -225,11 +229,13 @@ class LoopPlugin(ImagerPlugin):
             raise
 
         try:
-            envcmd = fs_related.find_binary_inchroot("env", extmnt)
-            if envcmd:
-                cmdline = "%s HOME=/root /bin/bash" % envcmd
+            if len(cmd) != 0:
+                cmdline = ' '.join(cmd)
             else:
                 cmdline = "/bin/bash"
+            envcmd = fs_related.find_binary_inchroot("env", extmnt)
+            if envcmd:
+                cmdline = "%s HOME=/root %s" % (envcmd, cmdline)
             chroot.chroot(extmnt, None, cmdline)
         except:
             raise errors.CreatorError("Failed to chroot to %s." % img)

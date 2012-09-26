@@ -119,7 +119,7 @@ class LiveUSBPlugin(ImagerPlugin):
         return 0
 
     @classmethod
-    def do_chroot(cls, target):
+    def do_chroot(cls, target, cmd):
         os_image = cls.do_unpack(target)
         os_image_dir = os.path.dirname(os_image)
 
@@ -151,11 +151,13 @@ class LiveUSBPlugin(ImagerPlugin):
             raise
 
         try:
-            envcmd = fs_related.find_binary_inchroot("env", extmnt)
-            if envcmd:
-                cmdline = "%s HOME=/root /bin/bash" % envcmd
+            if len(cmd) != 0:
+                cmdline = ' '.join(cmd)
             else:
                 cmdline = "/bin/bash"
+            envcmd = fs_related.find_binary_inchroot("env", extmnt)
+            if envcmd:
+                cmdline = "%s HOME=/root %s" % (envcmd, cmdline)
             chroot.chroot(extmnt, None, cmdline)
         except:
             raise errors.CreatorError("Failed to chroot to %s." %target)
