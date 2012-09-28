@@ -114,6 +114,7 @@ class RawPlugin(ImagerPlugin):
             creator.configure(creatoropts["repomd"])
             creator.copy_kernel()
             creator.unmount()
+            creator.generate_bmap()
             creator.package(creatoropts["outdir"])
             if creatoropts['release'] is not None:
                 creator.release_output(ksconf, creatoropts['outdir'], creatoropts['release'])
