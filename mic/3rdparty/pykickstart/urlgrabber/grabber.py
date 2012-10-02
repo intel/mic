@@ -688,7 +688,7 @@ class URLParser:
                     user, password = user_pass.split(':', 1)
             except ValueError, e:
                 raise URLGrabError(1, _('Bad URL: %s') % url)
-            if DEBUG: DEBUG.info('adding HTTP auth: %s, %s', user, password)
+            if DEBUG: DEBUG.info('adding HTTP auth: %s, XXXXXXXX', user)
             auth_handler.add_password(None, host, user, password)
 
         return (scheme, host, path, parm, query, frag)
