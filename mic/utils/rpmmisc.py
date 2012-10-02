@@ -613,7 +613,7 @@ def checkRepositoryEULA(name, repo):
             except ValueError, e:
                 raise CreatorError('Bad URL: %s' % url)
 
-            msger.verbose("adding HTTP auth: %s, %s" %(user, password))
+            msger.verbose("adding HTTP auth: %s, XXXXXXXX" %(user))
             auth_handler.add_password(None, host, user, password)
             tmphandlers.append(auth_handler)
             url = scheme + "://" + host + path + parm + query + frag
