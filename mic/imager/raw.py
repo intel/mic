@@ -174,6 +174,14 @@ class RawImageCreator(BaseImageCreator):
 
         return self._diskinfo
 
+    def _full_name(self, name, extention):
+        """ Construct full file name for a file we generate. """
+        return "%s-%s.%s" % (self.name, name, extention)
+
+    def _full_path(self, path, name, extention):
+        """ Construct full file path to a file we generate. """
+        return os.path.join(path, self._full_name(name, extention))
+
     #
     # Actual implemention
     #
@@ -184,15 +192,11 @@ class RawImageCreator(BaseImageCreator):
 
         #create disk
         for item in self.get_diskinfo():
-            msger.debug("Adding disk %s as %s/%s-%s.raw with size %s bytes" %
-                        (item['name'], self.__imgdir, self.name, item['name'],
-                         item['size']))
+            full_path = self._full_path(self.__imgdir, item['name'], "raw")
+            msger.debug("Adding disk %s as %s with size %s bytes" \
+                        % (item['name'], full_path, item['size']))
 
-            disk = fs_related.SparseLoopbackDisk("%s/%s-%s.raw" % (
-                                                                self.__imgdir,
-                                                                self.name,
-                                                                item['name']),
-                                                 item['size'])
+            disk = fs_related.SparseLoopbackDisk(full_path, item['size'])
             self.__disks[item['name']] = disk
 
         self.__instloop = PartitionedMount(self.__disks, self._instroot)
@@ -426,8 +430,9 @@ class RawImageCreator(BaseImageCreator):
 
         i = 0
         for name in self.__disks.keys():
-            xml += "      <drive disk='%s-%s.%s' target='hd%s'/>\n" \
-                   % (self.name,name, self.__disk_format,chr(ord('a')+i))
+            full_name = self._full_name(name, self.__disk_format)
+            xml += "      <drive disk='%s' target='hd%s'/>\n" \
+                       % (full_name, chr(ord('a') + i))
             i = i + 1
 
         xml += "    </boot>\n"
@@ -443,21 +448,17 @@ class RawImageCreator(BaseImageCreator):
 
         if self.checksum is True:
             for name in self.__disks.keys():
-                diskpath = "%s/%s-%s.%s" \
-                           % (self._outdir,self.name,name, self.__disk_format)
+                diskpath = self._full_path(self._outdir, name, \
+                                           self.__disk_format)
                 disk_size = os.path.getsize(diskpath)
                 meter_ct = 0
                 meter = progress.TextMeter()
-                meter.start(size=disk_size,
-                            text="Generating disk signature for %s-%s.%s" \
-                                 % (self.name,
-                                    name,
-                                    self.__disk_format))
-                xml += "    <disk file='%s-%s.%s' use='system' format='%s'>\n"\
-                       % (self.name,
-                          name,
-                          self.__disk_format,
-                          self.__disk_format)
+                full_name = self._full_name(name, self.__disk_format)
+                meter.start(size = disk_size, \
+                            text = "Generating disk signature for %s" \
+                                   % full_name)
+                xml += "    <disk file='%s' use='system' format='%s'>\n" \
+                       % (full_name, self.__disk_format)
 
                 try:
                     import hashlib
@@ -490,11 +491,9 @@ class RawImageCreator(BaseImageCreator):
                 xml += "    </disk>\n"
         else:
             for name in self.__disks.keys():
-                xml += "    <disk file='%s-%s.%s' use='system' format='%s'/>\n"\
-                       %(self.name,
-                         name,
-                         self.__disk_format,
-                         self.__disk_format)
+                full_name = self._full_name(name, self.__disk_format)
+                xml += "    <disk file='%s' use='system' format='%s'/>\n" \
+                       % (full_name, self.__disk_format)
 
         xml += "  </storage>\n"
         xml += "</image>\n"
