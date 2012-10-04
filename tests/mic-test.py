@@ -3,7 +3,7 @@ import unittest
 import os, sys, glob, tempfile, shutil
 from testbase import *
 
-class MICTest(unittest.TestCase):
+class TestMIC(unittest.TestCase):
     cases_dir = "mic_cases"
     if os.path.isdir(cases_dir):
         for case in glob.glob(os.path.join(cases_dir,'test-*')):
@@ -19,6 +19,13 @@ def test_%s(self):
     
     def tearDown(self):
         shutil.rmtree(self.work_env, ignore_errors = True)
+
+    def test_stub(self):
+	"""
+	Empty test just to make nose to run at least one test.
+	without tests but with tests/ directory Jenkins job will fail.
+	"""
+	assert True
             
     def _testTemplate(self, case):
         """test function"""

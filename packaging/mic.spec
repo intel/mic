@@ -8,7 +8,7 @@ Group:      System/Base
 License:    GPLv2
 BuildArch:  noarch
 URL:        http://www.tizen.org
-Source0:    %{name}-%{version}.tar.gz
+Source0:    %{name}_%{version}.tar.gz
 Requires:   rpm-python
 Requires:   util-linux
 Requires:   coreutils
@@ -51,11 +51,13 @@ Requires:   syslinux-extlinux
 %endif
 
 Requires:   python-zypp
+
 BuildRequires:  python-devel
+BuildRequires:  python-docutils
 
 Obsoletes:  mic2
 
-BuildRoot:  %{_tmppath}/%{name}-%{version}-build
+BuildRoot:  %{_tmppath}/%{name}_%{version}-build
 
 
 %description
@@ -71,7 +73,7 @@ an image.
 
 %build
 CFLAGS="$RPM_OPT_FLAGS" %{__python} setup.py build
-
+make man
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -81,14 +83,15 @@ rm -rf $RPM_BUILD_ROOT
 %{__python} setup.py install --root=$RPM_BUILD_ROOT -O1
 %endif
 
-# install man page
 # remove yum backend for tizen
 %if 0%{is_tizen} == 1
 rm -rf %{buildroot}/%{_prefix}/lib/%{name}/plugins/backend/yumpkgmgr.py
 rm -rf %{buildroot}/%{_sysconfdir}/%{name}/bootstrap.conf
 %endif
+
+# install man page
 mkdir -p %{buildroot}/%{_prefix}/share/man/man1
-install -m644 doc/mic.1 %{buildroot}/%{_prefix}/share/man/man1
+install -m644 mic.1 %{buildroot}/%{_prefix}/share/man/man1
 
 %files
 %defattr(-,root,root,-)
