@@ -126,6 +126,7 @@ def select_bootstrap(repomd, cachedir, bootstrapdir):
 
 def runmic_in_bootstrap(name, argv, opts, ksfile, repolist):
     bootstrap_env = bootstrap.Bootstrap(homedir = opts['bootstrapdir'])
+    bootstrap_env.pkgmgr = opts['pkgmgr']
     bootstrap_lst = bootstrap_env.bootstraps
     setattr(bootstrap_env, 'rootdir', name)
     if not bootstrap_lst or not name in bootstrap_lst:
@@ -159,6 +160,15 @@ def runmic_in_bootstrap(name, argv, opts, ksfile, repolist):
 
     bindmounts = ';'.join(map(lambda p: os.path.abspath(os.path.expanduser(p)),
                               lst))
+
+    # for bootstrap don't support yum, will replace to zypp here
+    if opts['pkgmgr'] == 'yum':
+        try:
+            i = argv.index("--pkgmgr=yum")
+        except:
+            argv.append("--pkgmgr=zypp")
+        else:
+            argv[i] = "--pkgmgr=zypp"
 
     msger.info("Start mic command in bootstrap")
     bootstrap_env.run(name, argv, cwd, bindmounts)
