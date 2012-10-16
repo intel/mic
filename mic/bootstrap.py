@@ -70,6 +70,7 @@ class Bootstrap(object):
         self._pkgmgr = None
         self._rootdir = None
         self._bootstraps = []
+        self.logfile = None
         self.homedir = homedir
 
         if not os.path.exists(self.homedir):
@@ -139,6 +140,8 @@ class Bootstrap(object):
         except:
             raise errors.BootstrapError("Run in bootstrap fail")
         finally:
+            if self.logfile:
+                msger.log(file(self.logfile).read())
             chroot.cleanup_chrootenv(self.rootdir, bindmounts, globalmounts)
 
         msger.set_loglevel(lvl)

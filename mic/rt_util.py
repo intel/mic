@@ -145,6 +145,7 @@ def runmic_in_bootstrap(name, argv, opts, ksfile, repolist):
         ksfp = os.path.abspath(os.path.expanduser(ksfile))
         lst.append(os.path.dirname(ksfp))
     if opts['logfile']:
+        bootstrap_env.logfile = opts['logfile']
         logfile = os.path.abspath(os.path.expanduser(opts['logfile']))
         lst.append(os.path.dirname(logfile))
     if opts['local_pkgs_path']:
