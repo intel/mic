@@ -38,6 +38,8 @@ def runmic_in_runtime(runmode, opts, ksfile, argv=None):
         argv = sys.argv
     else:
         argv = argv[:]
+    if argv[0] not in ('/usr/bin/mic', 'mic'):
+        argv[0] = '/usr/bin/mic'
 
     if runmode == 'bootstrap':
         msger.info("Use bootstrap runtime environment")
