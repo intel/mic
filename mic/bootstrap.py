@@ -77,6 +77,13 @@ class Bootstrap(object):
 
         self.__dict__.update(**kwargs)
 
+    def __del__(self):
+        try:
+            # clean mounts
+            chroot.cleanup_mounts(self._rootdir)
+        except:
+            pass
+
     def _setRootdir(self, name):
         self._rootdir = os.path.join(self.homedir, name)
 
