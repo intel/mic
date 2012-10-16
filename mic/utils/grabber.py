@@ -35,7 +35,7 @@ def myurlgrab(url, filename, proxies, progress_obj = None):
 
     else:
         try:
-            filename = g.urlgrab(url = url, filename = filename,
+            filename = g.urlgrab(url = str(url), filename = filename,
                 ssl_verify_host = False, ssl_verify_peer = False,
                 proxies = proxies, http_headers = (('Pragma', 'no-cache'),),
                 quote = 0, progress_obj = progress_obj)
