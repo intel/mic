@@ -231,11 +231,6 @@ class Bootstrap(object):
             pkg_manager.closeRpmDB()
             pkg_manager.close()
 
-        # Copy bootstrap repo files
-        srcdir = "%s/etc/zypp/repos.d/" % self.cachedir
-        destdir= "%s/etc/zypp/repos.d/" % os.path.abspath(self.rootdir)
-        shutil.rmtree(destdir, ignore_errors = True)
-        shutil.copytree(srcdir, destdir)
         # create '/tmp' in chroot
         _tmpdir = os.path.join(os.path.abspath(self.rootdir), "tmp")
         if not os.path.exists(_tmpdir):
