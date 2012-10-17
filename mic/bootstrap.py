@@ -29,6 +29,8 @@ from mic.utils import proxy
 from mic.utils import misc
 from mic.utils import errors
 
+PATH_BOOTSTRAP = "/usr/sbin:/usr/bin:/sbin:/bin"
+
 minibase_grps = [ "tizen-bootstrap" ]
 minibase_pkgs = [ ]
 required_pkgs = [ "syslinux", "syslinux-extlinux", "satsolver-tools",
@@ -130,12 +132,15 @@ class Bootstrap(object):
         if isinstance(cmd, list):
             cmd = ' '.join(cmd)
 
+        env = os.environ
+        env['PATH'] = "%s:%s" %(PATH_BOOTSTRAP, env['PATH'])
+
         lvl = msger.get_loglevel()
         msger.set_loglevel('quiet')
         globalmounts = chroot.setup_chrootenv(self.rootdir, bindmounts)
         try:
             proxy.set_proxy_environ()
-            subprocess.call(cmd, preexec_fn=mychroot, shell=True)
+            subprocess.call(cmd, preexec_fn=mychroot, env=env, shell=True)
             proxy.unset_proxy_environ()
         except:
             raise errors.BootstrapError("Run in bootstrap fail")
