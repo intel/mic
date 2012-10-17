@@ -512,26 +512,29 @@ class RawImageCreator(BaseImageCreator):
 
         xml = "<?xml version=\"1.0\" ?>\n\n"
         xml += "<!-- This file contains block map for an image file. The block map\n"
-        xml += "     is basically a list of block numbers of the image file. It lists\n"
+        xml += "     is basically a list of block numbers in the image file. It lists\n"
         xml += "     only those blocks which contain data (boot sector, partition\n"
         xml += "     table, file-system metadata, files, directories, extents, etc).\n"
         xml += "     These blocks have to be copied to the target device. The other\n"
         xml += "     blocks do not contain any useful data and do not have to be\n"
         xml += "     copied to the target device. Thus, using the block map users can\n"
-        xml += "     flash the image faster. The block map is just an optimization. -->\n\n"
+        xml += "     flash the image fast. So the block map is just an optimization.\n"
+        xml += "     It is OK to ignore this file and just flash the entire image to\n"
+        xml += "     the target device if the flashing speed is not important.\n\n"
+
+        xml += "     Note, this file contains commentaries with useful information\n"
+        xml += "     like image size in gigabytes, percentage of mapped data, etc.\n"
+        xml += "     This data is there merely to make the XML file human-readable. -->\n\n"
 
         xml += "<bmap version=\"1.0\">\n"
-        xml += "\t<!-- Image size in bytes -->\n"
+        xml += "\t<!-- Image size in bytes (%s) -->\n" \
+                % misc.human_size(image_size)
         xml += "\t<ImageSize> %u </ImageSize>\n\n" % image_size
-
-        xml += "\t<!-- Image size, but human-friendly -->\n"
-        xml += "\t<ImageSizeHuman> %s </ImageSizeHuman>\n\n" \
-               % misc.human_size(image_size)
 
         xml += "\t<!-- Size of a block in bytes -->\n"
         xml += "\t<BlockSize> %u </BlockSize>\n\n" % block_size
 
-        xml += "\t<!-- Size of a block in bytes -->\n"
+        xml += "\t<!-- Count of blocks in the image file -->\n"
         xml += "\t<BlocksCount> %u </BlocksCount>\n\n" % blocks_cnt
 
         xml += "\t<!-- The block map which consists of elements which may\n"
@@ -547,17 +550,11 @@ class RawImageCreator(BaseImageCreator):
 
         xml = "\t</BlockMap>\n\n"
 
-        xml += "\t<!-- Count of mapped blocks -->\n"
-        xml += "\t<MappedBlocksCount> %u </MappedBlocksCount>\n\n" % mapped_cnt
-
-        xml += "\t<!-- Amount of mapped data in a human-friendly form -->\n"
-        xml += "\t<MappedSize> %s </MappedSize>\n\n" \
-                % misc.human_size(mapped_cnt * block_size)
-
-        xml += "\t<!-- Amount of mapped blocks as a percent of total amount of\n"
-        xml += "\t     blocks -->\n"
-        xml += "\t<MappedBlocksCountPercent> %.1f </MappedBlocksCountPercent>\n" % \
-                ((mapped_cnt * 100.0) / blocks_cnt)
+        size = misc.human_size(mapped_cnt * block_size)
+        percent = (mapped_cnt * 100.0) / blocks_cnt
+        xml += "\t<!-- Count of mapped blocks (%s or %.1f%% mapped) -->\n" \
+                % (size, percent)
+        xml += "\t<MappedBlocksCount> %u </MappedBlocksCount>\n" % mapped_cnt
         xml += "</bmap>"
 
         return xml
