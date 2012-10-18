@@ -533,9 +533,16 @@ class RawImageCreator(BaseImageCreator):
 
         xml += "     Note, this file contains commentaries with useful information\n"
         xml += "     like image size in gigabytes, percentage of mapped data, etc.\n"
-        xml += "     This data is there merely to make the XML file human-readable. -->\n\n"
+        xml += "     This data is there merely to make the XML file human-readable.\n\n"
 
-        xml += "<bmap version=\"1.0\">\n"
+        xml += "     The 'version' attribute is the block map file format version in\n"
+        xml += "     the 'major.minor' format. The version major number is increased\n"
+        xml += "     whenever we make incompatible changes to the block map format,\n"
+        xml += "     meaning that the bmap-aware flasher would have to be modified in\n"
+        xml += "     order to support the new format. The minor version is increased\n"
+        xml += "     in case of compatible changes. For example, if we add an attribute\n"
+        xml += "     which is optional for the bmap-aware flasher. -->\n"
+        xml += "<bmap version=\"1.1\">\n"
         xml += "\t<!-- Image size in bytes (%s) -->\n" \
                 % misc.human_size(image_size)
         xml += "\t<ImageSize> %u </ImageSize>\n\n" % image_size
