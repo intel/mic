@@ -409,6 +409,38 @@ class RawImageCreator(BaseImageCreator):
                 shutil.move(src,dst)
         self._write_image_xml()
 
+    def _calc_hashes(self, file_name, hashes, start = 0, end = None):
+        """ Calculate hashes for a file. The 'file_name' argument is the file
+        to calculate hash functions for, 'start' and 'end' are the starting and
+        ending file offset to calculate the has functions for. The 'hashes'
+        argument is a list of haslib hash functions to calculate. Returns the
+        the list of calculated hash values in the hexadecimal form in the same
+        order as 'hashes'. """
+
+        if end == None:
+            end = os.path.getsize(file_name)
+
+        chunk_size = 65536
+        to_read = end - start;
+        read = 0
+
+        with open(file_name, "rb") as f:
+            f.seek(start)
+
+            while read < to_read:
+                if read + chunk_size > to_read:
+                    chunk_size = to_read - read
+                chunk = f.read(chunk_size)
+                for hash_obj in hashes:
+                    hash_obj.update(chunk)
+                read += chunk_size
+
+        result = []
+        for hash_obj in hashes:
+            result.append(hash_obj.hexdigest())
+
+        return result
+
     def _write_image_xml(self):
         imgarch = "i686"
         if self.target_arch and self.target_arch.startswith("arm"):
@@ -454,7 +486,6 @@ class RawImageCreator(BaseImageCreator):
             for name in self.__disks.keys():
                 diskpath = self._full_path(self._outdir, name, \
                                            self.__disk_format)
-                disk_size = os.path.getsize(diskpath)
                 full_name = self._full_name(name, self.__disk_format)
 
                 msger.debug("Generating disk signature for %s" % full_name)
@@ -462,26 +493,13 @@ class RawImageCreator(BaseImageCreator):
                 xml += "    <disk file='%s' use='system' format='%s'>\n" \
                        % (full_name, self.__disk_format)
 
-                m1 = hashlib.sha1()
-                m2 = hashlib.sha256()
-                f = open(diskpath,"r")
-                while 1:
-                    chunk = f.read(65536)
-                    if not chunk:
-                        break
-                    m1.update(chunk)
-                    if m2:
-                       m2.update(chunk)
+                hashes = self._calc_hashes(diskpath,
+                                           (hashlib.sha1(), hashlib.sha256()))
 
-                sha1checksum = m1.hexdigest()
                 xml +=  "      <checksum type='sha1'>%s</checksum>\n" \
-                        % sha1checksum
-
-                if m2:
-                    sha256checksum = m2.hexdigest()
-                    xml += "      <checksum type='sha256'>%s</checksum>\n" \
-                           % sha256checksum
-
+                        % hashes[0]
+                xml += "      <checksum type='sha256'>%s</checksum>\n" \
+                       % hashes[1]
                 xml += "    </disk>\n"
         else:
             for name in self.__disks.keys():
