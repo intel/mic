@@ -546,8 +546,9 @@ class RawImageCreator(BaseImageCreator):
         xml += "\t<!-- Count of blocks in the image file -->\n"
         xml += "\t<BlocksCount> %u </BlocksCount>\n\n" % blocks_cnt
 
-        xml += "\t<!-- The block map which consists of elements which may\n"
-        xml += "\t     either be a range of blocks or a single block -->\n"
+        xml += "\t<!-- The block map which consists of elements which may either\n"
+        xml += "\t     be a range of blocks or a single block. The 'sha1' attribute\n"
+        xml += "\t     is the SHA1 checksum of the this range of blocks. -->\n"
         xml += "\t<BlockMap>\n"
 
         return xml
@@ -597,7 +598,6 @@ class RawImageCreator(BaseImageCreator):
                     pass
                 yield first, last
 
-
     def generate_bmap(self):
         """ Generate block map file for an image. The idea is that while disk
         images we generate may be large (e.g., 4GiB), they may actually contain
@@ -643,7 +643,11 @@ class RawImageCreator(BaseImageCreator):
                 mapped_cnt = 0
                 for first, last in self._get_ranges(f_image, blocks_cnt):
                     mapped_cnt += last - first + 1
-                    f_bmap.write("\t\t<Range> %s-%s </Range>\n" % (first, last))
+                    sha1 = self._calc_hashes(image, (hashlib.sha1(),),
+                                             first * block_size,
+                                             (last + 1) * block_size)
+                    f_bmap.write("\t\t<Range sha1=\"%s\"> %s-%s </Range>\n" \
+                            % (sha1[0], first, last))
 
                 # Finish the block map file
                 xml = self._bmap_file_end(mapped_cnt, block_size, blocks_cnt)
