@@ -455,12 +455,10 @@ class RawImageCreator(BaseImageCreator):
                 diskpath = self._full_path(self._outdir, name, \
                                            self.__disk_format)
                 disk_size = os.path.getsize(diskpath)
-                meter_ct = 0
-                meter = progress.TextMeter()
                 full_name = self._full_name(name, self.__disk_format)
-                meter.start(size = disk_size, \
-                            text = "Generating disk signature for %s" \
-                                   % full_name)
+
+                msger.debug("Generating disk signature for %s" % full_name)
+
                 xml += "    <disk file='%s' use='system' format='%s'>\n" \
                        % (full_name, self.__disk_format)
 
@@ -474,8 +472,6 @@ class RawImageCreator(BaseImageCreator):
                     m1.update(chunk)
                     if m2:
                        m2.update(chunk)
-                    meter.update(meter_ct)
-                    meter_ct = meter_ct + 65536
 
                 sha1checksum = m1.hexdigest()
                 xml +=  "      <checksum type='sha1'>%s</checksum>\n" \
