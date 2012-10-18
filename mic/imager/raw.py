@@ -621,7 +621,7 @@ class RawImageCreator(BaseImageCreator):
 
             image_size = os.path.getsize(image)
 
-            with open(bmap_file, "w") as f_bmap, open(image) as f_image:
+            with open(bmap_file, "w") as f_bmap, open(image, "rb") as f_image:
                 # Get the block size of the host file-system for the image file
                 # by calling the FIGETBSZ ioctl (number 2).
                 block_size = unpack('I', ioctl(f_image, 2, pack('I', 0)))[0]
