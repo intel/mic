@@ -24,13 +24,21 @@ class CreatorError(Exception):
         self.msg = msg
 
     def __str__(self):
-        return self.keyword + str(self.msg)
+        if isinstance(self.msg, unicode):
+            self.msg = self.msg.encode('utf-8', 'ignore')
+        else:
+            self.msg = str(self.msg)
+        return self.keyword + self.msg
 
 class Usage(CreatorError):
     keyword = '<usage>'
 
     def __str__(self):
-        return self.keyword + str(self.msg) + ', please use "--help" for more info'
+        if isinstance(self.msg, unicode):
+            self.msg = self.msg.encode('utf-8', 'ignore')
+        else:
+            self.msg = str(self.msg)
+        return self.keyword + self.msg + ', please use "--help" for more info'
 
 class Abort(CreatorError):
     keyword = ''
