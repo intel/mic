@@ -18,6 +18,7 @@
 import os
 import stat
 import shutil
+import hashlib
 from fcntl import ioctl
 from struct import pack, unpack
 from itertools import groupby
@@ -463,14 +464,8 @@ class RawImageCreator(BaseImageCreator):
                 xml += "    <disk file='%s' use='system' format='%s'>\n" \
                        % (full_name, self.__disk_format)
 
-                try:
-                    import hashlib
-                    m1 = hashlib.sha1()
-                    m2 = hashlib.sha256()
-                except:
-                    import sha
-                    m1 = sha.new()
-                    m2 = None
+                m1 = hashlib.sha1()
+                m2 = hashlib.sha256()
                 f = open(diskpath,"r")
                 while 1:
                     chunk = f.read(65536)
