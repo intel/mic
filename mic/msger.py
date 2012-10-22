@@ -41,8 +41,6 @@ ERR_COLOR  = 31 # red
 ASK_COLOR  = 34 # blue
 NO_COLOR = 0
 
-HOST_TIMEZONE = time.timezone
-
 PREFIX_RE = re.compile('^<(.*?)>\s*(.*)', re.S)
 
 INTERACTIVE = True
@@ -89,9 +87,7 @@ def _general_print(head, color, msg = None, stream = None, level = 'normal'):
     # append normal msg to LOG
     save_msg = msg.strip() if msg else None
     if save_msg:
-        global HOST_TIMEZONE
-        timestr = time.strftime("[%m/%d %H:%M:%S] ",
-                                time.gmtime(time.time() - HOST_TIMEZONE))
+        timestr = time.strftime("[%m/%d %H:%M:%S] ", time.localtime())
         LOG_CONTENT += timestr + save_msg + '\n'
 
     if errormsg:
