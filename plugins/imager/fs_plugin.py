@@ -126,7 +126,7 @@ class FsPlugin(ImagerPlugin):
         return 0
 
     @classmethod
-    def do_chroot(self, target, cmd):#chroot.py parse opts&args
+    def do_chroot(self, target, cmd=[]):#chroot.py parse opts&args
             try:
                 if len(cmd) != 0:
                     cmdline = ' '.join(cmd)

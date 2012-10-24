@@ -129,7 +129,7 @@ class RawPlugin(ImagerPlugin):
         return 0
 
     @classmethod
-    def do_chroot(cls, target, cmd):
+    def do_chroot(cls, target, cmd=[]):
         img = target
         imgsize = misc.get_file_size(img) * 1024L * 1024L
         partedcmd = fs_related.find_binary_path("parted")

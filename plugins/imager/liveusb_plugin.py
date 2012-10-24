@@ -119,7 +119,7 @@ class LiveUSBPlugin(ImagerPlugin):
         return 0
 
     @classmethod
-    def do_chroot(cls, target, cmd):
+    def do_chroot(cls, target, cmd=[]):
         os_image = cls.do_unpack(target)
         os_image_dir = os.path.dirname(os_image)
 

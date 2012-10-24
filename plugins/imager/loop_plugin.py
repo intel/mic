@@ -131,7 +131,7 @@ class LoopPlugin(ImagerPlugin):
         return 0
 
     @classmethod
-    def _do_chroot_tar(cls, target, cmd):
+    def _do_chroot_tar(cls, target, cmd=[]):
         mountfp_xml = os.path.splitext(target)[0] + '.xml'
         if not os.path.exists(mountfp_xml):
             raise errors.CreatorError("No mount point file found for this tar "
@@ -192,7 +192,7 @@ class LoopPlugin(ImagerPlugin):
             shutil.rmtree(tmpdir, ignore_errors=True)
 
     @classmethod
-    def do_chroot(cls, target, cmd):
+    def do_chroot(cls, target, cmd=[]):
         if target.endswith('.tar'):
             import tarfile
             if tarfile.is_tarfile(target):
