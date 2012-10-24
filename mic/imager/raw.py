@@ -404,38 +404,6 @@ class RawImageCreator(BaseImageCreator):
                 shutil.move(src,dst)
         self._write_image_xml()
 
-    def _calc_hashes(self, file_name, hashes, start = 0, end = None):
-        """ Calculate hashes for a file. The 'file_name' argument is the file
-        to calculate hash functions for, 'start' and 'end' are the starting and
-        ending file offset to calculate the has functions for. The 'hashes'
-        argument is a list of haslib hash functions to calculate. Returns the
-        the list of calculated hash values in the hexadecimal form in the same
-        order as 'hashes'. """
-
-        if end == None:
-            end = os.path.getsize(file_name)
-
-        chunk_size = 65536
-        to_read = end - start;
-        read = 0
-
-        with open(file_name, "rb") as f:
-            f.seek(start)
-
-            while read < to_read:
-                if read + chunk_size > to_read:
-                    chunk_size = to_read - read
-                chunk = f.read(chunk_size)
-                for hash_obj in hashes:
-                    hash_obj.update(chunk)
-                read += chunk_size
-
-        result = []
-        for hash_obj in hashes:
-            result.append(hash_obj.hexdigest())
-
-        return result
-
     def _write_image_xml(self):
         imgarch = "i686"
         if self.target_arch and self.target_arch.startswith("arm"):
@@ -488,8 +456,7 @@ class RawImageCreator(BaseImageCreator):
                 xml += "    <disk file='%s' use='system' format='%s'>\n" \
                        % (full_name, self.__disk_format)
 
-                hashes = self._calc_hashes(diskpath,
-                                           (hashlib.sha1(), hashlib.sha256()))
+                hashes = misc.calc_hashes(diskpath, ('sha1', 'sha256'))
 
                 xml +=  "      <checksum type='sha1'>%s</checksum>\n" \
                         % hashes[0]
@@ -645,9 +612,9 @@ class RawImageCreator(BaseImageCreator):
                 mapped_cnt = 0
                 for first, last in self._get_ranges(f_image, blocks_cnt):
                     mapped_cnt += last - first + 1
-                    sha1 = self._calc_hashes(image, (hashlib.sha1(),),
-                                             first * block_size,
-                                             (last + 1) * block_size)
+                    sha1 = misc.calc_hashes(image, ('sha1', ),
+                                            first * block_size,
+                                            (last + 1) * block_size)
                     f_bmap.write("\t\t<Range sha1=\"%s\"> %s-%s </Range>\n" \
                             % (sha1[0], first, last))
 
