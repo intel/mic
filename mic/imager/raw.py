@@ -22,7 +22,6 @@ import hashlib
 from fcntl import ioctl
 from struct import pack, unpack
 from itertools import groupby
-from urlgrabber import progress
 
 from mic import kickstart, msger
 from mic.utils import fs_related, runner, misc
@@ -248,13 +247,9 @@ class RawImageCreator(BaseImageCreator):
         return (bootdevnum, rootdevnum, rootdev, prefix)
 
     def _create_syslinux_config(self):
-        #Copy splash
-        splash = "%s/usr/lib/anaconda-runtime/syslinux-vesa-splash.jpg" \
-                 % self._instroot
 
+        splash = os.path.join(self._instroot, "boot/extlinux")
         if os.path.exists(splash):
-            shutil.copy(splash, "%s%s/splash.jpg" \
-                                % (self._instroot, "/boot/extlinux"))
             splashline = "menu background splash.jpg"
         else:
             splashline = ""
