@@ -596,28 +596,31 @@ class RawImageCreator(BaseImageCreator):
 
             image_size = os.path.getsize(image)
 
-            with open(bmap_file, "w") as f_bmap, open(image, "rb") as f_image:
-                # Get the block size of the host file-system for the image file
-                # by calling the FIGETBSZ ioctl (number 2).
-                block_size = unpack('I', ioctl(f_image, 2, pack('I', 0)))[0]
-                blocks_cnt = (image_size + block_size - 1) / block_size
+            with open(bmap_file, "w") as f_bmap:
+                with open(image, "rb") as f_image:
+                    # Get the block size of the host file-system for the image
+                    # file by calling the FIGETBSZ ioctl (number 2).
+                    block_size = unpack('I', ioctl(f_image, 2, pack('I', 0)))[0]
+                    blocks_cnt = (image_size + block_size - 1) / block_size
 
-                # Write general information to the block map file, without
-                # block map itself, which will be written next.
-                xml = self._bmap_file_start(block_size, image_size, blocks_cnt)
-                f_bmap.write(xml)
+                    # Write general information to the block map file, without
+                    # block map itself, which will be written next.
+                    xml = self._bmap_file_start(block_size, image_size,
+                                                blocks_cnt)
+                    f_bmap.write(xml)
 
-                # Generate the block map and write it to the XML block map file
-                # as we go.
-                mapped_cnt = 0
-                for first, last in self._get_ranges(f_image, blocks_cnt):
-                    mapped_cnt += last - first + 1
-                    sha1 = misc.calc_hashes(image, ('sha1', ),
-                                            first * block_size,
-                                            (last + 1) * block_size)
-                    f_bmap.write("\t\t<Range sha1=\"%s\"> %s-%s </Range>\n" \
-                            % (sha1[0], first, last))
+                    # Generate the block map and write it to the XML block map
+                    # file as we go.
+                    mapped_cnt = 0
+                    for first, last in self._get_ranges(f_image, blocks_cnt):
+                        mapped_cnt += last - first + 1
+                        sha1 = misc.calc_hashes(image, ('sha1', ),
+                                                first * block_size,
+                                                (last + 1) * block_size)
+                        f_bmap.write("\t\t<Range sha1=\"%s\"> %s-%s " \
+                                     "</Range>\n" % (sha1[0], first, last))
 
-                # Finish the block map file
-                xml = self._bmap_file_end(mapped_cnt, block_size, blocks_cnt)
-                f_bmap.write(xml)
+                    # Finish the block map file
+                    xml = self._bmap_file_end(mapped_cnt, block_size,
+                                              blocks_cnt)
+                    f_bmap.write(xml)
