@@ -15,7 +15,6 @@
 # with this program; if not, write to the Free Software Foundation, Inc., 59
 # Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-from __future__ import with_statement
 import os
 import sys
 import tempfile
@@ -26,21 +25,10 @@ import hashlib
 import subprocess
 import platform
 import rpmmisc
+from hashlib import md5
+import sqlite3 as sqlite
 
-try:
-    from hashlib import md5
-except ImportError:
-    from md5 import md5
-
-try:
-    import sqlite3 as sqlite
-except ImportError:
-    import sqlite
-
-try:
-    from xml.etree import cElementTree
-except ImportError:
-    import cElementTree
+from xml.etree import cElementTree
 xmlparse = cElementTree.parse
 
 from errors import *
