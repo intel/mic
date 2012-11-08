@@ -313,7 +313,7 @@ def _check_mic_chroot(rootdir):
                                  "/etc/tizen-release"])
 
     if not any(map(os.path.exists, release_files)):
-        msger.warning("Dir %s is not a MeeGo/Tizen chroot env")
+        msger.warning("Dir %s is not a MeeGo/Tizen chroot env" % rootdir)
 
     if not glob.glob(rootdir + "/boot/vmlinuz-*"):
         msger.warning("Failed to find kernel module under %s" % rootdir)
