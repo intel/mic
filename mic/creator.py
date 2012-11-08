@@ -254,11 +254,12 @@ class Creator(cmdln.Cmdln):
         return self.cmd(args)
 
     def precmd(self, argv): # check help before cmd
-        if len(argv) == 1:
-            return ['help', argv[0]]
 
         if '-h' in argv or '?' in argv or '--help' in argv or 'help' in argv:
             return argv
+
+        if len(argv) == 1:
+            return ['help', argv[0]]
 
         if os.geteuid() != 0:
             raise msger.error("Root permission is required, abort")
