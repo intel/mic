@@ -270,8 +270,6 @@ def set_logfile(fpath):
 
     def _savelogf():
         if LOG_FILE_FP:
-            if not os.path.exists(os.path.dirname(LOG_FILE_FP)):
-                os.makedirs(os.path.dirname(LOG_FILE_FP))
             fp = open(LOG_FILE_FP, 'w')
             fp.write(LOG_CONTENT)
             fp.close()
@@ -279,7 +277,7 @@ def set_logfile(fpath):
     if LOG_FILE_FP is not None:
         warning('duplicate log file configuration')
 
-    LOG_FILE_FP = os.path.abspath(os.path.expanduser(fpath))
+    LOG_FILE_FP = fpath
 
     import atexit
     atexit.register(_savelogf)

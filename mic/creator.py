@@ -159,8 +159,14 @@ class Creator(cmdln.Cmdln):
             msger.set_loglevel('debug')
 
         if self.options.logfile:
+            logfile_abs_path = abspath(self.options.logfile)
+            if not os.path.exists(os.path.dirname(logfile_abs_path)):
+                os.makedirs(os.path.dirname(logfile_abs_path))
+            if os.path.isdir(logfile_abs_path):
+                raise errors.Usage("logfile's path %s should be file"
+                                   % self.options.logfile)
             msger.set_interactive(False)
-            msger.set_logfile(self.options.logfile)
+            msger.set_logfile(logfile_abs_path)
             configmgr.create['logfile'] = self.options.logfile
 
         if self.options.config:
