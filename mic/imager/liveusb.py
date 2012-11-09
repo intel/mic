@@ -137,7 +137,7 @@ class LiveUSBImageCreator(LiveCDImageCreator):
             pattern = re.compile('rootfstype=[^ ]*')
             text = pattern.sub("rootfstype=" + fstype, text)
             if kernelargs:
-                text = text.replace("liveimg", "liveimg " + kernelargs)
+                text = text.replace("rd.live.image", "rd.live.image " + kernelargs)
 
             if overlaysizemb > 0:
                 msger.info("Initializing persistent overlay file")
@@ -158,7 +158,7 @@ class LiveUSBImageCreator(LiveCDImageCreator):
                 rc = runner.show(args)
                 if rc:
                     raise CreatorError("Can't create overlay file")
-                text = text.replace("liveimg", "liveimg overlay=" + usblabel)
+                text = text.replace("rd.live.image", "rd.live.image rd.live.overlay=" + usblabel)
                 text = text.replace(" ro ", " rw ")
 
             if swapsizemb > 0:
