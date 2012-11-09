@@ -330,9 +330,12 @@ class UserConfig(KickstartConfig):
         if userconfig.groups:
             args += [ "--groups", string.join(userconfig.groups, ",") ]
         if userconfig.name:
+            args += [ "-m"]
+            args += [ "-d", "/home/%s" % userconfig.name  ]
             args.append(userconfig.name)
             try:
                 dev_null = os.open("/dev/null", os.O_WRONLY)
+                msger.debug('adding user with %s' % args)
                 subprocess.call(args,
                                  stdout = dev_null,
                                  stderr = dev_null,
@@ -726,7 +729,7 @@ def get_timeout(ks, default = None):
         return default
     return int(ks.handler.bootloader.timeout)
 
-def get_kernel_args(ks, default = "ro liveimg"):
+def get_kernel_args(ks, default = "ro rd.live.image"):
     if not hasattr(ks.handler.bootloader, "appendLine"):
         return default
     if ks.handler.bootloader.appendLine is None:
