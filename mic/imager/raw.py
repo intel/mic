@@ -21,7 +21,6 @@ import shutil
 from fcntl import ioctl
 from struct import pack, unpack
 from itertools import groupby
-from urlgrabber import progress
 
 from mic import kickstart, msger
 from mic.utils import fs_related, runner, misc
@@ -247,13 +246,9 @@ class RawImageCreator(BaseImageCreator):
         return (bootdevnum, rootdevnum, rootdev, prefix)
 
     def _create_syslinux_config(self):
-        #Copy splash
-        splash = "%s/usr/lib/anaconda-runtime/syslinux-vesa-splash.jpg" \
-                 % self._instroot
 
+        splash = os.path.join(self._instroot, "boot/extlinux")
         if os.path.exists(splash):
-            shutil.copy(splash, "%s%s/splash.jpg" \
-                                % (self._instroot, "/boot/extlinux"))
             splashline = "menu background splash.jpg"
         else:
             splashline = ""
@@ -453,44 +448,19 @@ class RawImageCreator(BaseImageCreator):
             for name in self.__disks.keys():
                 diskpath = self._full_path(self._outdir, name, \
                                            self.__disk_format)
-                disk_size = os.path.getsize(diskpath)
-                meter_ct = 0
-                meter = progress.TextMeter()
                 full_name = self._full_name(name, self.__disk_format)
-                meter.start(size = disk_size, \
-                            text = "Generating disk signature for %s" \
-                                   % full_name)
+
+                msger.debug("Generating disk signature for %s" % full_name)
+
                 xml += "    <disk file='%s' use='system' format='%s'>\n" \
                        % (full_name, self.__disk_format)
 
-                try:
-                    import hashlib
-                    m1 = hashlib.sha1()
-                    m2 = hashlib.sha256()
-                except:
-                    import sha
-                    m1 = sha.new()
-                    m2 = None
-                f = open(diskpath,"r")
-                while 1:
-                    chunk = f.read(65536)
-                    if not chunk:
-                        break
-                    m1.update(chunk)
-                    if m2:
-                       m2.update(chunk)
-                    meter.update(meter_ct)
-                    meter_ct = meter_ct + 65536
+                hashes = misc.calc_hashes(diskpath, ('sha1', 'sha256'))
 
-                sha1checksum = m1.hexdigest()
                 xml +=  "      <checksum type='sha1'>%s</checksum>\n" \
-                        % sha1checksum
-
-                if m2:
-                    sha256checksum = m2.hexdigest()
-                    xml += "      <checksum type='sha256'>%s</checksum>\n" \
-                           % sha256checksum
-
+                        % hashes[0]
+                xml += "      <checksum type='sha256'>%s</checksum>\n" \
+                       % hashes[1]
                 xml += "    </disk>\n"
         else:
             for name in self.__disks.keys():
@@ -512,30 +482,41 @@ class RawImageCreator(BaseImageCreator):
 
         xml = "<?xml version=\"1.0\" ?>\n\n"
         xml += "<!-- This file contains block map for an image file. The block map\n"
-        xml += "     is basically a list of block numbers of the image file. It lists\n"
+        xml += "     is basically a list of block numbers in the image file. It lists\n"
         xml += "     only those blocks which contain data (boot sector, partition\n"
         xml += "     table, file-system metadata, files, directories, extents, etc).\n"
         xml += "     These blocks have to be copied to the target device. The other\n"
         xml += "     blocks do not contain any useful data and do not have to be\n"
         xml += "     copied to the target device. Thus, using the block map users can\n"
-        xml += "     flash the image faster. The block map is just an optimization. -->\n\n"
+        xml += "     flash the image fast. So the block map is just an optimization.\n"
+        xml += "     It is OK to ignore this file and just flash the entire image to\n"
+        xml += "     the target device if the flashing speed is not important.\n\n"
 
-        xml += "<bmap version=\"1.0\">\n"
-        xml += "\t<!-- Image size in bytes -->\n"
+        xml += "     Note, this file contains commentaries with useful information\n"
+        xml += "     like image size in gigabytes, percentage of mapped data, etc.\n"
+        xml += "     This data is there merely to make the XML file human-readable.\n\n"
+
+        xml += "     The 'version' attribute is the block map file format version in\n"
+        xml += "     the 'major.minor' format. The version major number is increased\n"
+        xml += "     whenever we make incompatible changes to the block map format,\n"
+        xml += "     meaning that the bmap-aware flasher would have to be modified in\n"
+        xml += "     order to support the new format. The minor version is increased\n"
+        xml += "     in case of compatible changes. For example, if we add an attribute\n"
+        xml += "     which is optional for the bmap-aware flasher. -->\n"
+        xml += "<bmap version=\"1.1\">\n"
+        xml += "\t<!-- Image size in bytes (%s) -->\n" \
+                % misc.human_size(image_size)
         xml += "\t<ImageSize> %u </ImageSize>\n\n" % image_size
-
-        xml += "\t<!-- Image size, but human-friendly -->\n"
-        xml += "\t<ImageSizeHuman> %s </ImageSizeHuman>\n\n" \
-               % misc.human_size(image_size)
 
         xml += "\t<!-- Size of a block in bytes -->\n"
         xml += "\t<BlockSize> %u </BlockSize>\n\n" % block_size
 
-        xml += "\t<!-- Size of a block in bytes -->\n"
+        xml += "\t<!-- Count of blocks in the image file -->\n"
         xml += "\t<BlocksCount> %u </BlocksCount>\n\n" % blocks_cnt
 
-        xml += "\t<!-- The block map which consists of elements which may\n"
-        xml += "\t     either be a range of blocks or a single block -->\n"
+        xml += "\t<!-- The block map which consists of elements which may either\n"
+        xml += "\t     be a range of blocks or a single block. The 'sha1' attribute\n"
+        xml += "\t     is the SHA1 checksum of the this range of blocks. -->\n"
         xml += "\t<BlockMap>\n"
 
         return xml
@@ -547,17 +528,11 @@ class RawImageCreator(BaseImageCreator):
 
         xml = "\t</BlockMap>\n\n"
 
-        xml += "\t<!-- Count of mapped blocks -->\n"
-        xml += "\t<MappedBlocksCount> %u </MappedBlocksCount>\n\n" % mapped_cnt
-
-        xml += "\t<!-- Amount of mapped data in a human-friendly form -->\n"
-        xml += "\t<MappedSize> %s </MappedSize>\n\n" \
-                % misc.human_size(mapped_cnt * block_size)
-
-        xml += "\t<!-- Amount of mapped blocks as a percent of total amount of\n"
-        xml += "\t     blocks -->\n"
-        xml += "\t<MappedBlocksCountPercent> %.1f </MappedBlocksCountPercent>\n" % \
-                ((mapped_cnt * 100.0) / blocks_cnt)
+        size = misc.human_size(mapped_cnt * block_size)
+        percent = (mapped_cnt * 100.0) / blocks_cnt
+        xml += "\t<!-- Count of mapped blocks (%s or %.1f%% mapped) -->\n" \
+                % (size, percent)
+        xml += "\t<MappedBlocksCount> %u </MappedBlocksCount>\n" % mapped_cnt
         xml += "</bmap>"
 
         return xml
@@ -591,7 +566,6 @@ class RawImageCreator(BaseImageCreator):
                     pass
                 yield first, last
 
-
     def generate_bmap(self):
         """ Generate block map file for an image. The idea is that while disk
         images we generate may be large (e.g., 4GiB), they may actually contain
@@ -621,24 +595,31 @@ class RawImageCreator(BaseImageCreator):
 
             image_size = os.path.getsize(image)
 
-            with open(bmap_file, "w") as f_bmap, open(image) as f_image:
-                # Get the block size of the host file-system for the image file
-                # by calling the FIGETBSZ ioctl (number 2).
-                block_size = unpack('I', ioctl(f_image, 2, pack('I', 0)))[0]
-                blocks_cnt = (image_size + block_size - 1) / block_size
+            with open(bmap_file, "w") as f_bmap:
+                with open(image, "rb") as f_image:
+                    # Get the block size of the host file-system for the image
+                    # file by calling the FIGETBSZ ioctl (number 2).
+                    block_size = unpack('I', ioctl(f_image, 2, pack('I', 0)))[0]
+                    blocks_cnt = (image_size + block_size - 1) / block_size
 
-                # Write general information to the block map file, without
-                # block map itself, which will be written next.
-                xml = self._bmap_file_start(block_size, image_size, blocks_cnt)
-                f_bmap.write(xml)
+                    # Write general information to the block map file, without
+                    # block map itself, which will be written next.
+                    xml = self._bmap_file_start(block_size, image_size,
+                                                blocks_cnt)
+                    f_bmap.write(xml)
 
-                # Generate the block map and write it to the XML block map file
-                # as we go.
-                mapped_cnt = 0
-                for first, last in self._get_ranges(f_image, blocks_cnt):
-                    mapped_cnt += last - first + 1
-                    f_bmap.write("\t\t<Range> %s-%s </Range>\n" % (first, last))
+                    # Generate the block map and write it to the XML block map
+                    # file as we go.
+                    mapped_cnt = 0
+                    for first, last in self._get_ranges(f_image, blocks_cnt):
+                        mapped_cnt += last - first + 1
+                        sha1 = misc.calc_hashes(image, ('sha1', ),
+                                                first * block_size,
+                                                (last + 1) * block_size)
+                        f_bmap.write("\t\t<Range sha1=\"%s\"> %s-%s " \
+                                     "</Range>\n" % (sha1[0], first, last))
 
-                # Finish the block map file
-                xml = self._bmap_file_end(mapped_cnt, block_size, blocks_cnt)
-                f_bmap.write(xml)
+                    # Finish the block map file
+                    xml = self._bmap_file_end(mapped_cnt, block_size,
+                                              blocks_cnt)
+                    f_bmap.write(xml)

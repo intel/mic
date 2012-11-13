@@ -28,11 +28,6 @@ import platform
 import rpmmisc
 
 try:
-    from hashlib import md5
-except ImportError:
-    from md5 import md5
-
-try:
     import sqlite3 as sqlite
 except ImportError:
     import sqlite
@@ -219,17 +214,44 @@ def check_space_pre_cp(src, dst):
         raise CreatorError("space on %s(%s) is not enough for about %s files"
                            % (dst, human_size(freesize), human_size(srcsize)))
 
-def get_md5sum(fpath):
-    blksize = 65536 # should be optimized enough
+def calc_hashes(file_path, hash_names, start = 0, end = None):
+    """ Calculate hashes for a file. The 'file_path' argument is the file
+    to calculate hash functions for, 'start' and 'end' are the starting and
+    ending file offset to calculate the has functions for. The 'hash_names'
+    argument is a list of hash names to calculate. Returns the the list
+    of calculated hash values in the hexadecimal form in the same order
+    as 'hash_names'. 
+    """
+    if end == None:
+        end = os.path.getsize(file_path)
 
-    md5sum = md5()
-    with open(fpath, 'rb') as f:
-        while True:
-            data = f.read(blksize)
-            if not data:
-                break
-            md5sum.update(data)
-    return md5sum.hexdigest()
+    chunk_size = 65536
+    to_read = end - start;
+    read = 0
+
+    hashes = []
+    for hash_name in hash_names:
+        hashes.append(hashlib.new(hash_name))
+
+    with open(file_path, "rb") as f:
+        f.seek(start)
+
+        while read < to_read:
+            if read + chunk_size > to_read:
+                chunk_size = to_read - read
+            chunk = f.read(chunk_size)
+            for hash_obj in hashes:
+                hash_obj.update(chunk)
+            read += chunk_size
+
+    result = []
+    for hash_obj in hashes:
+        result.append(hash_obj.hexdigest())
+
+    return result
+
+def get_md5sum(fpath):
+    return calc_hashes(fpath, ('md5', ))[0]
 
 def normalize_ksfile(ksconf, release, arch):
     def _clrtempks():
