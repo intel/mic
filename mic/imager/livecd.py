@@ -129,14 +129,9 @@ class LiveImageCreatorBase(LoopImageCreator):
         """
 
         if self.ks is None:
-            r = "ro liveimg"
+            r = "ro rd.live.image"
         else:
             r = kickstart.get_kernel_args(self.ks)
-
-        if os.path.exists(self._instroot + "/usr/bin/rhgb") or \
-           os.path.exists(self._instroot + "/usr/bin/plymouth") and \
-           ' rhgb' not in r:
-            r += ' rhgb'
 
         return r
 
@@ -166,15 +161,22 @@ class LiveImageCreatorBase(LoopImageCreator):
 
         return False
 
+    def __restore_file(self,path):
+        try:
+            os.unlink(path)
+        except:
+            pass
+        if os.path.exists(path + '.rpmnew'):
+            os.rename(path + '.rpmnew', path)
+
     def _mount_instroot(self, base_on = None):
         LoopImageCreator._mount_instroot(self, base_on)
         self.__write_initrd_conf(self._instroot + "/etc/sysconfig/mkinitrd")
+        self.__write_dracut_conf(self._instroot + "/etc/dracut.conf.d/02livecd.conf")
 
     def _unmount_instroot(self):
-        try:
-            os.unlink(self._instroot + "/etc/sysconfig/mkinitrd")
-        except:
-            pass
+        self.__restore_file(self._instroot + "/etc/sysconfig/mkinitrd")
+        self.__restore_file(self._instroot + "/etc/dracut.conf.d/02livecd.conf")
         LoopImageCreator._unmount_instroot(self)
 
     def __ensure_isodir(self):
@@ -199,6 +201,12 @@ class LiveImageCreatorBase(LoopImageCreator):
             env["LIVE_ROOT"] = self.__ensure_isodir()
 
         return env
+    def __write_dracut_conf(self, path):
+        if not os.path.exists(os.path.dirname(path)):
+            fs_related.makedirs(os.path.dirname(path))
+        f = open(path, "a")
+        f.write('add_dracutmodules+=" dmsquash-live pollcdrom "')
+        f.close()
 
     def __write_initrd_conf(self, path):
         content = ""
@@ -354,7 +362,7 @@ class x86LiveImageCreator(LiveImageCreatorBase):
 
     def __copy_syslinux_background(self, isodest):
         background_path = self._instroot + \
-                          "/usr/lib/anaconda-runtime/syslinux-vesa-splash.jpg"
+                          "/usr/share/branding/default/syslinux/syslinux-vesa-splash.jpg"
 
         if not os.path.exists(background_path):
             return False
@@ -365,15 +373,23 @@ class x86LiveImageCreator(LiveImageCreatorBase):
 
     def __copy_kernel_and_initramfs(self, isodir, version, index):
         bootdir = self._instroot + "/boot"
+        isDracut = False
 
         if self._alt_initrd_name:
             src_initrd_path = os.path.join(bootdir, self._alt_initrd_name)
         else:
-            src_initrd_path = os.path.join(bootdir, "initrd-" +version+ ".img")
+            if os.path.exists(bootdir + "/initramfs-" + version + ".img"):
+                src_initrd_path = os.path.join(bootdir, "initramfs-" +version+ ".img")
+                isDracut = True
+            else:
+                src_initrd_path = os.path.join(bootdir, "initrd-" +version+ ".img")
 
         try:
+            msger.debug("copy %s to %s" % (bootdir + "/vmlinuz-" + version, isodir + "/isolinux/vmlinuz" + index))
             shutil.copyfile(bootdir + "/vmlinuz-" + version,
-                            isodir + "/isolinux/vmlinuz" + index)
+                    isodir + "/isolinux/vmlinuz" + index)
+
+            msger.debug("copy %s to %s" % (src_initrd_path, isodir + "/isolinux/initrd" + index + ".img"))
             shutil.copyfile(src_initrd_path,
                             isodir + "/isolinux/initrd" + index + ".img")
         except:
@@ -386,7 +402,7 @@ class x86LiveImageCreator(LiveImageCreatorBase):
                             isodir + "/isolinux/xen" + index + ".gz")
             is_xen = True
 
-        return is_xen
+        return (is_xen,isDracut)
 
     def __is_default_kernel(self, kernel, kernels):
         if len(kernels) == 1:
@@ -417,20 +433,26 @@ menu color hotkey 7 #ffffffff #ff000000
 menu color timeout_msg 0 #ffffffff #00000000
 menu color timeout 0 #ffffffff #00000000
 menu color cmdline 0 #ffffffff #00000000
+menu hidden
+menu clear
 """ % args
 
-    def __get_image_stanza(self, is_xen, **args):
+    def __get_image_stanza(self, is_xen, isDracut, **args):
+        if isDracut:
+            args["rootlabel"] = "live:CDLABEL=%(fslabel)s" % args
+        else:
+            args["rootlabel"] = "CDLABEL=%(fslabel)s" % args
         if not is_xen:
             template = """label %(short)s
   menu label %(long)s
   kernel vmlinuz%(index)s
-  append initrd=initrd%(index)s.img root=CDLABEL=%(fslabel)s rootfstype=iso9660 %(liveargs)s %(extra)s
+  append initrd=initrd%(index)s.img root=%(rootlabel)s rootfstype=iso9660 %(liveargs)s %(extra)s
 """
         else:
             template = """label %(short)s
   menu label %(long)s
   kernel mboot.c32
-  append xen%(index)s.gz --- vmlinuz%(index)s root=CDLABEL=%(fslabel)s rootfstype=iso9660 %(liveargs)s %(extra)s --- initrd%(index)s.img
+  append xen%(index)s.gz --- vmlinuz%(index)s root=%(rootlabel)s rootfstype=iso9660 %(liveargs)s %(extra)s --- initrd%(index)s.img
 """
         return template % args
 
@@ -501,7 +523,9 @@ menu color cmdline 0 #ffffffff #00000000
         index = "0"
         netinst = None
         for version in versions:
-            is_xen = self.__copy_kernel_and_initramfs(isodir, version, index)
+            (is_xen, isDracut) = self.__copy_kernel_and_initramfs(isodir, version, index)
+            if index == "0":
+                self._isDracut = isDracut
 
             default = self.__is_default_kernel(kernel, kernels)
 
@@ -514,10 +538,15 @@ menu color cmdline 0 #ffffffff #00000000
 
             oldmenus["verify"]["long"] = "%s %s" % (oldmenus["verify"]["long"],
                                                     long)
+            # tell dracut not to ask for LUKS passwords or activate mdraid sets
+            if isDracut:
+                kern_opts = kernel_options + " rd.luks=0 rd.md=0 rd.dm=0"
+            else:
+                kern_opts = kernel_options
 
-            cfg += self.__get_image_stanza(is_xen,
+            cfg += self.__get_image_stanza(is_xen, isDracut,
                                            fslabel = self.fslabel,
-                                           liveargs = kernel_options,
+                                           liveargs = kern_opts,
                                            long = long,
                                            short = "linux" + index,
                                            extra = "",
@@ -551,7 +580,7 @@ menu color cmdline 0 #ffffffff #00000000
                 if len(menu) >= 3:
                     extra = menu[2]
 
-                cfg += self.__get_image_stanza(is_xen,
+                cfg += self.__get_image_stanza(is_xen, isDracut,
                                                fslabel = self.fslabel,
                                                liveargs = kernel_options,
                                                long = long,
@@ -567,7 +596,7 @@ menu color cmdline 0 #ffffffff #00000000
             default_index = "0"
 
         if netinst:
-            cfg += self.__get_image_stanza(is_xen,
+            cfg += self.__get_image_stanza(is_xen, isDracut,
                                            fslabel = self.fslabel,
                                            liveargs = kernel_options,
                                            long = netinst["long"],
