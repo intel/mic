@@ -314,12 +314,14 @@ class SparseLoopbackDisk(LoopbackDisk):
         else:
             fd = os.open(self.lofile, flags)
 
+        if size <= 0:
+            size = 1
         try:
-            os.lseek(fd, size, os.SEEK_SET)
+            os.ftruncate(fd, size)
         except:
             # may be limited by 2G in 32bit env
-            os.lseek(fd, 2**31L - 1, os.SEEK_SET)
-        os.write(fd, '\x00')
+            os.ftruncate(fd, 2**31L)
+
         os.close(fd)
 
     def truncate(self, size = None):
