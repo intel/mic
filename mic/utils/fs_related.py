@@ -926,15 +926,20 @@ def get_loop_device(losetupcmd, lofile):
     fp = open("/var/lock/__mic_loopdev.lock", 'w')
     fcntl.flock(fp, fcntl.LOCK_EX)
     try:
-        devinst = LoopDevice()
-        devinst.create()
+        rc, out = runner.runtool([losetupcmd, "--find"])
+        if rc == 0:
+	    loopdev = out.split()[0]
+	else:
+	    devinst = LoopDevice()
+	    devinst.create()
+	    loopdev = devinst.device
+	rc = runner.show([losetupcmd, loopdev, lofile])
+	if rc != 0:
+	    raise MountError("Failed to setup loop device for '%s'" % lofile)
+    except MountError, err:
+        raise CreatorError("%s" % str(err))
     except:
-        rc, out = runner.runtool([losetupcmd, "-f"])
-        if rc != 0:
-            raise MountError("1-Failed to allocate loop device for '%s'" % lofile)
-        loopdev = out.split()[0]
-    else:
-        loopdev = devinst.device
+        raise
     finally:
         try:
             fcntl.flock(fp, fcntl.LOCK_UN)
@@ -942,10 +947,6 @@ def get_loop_device(losetupcmd, lofile):
             os.unlink('/var/lock/__mic_loopdev.lock')
         except:
             pass
-
-    rc = runner.show([losetupcmd, loopdev, lofile])
-    if rc != 0:
-        raise MountError("2-Failed to allocate loop device for '%s'" % lofile)
 
     return loopdev
 
