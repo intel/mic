@@ -183,8 +183,28 @@ class Bootstrap(object):
         os.makedirs(self.rootdir)
         return self.rootdir
 
-    def _path(self, pth):
-        return os.path.join(self.rootdir, pth.lstrip('/'))
+    def dirsetup(self, rootdir=None):
+        _path = lambda pth: os.path.join(rootdir, pth.lstrip('/'))
+
+        if not rootdir:
+            rootdir = self.rootdir
+
+        try:
+            # make /tmp and /etc path
+            tmpdir = _path('/tmp')
+            if not os.path.exists(tmpdir):
+                os.makedirs(tmpdir)
+            etcdir = _path('/etc')
+            if not os.path.exists(etcdir):
+                os.makedirs(etcdir)
+
+            # touch distro file
+            tzdist = _path('/etc/%s-release' % self.distro)
+            if not os.path.exists(tzdist):
+                with open(tzdist, 'w') as wf:
+                    wf.write("bootstrap")
+        except:
+            pass
 
     def create(self, repomd, pkglist, optlist=[]):
         try:
@@ -195,24 +215,16 @@ class Bootstrap(object):
             map(pkgmgr.selectPackage, pkglist + optlist)
             pkgmgr.runInstall()
 
-            # make /tmp path
-            tmpdir = self._path('/tmp')
-            if not os.path.exists(tmpdir):
-                os.makedirs(tmpdir)
-
-            # touch distro file
-            tzdist = self._path('/etc/%s-release' % self.distro)
-            if not os.path.exists(tzdist):
-                with open(tzdist, 'w') as wf:
-                    wf.write("bootstrap")
-
         except (OSError, IOError, errors.CreatorError), err:
             raise errors.BootstrapError("%s" % err)
 
-    def run(self, cmd, chdir, bindmounts=None):
+    def run(self, cmd, chdir, rootdir=None, bindmounts=None):
         def mychroot():
-            os.chroot(self.rootdir)
+            os.chroot(rootdir)
             os.chdir(chdir)
+
+        if not rootdir:
+            rootdir = self.rootdir
 
         if isinstance(cmd, list):
             shell = False
@@ -226,14 +238,14 @@ class Bootstrap(object):
         gloablmounts = None
         try:
             proxy.set_proxy_environ()
-            gloablmounts = setup_chrootenv(self.rootdir, bindmounts)
+            gloablmounts = setup_chrootenv(rootdir, bindmounts)
             retcode = subprocess.call(cmd, preexec_fn=mychroot, env=env, shell=shell)
         except (OSError, IOError), err:
             raise RuntimeError(err)
         finally:
             if self.logfile:
                 msger.log(file(self.logfile).read())
-            cleanup_chrootenv(self.rootdir, bindmounts, gloablmounts)
+            cleanup_chrootenv(rootdir, bindmounts, gloablmounts)
             proxy.unset_proxy_environ()
         return retcode
 

@@ -61,6 +61,7 @@ class ConfigMgr(object):
                     "no_proxy": None,
                     "copy_kernel": False,
                     "repourl": {},
+                    "runtime": "bootstrap",
                 },
                 'chroot': {
                     "saveto": None,
@@ -69,10 +70,8 @@ class ConfigMgr(object):
                     "shell": False,
                 },
                 'bootstrap': {
-                    "enable": False,
-                    "distros": [], # supported distros
-                    "distro_name": None,
                     "rootdir": '/var/tmp/mic-bootstrap',
+                    "packages": [],
                 },
                }
 
@@ -93,10 +92,6 @@ class ConfigMgr(object):
 
         # initial options from siteconf
         self._siteconf = siteconf
-
-        # set bootstrap from bootstrap.conf
-        bsconf = os.path.join(os.path.dirname(siteconf), 'bootstrap.conf')
-        self._parse_bootstrap(bsconf)
 
         if ksconf:
             self._ksconf = ksconf
@@ -146,7 +141,7 @@ class ConfigMgr(object):
 
         # append common section items to other sections
         for section in self.DEFAULTS.keys():
-            if section != "common" and not section.startswith('bootstrap'):
+            if section != "common":
                 getattr(self, section).update(self.common)
 
         # check and normalize the scheme of proxy url
@@ -162,6 +157,16 @@ class ConfigMgr(object):
                 self.create['proxy'] = "http://" + self.create['proxy']
 
         proxy.set_proxies(self.create['proxy'], self.create['no_proxy'])
+
+        # bootstrap option handling
+        self.set_runtime(self.create['runtime'])
+        if isinstance(self.bootstrap['packages'], basestring):
+            packages = self.bootstrap['packages'].replace('\n', ' ')
+            if packages.find(',') != -1:
+                packages = packages.split(',')
+            else:
+                packages = packages.split()
+            self.bootstrap['packages'] = packages
 
     def _parse_kickstart(self, ksconf=None):
         if not ksconf:
@@ -211,37 +216,12 @@ class ConfigMgr(object):
         misc.selinux_check(self.create['arch'],
                            [p.fstype for p in ks.handler.partition.partitions])
 
+    def set_runtime(self, runtime):
+        if runtime not in ("bootstrap", "native"):
+            msger.error("Invalid runtime mode: %s" % runtime)
 
-    def _parse_bootstrap(self, bsconf):
-        if not bsconf or not os.path.exists(bsconf):
-            self.bootstrap['enable'] = False
-            return
-
-        parser = ConfigParser.SafeConfigParser()
-        parser.read(bsconf)
-
-        for section in parser.sections():
-            if section == "main":
-                self.bootstrap.update(dict(parser.items(section)))
-            else:
-                self.bootstrap['distros'].append(section)
-                distro = section.lower()
-                self.bootstrap[distro] = dict(parser.items(section))
-                for item in ('optional', 'packages'):
-                    if not item in self.bootstrap[distro]:
-                        continue 
-                    pks = self.bootstrap[distro][item].replace('\n', ' ')
-                    self.bootstrap[distro][item] = pks.split()
-
-        # update bootstrap options
-        if self.bootstrap['enable'] not in (True, False):
-            try:
-                self.bootstrap['enable'] = parser.getboolean('main', 'enable')
-            except:
-                self.bootstrap['enable'] = False
-        if not self.bootstrap['distro_name']:
-            self.bootstrap['distro_name'] = self.common['distro_name']
-        if  self.bootstrap['distro_name'] not in self.bootstrap['distros']:
-            self.bootstrap['enable'] = False
+        if misc.get_distro()[0] in ("tizen", "Tizen"):
+            runtime = "native"
+        self.create['runtime'] = runtime
 
 configmgr = ConfigMgr()
