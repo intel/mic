@@ -167,7 +167,7 @@ class MiniBackend(object):
 
 class Bootstrap(object):
     def __init__(self, rootdir, distro, arch=None):
-        self.rootdir = rootdir
+        self.rootdir = misc.mkdtemp(dir=rootdir, prefix=distro)
         self.distro = distro
         self.arch = arch
         self.logfile = None

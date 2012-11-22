@@ -55,6 +55,8 @@ def bootstrap_mic(argv=None):
     # create bootstrap and run mic in bootstrap
     bsenv = bootstrap.Bootstrap(rootdir, distro, cropts['arch'])
     bsenv.logfile = cropts['logfile']
+    # rootdir is regenerated as a temp dir
+    rootdir = bsenv.rootdir
 
     if 'optional' in bsopts:
         optlist = bsopts['optional']
