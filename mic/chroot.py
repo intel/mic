@@ -237,7 +237,7 @@ def cleanup_chrootenv(chrootdir, bindmounts = None, globalmounts = []):
 
     if not fs_related.my_fuser(chroot_lock):
         tmpdir = chrootdir + "/parentroot"
-        if len(os.listdir(tmpdir)) == 0:
+        if os.path.exists(tmpdir) and len(os.listdir(tmpdir)) == 0:
             shutil.rmtree(tmpdir, ignore_errors = True)
 
         cleanup_resolv(chrootdir)
