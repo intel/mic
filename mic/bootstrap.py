@@ -218,6 +218,9 @@ class Bootstrap(object):
         except (OSError, IOError, errors.CreatorError), err:
             raise errors.BootstrapError("%s" % err)
 
+        except:
+            raise
+
     def run(self, cmd, chdir, rootdir=None, bindmounts=None):
         def mychroot():
             os.chroot(rootdir)
