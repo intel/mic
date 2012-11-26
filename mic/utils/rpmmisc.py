@@ -35,10 +35,9 @@ def myurlgrab(url, filename, proxies, progress_obj = None):
         progress_obj = TextProgress()
 
     if url.startswith("file:/"):
-        file = url.replace("file:", "")
-        if not os.path.exists(file):
+        filename = "/%s" % url.replace("file:", "").lstrip('/')
+        if not os.path.exists(filename):
             raise CreatorError("URLGrabber error: can't find file %s" % file)
-        runner.show(['cp', "-f", file, filename])
     else:
         try:
             filename = g.urlgrab(url = url, filename = filename,
