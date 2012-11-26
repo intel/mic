@@ -57,6 +57,7 @@ class MiniBackend(object):
         self.optionals = []
         self.preins = {}
         self.postins = {}
+        self.scriptlets = False
 
     def __del__(self):
         try:
@@ -93,6 +94,9 @@ class MiniBackend(object):
 
         if self.arch.startswith("arm"):
             misc.setup_qemu_emulator(self.rootdir, self.arch)
+
+        if not self.scriptlets:
+            return
 
         for pkg in self.preins.keys():
             prog, script = self.preins[pkg]
