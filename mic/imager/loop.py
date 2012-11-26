@@ -150,6 +150,7 @@ class LoopImageCreator(BaseImageCreator):
                     'name': imgname,
                     'size': part.size or 4096L * 1024 * 1024,
                     'fstype': part.fstype or 'ext3',
+                    'extopts': part.extopts or None,
                     'loop': None,  # to be created in _mount_instroot
                     })
             self._instloops = allloops
@@ -314,6 +315,7 @@ class LoopImageCreator(BaseImageCreator):
                  "name": imgname,
                  "size": self.__image_size or 4096L,
                  "fstype": self.__fstype or "ext3",
+                 "extopts": part.extopts or None,
                  "loop": None
                  })
 
@@ -341,6 +343,9 @@ class LoopImageCreator(BaseImageCreator):
                                        fstype,
                                        self._blocksize,
                                        loop['label'])
+
+            if fstype in ("ext2", "ext3", "ext4"):
+                loop['loop'].extopts = loop['extopts']
 
             try:
                 msger.verbose('Mounting image "%s" on "%s"' % (imgname, mp))

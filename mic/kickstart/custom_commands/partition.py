@@ -25,6 +25,7 @@ class MeeGo_PartData(FC4_PartData):
         FC4_PartData.__init__(self, *args, **kwargs)
         self.deleteRemovedAttrs()
         self.align = kwargs.get("align", None)
+        self.extopts = kwargs.get("extopts", None)
 
     def _getArgsAsStr(self):
         retval = FC4_PartData._getArgsAsStr(self)
@@ -32,6 +33,8 @@ class MeeGo_PartData(FC4_PartData):
         if self.align:
             retval += " --align"
 
+        if self.extopts:
+            retval += " --extoptions=%s" % self.extopts
         return retval
 
 class MeeGo_Partition(FC4_Partition):
@@ -43,5 +46,7 @@ class MeeGo_Partition(FC4_Partition):
         # The alignment value is given in kBytes. e.g., value 8 means that
         # the partition is aligned to start from 8096 byte boundary.
         op.add_option("--align", type="int", action="store", dest="align",
+                      default=None)
+        op.add_option("--extoptions", type="string", action="store", dest="extopts",
                       default=None)
         return op

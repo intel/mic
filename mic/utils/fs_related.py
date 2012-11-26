@@ -427,6 +427,7 @@ class ExtDiskMount(DiskMount):
         self.uuid  = None
         self.skipformat = skipformat
         self.fsopts = fsopts
+        self.extopts = None
         self.dumpe2fs = find_binary_path("dumpe2fs")
         self.tune2fs = find_binary_path("tune2fs")
 
@@ -443,10 +444,14 @@ class ExtDiskMount(DiskMount):
             return
 
         msger.verbose("Formating %s filesystem on %s" % (self.fstype, self.disk.device))
-        rc = runner.show([self.mkfscmd,
-                          "-F", "-L", self.fslabel,
-                          "-m", "1", "-b", str(self.blocksize),
-                          self.disk.device]) # str(self.disk.size / self.blocksize)])
+        if self.extopts is None:
+            self.extopts = ""
+        cmdline = "%s -F -L %s -m 1 -b %s %s %s"  % (self.mkfscmd,
+                                                     self.fslabel,
+                                                     self.blocksize,
+                                                     self.extopts,
+                                                     self.disk.device)
+        rc = runner.show(cmdline.split())
         if rc != 0:
             raise MountError("Error creating %s filesystem on disk %s" % (self.fstype, self.disk.device))
 
