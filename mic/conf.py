@@ -61,6 +61,7 @@ class ConfigMgr(object):
                     "no_proxy": None,
                     "copy_kernel": False,
                     "repourl": {},
+                    "localrepos": [],  # save localrepos
                     "runtime": "bootstrap",
                 },
                 'chroot': {
@@ -189,6 +190,12 @@ class ConfigMgr(object):
         ksrepos = misc.get_repostrs_from_ks(ks)
         if not ksrepos:
             raise errors.KsError('no valid repos found in ks file')
+
+        for repo in ksrepos:
+            if 'baseurl' in repo and repo['baseurl'].startswith("file:"):
+                repourl = repo['baseurl'].replace('file:', '')
+                repourl = "/%s" % repourl.lstrip('/')
+                self.create['localrepos'].append(repourl)
 
         self.create['repomd'] = misc.get_metadata_from_repos(
                                                     ksrepos,

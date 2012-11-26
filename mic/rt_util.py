@@ -104,6 +104,9 @@ def get_bindmounts(cropts):
                   configmgr._ksconf,
                 ]
 
+    for lrepo in cropts['localrepos']:
+        binddirs.append(lrepo)
+
     bindlist = map(expath, filter(None, binddirs))
     bindlist += map(os.path.dirname, map(expath, filter(None, bindfiles)))
     bindlist = sorted(set(bindlist))
