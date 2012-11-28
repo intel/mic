@@ -883,11 +883,10 @@ class LoopDevice(object):
                 else:
                     self.created = True
                     return
-            try:
-                os.mknod(self.device,
-                         0664 | stat.S_IFBLK,
-                         os.makedev(7, self.loopid))
-            except:
+
+            mknod = find_binary_path('mknod')
+            rc = runner.show([mknod, '-m664', self.device, 'b', '7', self.loopid])
+            if rc != 0:
                 raise MountError("Failed to create device %s" % self.device)
             else:
                 self.created = True
