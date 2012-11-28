@@ -39,6 +39,8 @@ class RawPlugin(ImagerPlugin):
     @cmdln.option("--compress-image", dest="compress_image", type='choice',
                   choices=("gz", "bz2"), default = None,
                   help="Compress all raw images before package")
+    @cmdln.option("--generate-bmap", action="store_true", default = None,
+                  help="also generate the block map file")
     def do_create(self, subcmd, opts, *args):
         """${cmd_name}: create raw image
 
@@ -92,7 +94,8 @@ class RawPlugin(ImagerPlugin):
                                       (creatoropts['pkgmgr'],
                                        ','.join(backends.keys())))
 
-        creator = raw.RawImageCreator(creatoropts, pkgmgr, opts.compress_image)
+        creator = raw.RawImageCreator(creatoropts, pkgmgr, opts.compress_image,
+                                      opts.generate_bmap)
 
         if len(recording_pkgs) > 0:
             creator._recording_pkgs = recording_pkgs
@@ -111,6 +114,7 @@ class RawPlugin(ImagerPlugin):
             creator.configure(creatoropts["repomd"])
             creator.copy_kernel()
             creator.unmount()
+            creator.generate_bmap()
             creator.package(creatoropts["outdir"])
             if creatoropts['release'] is not None:
                 creator.release_output(ksconf, creatoropts['outdir'], creatoropts['release'])
