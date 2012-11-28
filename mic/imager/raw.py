@@ -373,7 +373,10 @@ class RawImageCreator(BaseImageCreator):
 
     def _unmount_instroot(self):
         if not self.__instloop is None:
-            self.__instloop.cleanup()
+            try:
+                self.__instloop.cleanup()
+            except MountError, err:
+                mseger.warning("%s" % err)
 
     def _resparse(self, size = None):
         return self.__instloop.resparse(size)
