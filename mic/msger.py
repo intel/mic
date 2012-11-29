@@ -87,7 +87,7 @@ def _general_print(head, color, msg = None, stream = None, level = 'normal'):
     # append normal msg to LOG
     save_msg = msg.strip() if msg else None
     if save_msg:
-        timestr = time.strftime("[%m/%d %H:%M:%S] ", time.localtime())
+        timestr = time.strftime("[%m/%d %H:%M:%S %Z] ", time.localtime())
         LOG_CONTENT += timestr + save_msg + '\n'
 
     if errormsg:

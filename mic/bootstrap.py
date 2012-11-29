@@ -230,6 +230,15 @@ class Bootstrap(object):
             os.chroot(rootdir)
             os.chdir(chdir)
 
+        def sync_timesetting(rootdir):
+            try:
+                # sync time and zone info to bootstrap
+                if os.path.exists(rootdir + "/etc/localtime"):
+                    os.unlink(rootdir + "/etc/localtime")
+                shutil.copyfile("/etc/localtime", rootdir + "/etc/localtime")
+            except:
+                pass
+            
         if not rootdir:
             rootdir = self.rootdir
 
@@ -246,6 +255,7 @@ class Bootstrap(object):
         try:
             proxy.set_proxy_environ()
             gloablmounts = setup_chrootenv(rootdir, bindmounts, False)
+            sync_timesetting(rootdir)
             retcode = subprocess.call(cmd, preexec_fn=mychroot, env=env, shell=shell)
         except (OSError, IOError), err:
             raise RuntimeError(err)
