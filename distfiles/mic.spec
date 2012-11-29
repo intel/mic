@@ -101,6 +101,7 @@ install -m644 doc/mic.1 %{buildroot}/%{_prefix}/share/man/man1
 %files
 %defattr(-,root,root,-)
 %doc README.rst
+%doc doc/RELEASE_NOTES
 %{_mandir}/man1/*
 %dir %{_sysconfdir}/%{name}
 %config(noreplace) %{_sysconfdir}/%{name}/%{name}.conf
