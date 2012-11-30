@@ -98,10 +98,10 @@ def cleanup_mounts(chrootdir):
 
     return 0
 
-def setup_chrootenv(chrootdir, bindmounts = None):
+def setup_chrootenv(chrootdir, bindmounts = None, mountparent = True):
     global chroot_lockfd, chroot_lock
 
-    def get_bind_mounts(chrootdir, bindmounts):
+    def get_bind_mounts(chrootdir, bindmounts, mountparent = True):
         chrootmounts = []
         if bindmounts in ("", None):
             bindmounts = ""
@@ -114,6 +114,11 @@ def setup_chrootenv(chrootdir, bindmounts = None):
             srcdst[0] = os.path.abspath(os.path.expanduser(srcdst[0]))
             if len(srcdst) == 1:
                srcdst.append("none")
+
+            # if some bindmount is not existed, but it's created inside
+            # chroot, this is not expected
+            if not os.path.exists(srcdst[0]):
+               os.makedirs(srcdst[0])
 
             if not os.path.isdir(srcdst[0]):
                 continue
@@ -141,10 +146,11 @@ def setup_chrootenv(chrootdir, bindmounts = None):
                                                            chrootdir,
                                                            None))
 
-        chrootmounts.append(fs_related.BindChrootMount("/",
-                                                       chrootdir,
-                                                       "/parentroot",
-                                                       "ro"))
+        if mountparent:
+            chrootmounts.append(fs_related.BindChrootMount("/",
+                                                           chrootdir,
+                                                           "/parentroot",
+                                                           "ro"))
 
         for kernel in os.listdir("/lib/modules"):
             chrootmounts.append(fs_related.BindChrootMount(
@@ -166,7 +172,7 @@ def setup_chrootenv(chrootdir, bindmounts = None):
         except:
             pass
 
-    globalmounts = get_bind_mounts(chrootdir, bindmounts)
+    globalmounts = get_bind_mounts(chrootdir, bindmounts, mountparent)
     bind_mount(globalmounts)
 
     setup_resolv(chrootdir)

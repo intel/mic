@@ -245,7 +245,7 @@ class Bootstrap(object):
         gloablmounts = None
         try:
             proxy.set_proxy_environ()
-            gloablmounts = setup_chrootenv(rootdir, bindmounts)
+            gloablmounts = setup_chrootenv(rootdir, bindmounts, False)
             retcode = subprocess.call(cmd, preexec_fn=mychroot, env=env, shell=shell)
         except (OSError, IOError), err:
             raise RuntimeError(err)
