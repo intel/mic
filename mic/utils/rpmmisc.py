@@ -35,9 +35,15 @@ def myurlgrab(url, filename, proxies, progress_obj = None):
         progress_obj = TextProgress()
 
     if url.startswith("file:/"):
-        filename = "/%s" % url.replace("file:", "").lstrip('/')
-        if not os.path.exists(filename):
-            raise CreatorError("URLGrabber error: can't find file %s" % file)
+        filepath = "/%s" % url.replace("file:", "").lstrip('/')
+        if not os.path.exists(filepath):
+            raise CreatorError("URLGrabber error: can't find file %s" % url)
+        if url.endswith('.rpm'):
+            return filepath
+        else:
+            # untouch repometadata in source path
+            runner.show(['cp', '-f', filepath, filename])
+
     else:
         try:
             filename = g.urlgrab(url = url, filename = filename,
