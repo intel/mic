@@ -290,7 +290,7 @@ def normalize_ksfile(ksconf, release, arch):
         ksc = f.read()
 
     if "@ARCH@" in ksc or "@BUILD_ID@" in ksc:
-        msger.info("Substitute macro variable @BUILD_ID@/@ARCH in ks: %s" % ksconf)
+        msger.info("Substitute macro variable @BUILD_ID@/@ARCH@ in ks: %s" % ksconf)
         ksc = ksc.replace("@ARCH@", arch)
         ksc = ksc.replace("@BUILD_ID@", release)
         fd, ksconf = tempfile.mkstemp(prefix=os.path.basename(ksconf), dir="/tmp/")

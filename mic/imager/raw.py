@@ -376,7 +376,7 @@ class RawImageCreator(BaseImageCreator):
             try:
                 self.__instloop.cleanup()
             except MountError, err:
-                mseger.warning("%s" % err)
+                msger.warning("%s" % err)
 
     def _resparse(self, size = None):
         return self.__instloop.resparse(size)
