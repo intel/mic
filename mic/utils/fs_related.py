@@ -455,7 +455,7 @@ class ExtDiskMount(DiskMount):
         if rc != 0:
             raise MountError("Error creating %s filesystem on disk %s" % (self.fstype, self.disk.device))
 
-        out = runner.outs([self.dumpe2fs, '-h', self.disk.device])
+        rc, out = runner.runtool([self.dumpe2fs, '-h', self.disk.device])
 
         self.uuid = self.__parse_field(out, "Filesystem UUID")
         msger.debug("Tuning filesystem on %s" % self.disk.device)
