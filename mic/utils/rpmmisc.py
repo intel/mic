@@ -187,8 +187,9 @@ class RPMInstallCallback:
                 handle = self._makeHandle(hdr)
                 fd = os.open(rpmloc, os.O_RDONLY)
                 self.callbackfilehandles[handle]=fd
-                self.total_installed += 1
-                self.installed_pkg_names.append(hdr['name'])
+                if hdr['name'] not in self.installed_pkg_names:
+                    self.installed_pkg_names.append(hdr['name'])
+                    self.total_installed += 1
                 return fd
             else:
                 self._localprint("No header - huh?")
