@@ -444,22 +444,23 @@ class ExtDiskMount(DiskMount):
             return
 
         msger.verbose("Formating %s filesystem on %s" % (self.fstype, self.disk.device))
-        if self.extopts is None:
-            self.extopts = ""
-        cmdline = "%s -F -L %s -m 1 -b %s %s %s"  % (self.mkfscmd,
-                                                     self.fslabel,
-                                                     self.blocksize,
-                                                     self.extopts,
-                                                     self.disk.device)
-        rc = runner.show(cmdline.split())
+        cmdlist = [self.mkfscmd, "-F", "-L", self.fslabel, "-m", "1", "-b",
+                   str(self.blocksize)]
+        if self.extopts:
+            cmdlist.extend(self.extopts.split())
+        cmdlist.extend([self.disk.device])
+
+        rc, errout = runner.runtool(cmdlist, catch=2)
         if rc != 0:
-            raise MountError("Error creating %s filesystem on disk %s" % (self.fstype, self.disk.device))
+            raise MountError("Error creating %s filesystem on disk %s:\n%s" %
+                             (self.fstype, self.disk.device, errout))
+
+        if not self.extopts:
+            msger.debug("Tuning filesystem on %s" % self.disk.device)
+            runner.show([self.tune2fs, "-c0", "-i0", "-Odir_index", "-ouser_xattr,acl", self.disk.device])
 
         rc, out = runner.runtool([self.dumpe2fs, '-h', self.disk.device])
-
         self.uuid = self.__parse_field(out, "Filesystem UUID")
-        msger.debug("Tuning filesystem on %s" % self.disk.device)
-        runner.show([self.tune2fs, "-c0", "-i0", "-Odir_index", "-ouser_xattr,acl", self.disk.device])
 
     def __resize_filesystem(self, size = None):
         current_size = os.stat(self.disk.lofile)[stat.ST_SIZE]
