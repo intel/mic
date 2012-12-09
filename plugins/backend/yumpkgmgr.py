@@ -68,9 +68,12 @@ class MyYumRepository(yum.yumRepo.YumRepository):
 
         m2c_connection = None
         if not self.sslverify:
-            import M2Crypto
-            m2c_connection = M2Crypto.SSL.Connection.clientPostConnectionCheck
-            M2Crypto.SSL.Connection.clientPostConnectionCheck = None
+            try:
+                import M2Crypto
+                m2c_connection = M2Crypto.SSL.Connection.clientPostConnectionCheck
+                M2Crypto.SSL.Connection.clientPostConnectionCheck = None
+            except ImportError, err:
+                raise CreatorError("%s, please try to install python-m2crypto" % str(err))
 
         proxy = None
         if url:
