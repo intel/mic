@@ -160,11 +160,11 @@ class Creator(cmdln.Cmdln):
 
         if self.options.logfile:
             logfile_abs_path = abspath(self.options.logfile)
-            if not os.path.exists(os.path.dirname(logfile_abs_path)):
-                os.makedirs(os.path.dirname(logfile_abs_path))
             if os.path.isdir(logfile_abs_path):
                 raise errors.Usage("logfile's path %s should be file"
                                    % self.options.logfile)
+            if not os.path.exists(os.path.dirname(logfile_abs_path)):
+                os.makedirs(os.path.dirname(logfile_abs_path))
             msger.set_interactive(False)
             msger.set_logfile(logfile_abs_path)
             configmgr.create['logfile'] = self.options.logfile
