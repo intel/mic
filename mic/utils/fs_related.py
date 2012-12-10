@@ -459,8 +459,16 @@ class ExtDiskMount(DiskMount):
             msger.debug("Tuning filesystem on %s" % self.disk.device)
             runner.show([self.tune2fs, "-c0", "-i0", "-Odir_index", "-ouser_xattr,acl", self.disk.device])
 
-        rc, out = runner.runtool([self.dumpe2fs, '-h', self.disk.device])
-        self.uuid = self.__parse_field(out, "Filesystem UUID")
+        rc, errout = runner.runtool([self.dumpe2fs, '-h', self.disk.device],
+                                    catch=2)
+        if rc != 0:
+            raise MountError("Error dumpe2fs %s filesystem on disk %s:\n%s" %
+                             (self.fstype, self.disk.device, errout))
+        # FIXME: specify uuid in mkfs parameter
+        try:
+            self.uuid = self.__parse_field(out, "Filesystem UUID")
+        except:
+            self.uuid = None
 
     def __resize_filesystem(self, size = None):
         current_size = os.stat(self.disk.lofile)[stat.ST_SIZE]

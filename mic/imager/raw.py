@@ -82,8 +82,13 @@ class RawImageCreator(BaseImageCreator):
                     p = p1
                     break
 
+            if p['uuid'] is None:
+               device = "/dev/%s%-d" % (p['disk'], p['num'])
+            else:
+               device = "UUID=%s" % p['uuid']
+
             s += "%(device)s  %(mountpoint)s  %(fstype)s  %(fsopts)s 0 0\n" % {
-               'device': "UUID=%s" % p['uuid'],
+               'device': device,
                'mountpoint': p['mountpoint'],
                'fstype': p['fstype'],
                'fsopts': "defaults,noatime" if not p['fsopts'] else p['fsopts']}
