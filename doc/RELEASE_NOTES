@@ -1,4 +1,4 @@
-Pre-Release 0.15 - Tue Dec 04 2012
+Release 0.15 - Tue Dec 13 2012
 ===========================================================
  * adapt new mechanism for bootstrap mode
    - create 'mic-bootstrap-x86-arm' by obs build
