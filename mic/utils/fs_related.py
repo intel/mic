@@ -896,7 +896,7 @@ class LoopDevice(object):
                     return
 
             mknod = find_binary_path('mknod')
-            rc = runner.show([mknod, '-m664', self.device, 'b', '7', self.loopid])
+            rc = runner.show([mknod, '-m664', self.device, 'b', '7', str(self.loopid)])
             if rc != 0:
                 raise MountError("Failed to create device %s" % self.device)
             else:
