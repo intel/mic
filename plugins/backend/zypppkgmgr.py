@@ -150,7 +150,16 @@ class Zypp(BackendPlugin):
             else:
                 obs.status().setToBeInstalled (zypp.ResStatus.USER)
 
-        def cmpEVR(ed1, ed2):
+        def cmpEVR(p1, p2):
+            a1 = p1.arch()
+            a2 = p2.arch()
+            if str(a1) != str(a2):
+                if a1.compatible_with(a2):
+                    return -1
+                else:
+                    return 1
+            ed1 = p1.edition()
+            ed2 = p2.edition()
             (e1, v1, r1) = map(str, [ed1.epoch(), ed1.version(), ed1.release()])
             (e2, v2, r2) = map(str, [ed2.epoch(), ed2.version(), ed2.release()])
             return rpm.labelCompare((e1, v1, r1), (e2, v2, r2))
@@ -184,7 +193,7 @@ class Zypp(BackendPlugin):
 
         for item in sorted(
                         q.queryResults(self.Z.pool()),
-                        cmp=lambda x,y: cmpEVR(x.edition(), y.edition()),
+                        cmp=lambda x,y: cmpEVR(x, y),
                         reverse=True):
 
             if item.name() in self.excpkgs.keys() and \
