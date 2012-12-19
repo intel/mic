@@ -49,7 +49,7 @@ class FsPlugin(ImagerPlugin):
         creatoropts = configmgr.create
         ksconf = args[0]
 
-        if configmgr.bootstrap['enable']:
+        if creatoropts['runtime'] == 'bootstrap':
             configmgr._ksconf = ksconf
             rt_util.bootstrap_mic()
 

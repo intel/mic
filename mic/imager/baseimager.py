@@ -111,7 +111,7 @@ class BaseImageCreator(object):
                 if ext not in misc.pack_formats:
                     self.pack_to += ".tar"
 
-        self._dep_checks = ["ls", "bash", "cp", "echo", "modprobe", "passwd"]
+        self._dep_checks = ["ls", "bash", "cp", "echo", "modprobe"]
 
         # Output image file names
         self.outimage = []

@@ -47,32 +47,36 @@ def bootstrap_mic(argv=None):
     cropts = configmgr.create
     bsopts = configmgr.bootstrap
     distro = bsopts['distro_name'].lower()
-    if distro not in bsopts['distros'] or \
-       'packages' not in bsopts[distro]:
-        msger.info("Use native running for distro don't support bootstrap")
-        return
 
     rootdir = bsopts['rootdir']
-    pkglist = bsopts[distro]['packages']
+    pkglist = bsopts['packages']
     cwd = os.getcwd()
 
     # create bootstrap and run mic in bootstrap
     bsenv = bootstrap.Bootstrap(rootdir, distro, cropts['arch'])
     bsenv.logfile = cropts['logfile']
+    # rootdir is regenerated as a temp dir
+    rootdir = bsenv.rootdir
 
-    if 'optional' in bsopts[distro]:
-        optlist = bsopts[distro]['optional']
+    if 'optional' in bsopts:
+        optlist = bsopts['optional']
     else:
         optlist = []
 
     try:
         msger.info("Creating %s bootstrap ..." % distro)
         bsenv.create(cropts['repomd'], pkglist, optlist)
+
+        # bootstrap is relocated under "bootstrap"
+        if os.path.exists(os.path.join(rootdir, "bootstrap")):
+            rootdir = os.path.join(rootdir, "bootstrap")
+
+        bsenv.dirsetup(rootdir)
         sync_mic(rootdir)
 
         msger.info("Start mic in bootstrap: %s\n" % rootdir)
         bindmounts = get_bindmounts(cropts)
-        ret = bsenv.run(argv, cwd, bindmounts)
+        ret = bsenv.run(argv, cwd, rootdir, bindmounts)
 
     except errors.BootstrapError, err:
         msger.warning('\n%s' % err)
@@ -99,6 +103,9 @@ def get_bindmounts(cropts):
                   cropts['logfile'],
                   configmgr._ksconf,
                 ]
+
+    for lrepo in cropts['localrepos']:
+        binddirs.append(lrepo)
 
     bindlist = map(expath, filter(None, binddirs))
     bindlist += map(os.path.dirname, map(expath, filter(None, bindfiles)))
@@ -169,18 +176,6 @@ def sync_mic(bootstrap, binpth = '/usr/bin/mic',
             safecopy(value, _path(eval(key)), False, ["*.pyc", "*.pyo"])
         except (OSError, IOError), err:
             raise errors.BootstrapError(err)
-
-    # clean stuff:
-    # bootstrap.conf, disable bootstrap mode inside bootstrap
-    clrpaths = [
-                '/etc/mic/bootstrap.conf',
-               ]
-
-    for pth in clrpaths:
-        try:
-            os.unlink(_path(pth)) 
-        except:
-            pass
 
     # auto select backend
     conf_str = file(_path(conf)).read()

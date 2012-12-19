@@ -9,7 +9,7 @@ plugin_dir = @PREFIX@/lib/mic/plugins
 tmpdir= /var/tmp/mic
 cachedir= /var/tmp/mic/cache
 outdir= ./mic-output
-bootstrapdir= /var/tmp/mic/bootstrap
+runtime=bootstrap
 
 pkgmgr = auto
 
@@ -29,8 +29,7 @@ pkgmgr = auto
 [chroot]
 ; settings for chroot subcommand
 
-[bootstrap1]
-name=micbootstrap
-bootstrap=http://download.tizen.org/tools/micbootstrap/
-; bootstrap_proxy=http://proxy.yourcompany.com:port
+[bootstrap]
+rootdir=/var/tmp/mic-bootstrap
+packages=mic-bootstrap-x86-arm
 

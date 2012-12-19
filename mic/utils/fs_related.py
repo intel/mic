@@ -314,12 +314,14 @@ class SparseLoopbackDisk(LoopbackDisk):
         else:
             fd = os.open(self.lofile, flags)
 
+        if size <= 0:
+            size = 1
         try:
-            os.lseek(fd, size, os.SEEK_SET)
+            os.ftruncate(fd, size)
         except:
             # may be limited by 2G in 32bit env
-            os.lseek(fd, 2**31L - 1, os.SEEK_SET)
-        os.write(fd, '\x00')
+            os.ftruncate(fd, 2**31L)
+
         os.close(fd)
 
     def truncate(self, size = None):
@@ -427,6 +429,7 @@ class ExtDiskMount(DiskMount):
         self.uuid  = None
         self.skipformat = skipformat
         self.fsopts = fsopts
+        self.extopts = None
         self.dumpe2fs = find_binary_path("dumpe2fs")
         self.tune2fs = find_binary_path("tune2fs")
 
@@ -443,18 +446,31 @@ class ExtDiskMount(DiskMount):
             return
 
         msger.verbose("Formating %s filesystem on %s" % (self.fstype, self.disk.device))
-        rc = runner.show([self.mkfscmd,
-                          "-F", "-L", self.fslabel,
-                          "-m", "1", "-b", str(self.blocksize),
-                          self.disk.device]) # str(self.disk.size / self.blocksize)])
+        cmdlist = [self.mkfscmd, "-F", "-L", self.fslabel, "-m", "1", "-b",
+                   str(self.blocksize)]
+        if self.extopts:
+            cmdlist.extend(self.extopts.split())
+        cmdlist.extend([self.disk.device])
+
+        rc, errout = runner.runtool(cmdlist, catch=2)
         if rc != 0:
-            raise MountError("Error creating %s filesystem on disk %s" % (self.fstype, self.disk.device))
+            raise MountError("Error creating %s filesystem on disk %s:\n%s" %
+                             (self.fstype, self.disk.device, errout))
 
-        out = runner.outs([self.dumpe2fs, '-h', self.disk.device])
+        if not self.extopts:
+            msger.debug("Tuning filesystem on %s" % self.disk.device)
+            runner.show([self.tune2fs, "-c0", "-i0", "-Odir_index", "-ouser_xattr,acl", self.disk.device])
 
-        self.uuid = self.__parse_field(out, "Filesystem UUID")
-        msger.debug("Tuning filesystem on %s" % self.disk.device)
-        runner.show([self.tune2fs, "-c0", "-i0", "-Odir_index", "-ouser_xattr,acl", self.disk.device])
+        rc, errout = runner.runtool([self.dumpe2fs, '-h', self.disk.device],
+                                    catch=2)
+        if rc != 0:
+            raise MountError("Error dumpe2fs %s filesystem on disk %s:\n%s" %
+                             (self.fstype, self.disk.device, errout))
+        # FIXME: specify uuid in mkfs parameter
+        try:
+            self.uuid = self.__parse_field(out, "Filesystem UUID")
+        except:
+            self.uuid = None
 
     def __resize_filesystem(self, size = None):
         current_size = os.stat(self.disk.lofile)[stat.ST_SIZE]
@@ -878,11 +894,10 @@ class LoopDevice(object):
                 else:
                     self.created = True
                     return
-            try:
-                os.mknod(self.device,
-                         0664 | stat.S_IFBLK,
-                         os.makedev(7, self.loopid))
-            except:
+
+            mknod = find_binary_path('mknod')
+            rc = runner.show([mknod, '-m664', self.device, 'b', '7', self.loopid])
+            if rc != 0:
                 raise MountError("Failed to create device %s" % self.device)
             else:
                 self.created = True
@@ -922,15 +937,20 @@ def get_loop_device(losetupcmd, lofile):
     fp = open("/var/lock/__mic_loopdev.lock", 'w')
     fcntl.flock(fp, fcntl.LOCK_EX)
     try:
-        devinst = LoopDevice()
-        devinst.create()
+        rc, out = runner.runtool([losetupcmd, "--find"])
+        if rc == 0:
+	    loopdev = out.split()[0]
+	else:
+	    devinst = LoopDevice()
+	    devinst.create()
+	    loopdev = devinst.device
+	rc = runner.show([losetupcmd, loopdev, lofile])
+	if rc != 0:
+	    raise MountError("Failed to setup loop device for '%s'" % lofile)
+    except MountError, err:
+        raise CreatorError("%s" % str(err))
     except:
-        rc, out = runner.runtool([losetupcmd, "-f"])
-        if rc != 0:
-            raise MountError("1-Failed to allocate loop device for '%s'" % lofile)
-        loopdev = out.split()[0]
-    else:
-        loopdev = devinst.device
+        raise
     finally:
         try:
             fcntl.flock(fp, fcntl.LOCK_UN)
@@ -938,10 +958,6 @@ def get_loop_device(losetupcmd, lofile):
             os.unlink('/var/lock/__mic_loopdev.lock')
         except:
             pass
-
-    rc = runner.show([losetupcmd, loopdev, lofile])
-    if rc != 0:
-        raise MountError("2-Failed to allocate loop device for '%s'" % lofile)
 
     return loopdev
 

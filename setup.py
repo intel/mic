@@ -78,7 +78,6 @@ else:
     etc_prefix = os.path.join(prefix, 'etc')
 
 conffile = 'etc/mic.conf'
-bsconf = 'etc/bootstrap.conf'
 if os.path.isfile('%s/mic/mic.conf' % etc_prefix):
     conffile += '.new'
 
@@ -102,7 +101,7 @@ try:
           packages = PACKAGES,
           data_files = [("%s/lib/mic/plugins/imager" % prefix, IMAGER_PLUGINS),
                         ("%s/lib/mic/plugins/backend" % prefix, BACKEND_PLUGINS),
-                        ("%s/mic" % etc_prefix, [conffile, bsconf])]
+                        ("%s/mic" % etc_prefix, [conffile])]
     )
 finally:
     # remove dynamic file distfiles/mic.conf

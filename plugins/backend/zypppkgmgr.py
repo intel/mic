@@ -678,6 +678,8 @@ class Zypp(BackendPlugin):
         if not self.ts:
             self.__initialize_transaction()
 
+        # clean rpm lock
+        self._cleanupRpmdbLocks(self.instroot)
         # Set filters
         probfilter = 0
         for flag in self.probFilterFlags:

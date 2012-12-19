@@ -57,6 +57,7 @@ class MiniBackend(object):
         self.optionals = []
         self.preins = {}
         self.postins = {}
+        self.scriptlets = False
 
     def __del__(self):
         try:
@@ -93,6 +94,9 @@ class MiniBackend(object):
 
         if self.arch.startswith("arm"):
             misc.setup_qemu_emulator(self.rootdir, self.arch)
+
+        if not self.scriptlets:
+            return
 
         for pkg in self.preins.keys():
             prog, script = self.preins[pkg]
@@ -167,7 +171,7 @@ class MiniBackend(object):
 
 class Bootstrap(object):
     def __init__(self, rootdir, distro, arch=None):
-        self.rootdir = rootdir
+        self.rootdir = misc.mkdtemp(dir=rootdir, prefix=distro)
         self.distro = distro
         self.arch = arch
         self.logfile = None
@@ -183,8 +187,28 @@ class Bootstrap(object):
         os.makedirs(self.rootdir)
         return self.rootdir
 
-    def _path(self, pth):
-        return os.path.join(self.rootdir, pth.lstrip('/'))
+    def dirsetup(self, rootdir=None):
+        _path = lambda pth: os.path.join(rootdir, pth.lstrip('/'))
+
+        if not rootdir:
+            rootdir = self.rootdir
+
+        try:
+            # make /tmp and /etc path
+            tmpdir = _path('/tmp')
+            if not os.path.exists(tmpdir):
+                os.makedirs(tmpdir)
+            etcdir = _path('/etc')
+            if not os.path.exists(etcdir):
+                os.makedirs(etcdir)
+
+            # touch distro file
+            tzdist = _path('/etc/%s-release' % self.distro)
+            if not os.path.exists(tzdist):
+                with open(tzdist, 'w') as wf:
+                    wf.write("bootstrap")
+        except:
+            pass
 
     def create(self, repomd, pkglist, optlist=[]):
         try:
@@ -195,24 +219,28 @@ class Bootstrap(object):
             map(pkgmgr.selectPackage, pkglist + optlist)
             pkgmgr.runInstall()
 
-            # make /tmp path
-            tmpdir = self._path('/tmp')
-            if not os.path.exists(tmpdir):
-                os.makedirs(tmpdir)
-
-            # touch distro file
-            tzdist = self._path('/etc/%s-release' % self.distro)
-            if not os.path.exists(tzdist):
-                with open(tzdist, 'w') as wf:
-                    wf.write("bootstrap")
-
         except (OSError, IOError, errors.CreatorError), err:
             raise errors.BootstrapError("%s" % err)
 
-    def run(self, cmd, chdir, bindmounts=None):
+        except:
+            raise
+
+    def run(self, cmd, chdir, rootdir=None, bindmounts=None):
         def mychroot():
-            os.chroot(self.rootdir)
+            os.chroot(rootdir)
             os.chdir(chdir)
+
+        def sync_timesetting(rootdir):
+            try:
+                # sync time and zone info to bootstrap
+                if os.path.exists(rootdir + "/etc/localtime"):
+                    os.unlink(rootdir + "/etc/localtime")
+                shutil.copyfile("/etc/localtime", rootdir + "/etc/localtime")
+            except:
+                pass
+            
+        if not rootdir:
+            rootdir = self.rootdir
 
         if isinstance(cmd, list):
             shell = False
@@ -226,14 +254,15 @@ class Bootstrap(object):
         gloablmounts = None
         try:
             proxy.set_proxy_environ()
-            gloablmounts = setup_chrootenv(self.rootdir, bindmounts)
+            gloablmounts = setup_chrootenv(rootdir, bindmounts, False)
+            sync_timesetting(rootdir)
             retcode = subprocess.call(cmd, preexec_fn=mychroot, env=env, shell=shell)
         except (OSError, IOError), err:
             raise RuntimeError(err)
         finally:
             if self.logfile:
                 msger.log(file(self.logfile).read())
-            cleanup_chrootenv(self.rootdir, bindmounts, gloablmounts)
+            cleanup_chrootenv(rootdir, bindmounts, gloablmounts)
             proxy.unset_proxy_environ()
         return retcode
 

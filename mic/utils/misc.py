@@ -28,7 +28,15 @@ import rpmmisc
 import hashlib
 import sqlite3 as sqlite
 
-from xml.etree import cElementTree
+try:
+    import sqlite3 as sqlite
+except ImportError:
+    import sqlite
+
+try:
+    from xml.etree import cElementTree
+except ImportError:
+    import cElementTree
 xmlparse = cElementTree.parse
 
 from errors import *
@@ -231,8 +239,8 @@ def calc_hashes(file_path, hash_names, start = 0, end = None):
     ending file offset to calculate the has functions for. The 'hash_names'
     argument is a list of hash names to calculate. Returns the the list
     of calculated hash values in the hexadecimal form in the same order
-    as 'hash_names'. """
-
+    as 'hash_names'.
+    """
     if end == None:
         end = os.path.getsize(file_path)
 
@@ -283,7 +291,7 @@ def normalize_ksfile(ksconf, release, arch):
         ksc = f.read()
 
     if "@ARCH@" in ksc or "@BUILD_ID@" in ksc:
-        msger.info("Substitute macro variable @BUILD_ID@/@ARCH in ks: %s" % ksconf)
+        msger.info("Substitute macro variable @BUILD_ID@/@ARCH@ in ks: %s" % ksconf)
         ksc = ksc.replace("@ARCH@", arch)
         ksc = ksc.replace("@BUILD_ID@", release)
         fd, ksconf = tempfile.mkstemp(prefix=os.path.basename(ksconf), dir="/tmp/")

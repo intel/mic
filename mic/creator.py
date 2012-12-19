@@ -92,8 +92,7 @@ class Creator(cmdln.Cmdln):
                              help='Path for local pkgs(rpms) to be installed')
         optparser.add_option('', '--runtime', type='string',
                              dest='runtime', default=None,
-                             #help='Specify  runtime mode, avaiable: bootstrap')
-                             help=SUPPRESS_HELP)
+                             help='Specify  runtime mode, avaiable: bootstrap, native')
         # --taring-to is alias to --pack-to
         optparser.add_option('', '--taring-to', type='string',
                              dest='pack_to', default=None,
@@ -161,11 +160,11 @@ class Creator(cmdln.Cmdln):
 
         if self.options.logfile:
             logfile_abs_path = abspath(self.options.logfile)
-            if not os.path.exists(os.path.dirname(logfile_abs_path)):
-                os.makedirs(os.path.dirname(logfile_abs_path))
             if os.path.isdir(logfile_abs_path):
                 raise errors.Usage("logfile's path %s should be file"
                                    % self.options.logfile)
+            if not os.path.exists(os.path.dirname(logfile_abs_path)):
+                os.makedirs(os.path.dirname(logfile_abs_path))
             msger.set_interactive(False)
             msger.set_logfile(logfile_abs_path)
             configmgr.create['logfile'] = self.options.logfile
@@ -213,7 +212,7 @@ class Creator(cmdln.Cmdln):
             configmgr.create['pkgmgr'] = self.options.pkgmgr
 
         if self.options.runtime:
-            configmgr.create['runtime'] = self.options.runtime
+            configmgr.set_runtime(self.options.runtime)
 
         if self.options.pack_to is not None:
             configmgr.create['pack_to'] = self.options.pack_to

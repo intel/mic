@@ -35,10 +35,15 @@ def myurlgrab(url, filename, proxies, progress_obj = None):
         progress_obj = TextProgress()
 
     if url.startswith("file:/"):
-        file = url.replace("file:", "")
-        if not os.path.exists(file):
-            raise CreatorError("URLGrabber error: can't find file %s" % file)
-        runner.show(['cp', "-f", file, filename])
+        filepath = "/%s" % url.replace("file:", "").lstrip('/')
+        if not os.path.exists(filepath):
+            raise CreatorError("URLGrabber error: can't find file %s" % url)
+        if url.endswith('.rpm'):
+            return filepath
+        else:
+            # untouch repometadata in source path
+            runner.show(['cp', '-f', filepath, filename])
+
     else:
         try:
             filename = g.urlgrab(url = url, filename = filename,
@@ -182,8 +187,9 @@ class RPMInstallCallback:
                 handle = self._makeHandle(hdr)
                 fd = os.open(rpmloc, os.O_RDONLY)
                 self.callbackfilehandles[handle]=fd
-                self.total_installed += 1
-                self.installed_pkg_names.append(hdr['name'])
+                if hdr['name'] not in self.installed_pkg_names:
+                    self.installed_pkg_names.append(hdr['name'])
+                    self.total_installed += 1
                 return fd
             else:
                 self._localprint("No header - huh?")

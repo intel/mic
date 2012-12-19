@@ -18,7 +18,6 @@
 import os
 import stat
 import shutil
-import hashlib
 from fcntl import ioctl
 from struct import pack, unpack
 from itertools import groupby
@@ -83,8 +82,13 @@ class RawImageCreator(BaseImageCreator):
                     p = p1
                     break
 
+            if p['uuid'] is None:
+               device = "/dev/%s%-d" % (p['disk'], p['num'])
+            else:
+               device = "UUID=%s" % p['uuid']
+
             s += "%(device)s  %(mountpoint)s  %(fstype)s  %(fsopts)s 0 0\n" % {
-               'device': "UUID=%s" % p['uuid'],
+               'device': device,
                'mountpoint': p['mountpoint'],
                'fstype': p['fstype'],
                'fsopts': "defaults,noatime" if not p['fsopts'] else p['fsopts']}
@@ -374,7 +378,10 @@ class RawImageCreator(BaseImageCreator):
 
     def _unmount_instroot(self):
         if not self.__instloop is None:
-            self.__instloop.cleanup()
+            try:
+                self.__instloop.cleanup()
+            except MountError, err:
+                msger.warning("%s" % err)
 
     def _resparse(self, size = None):
         return self.__instloop.resparse(size)
