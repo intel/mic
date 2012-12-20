@@ -1,7 +1,0 @@
-raw: create raw image
-
-Usage:
-    mic create(cr) raw <ksfile> [OPTS]
-
-Options:
-    -h, --help  show this help message and exit
