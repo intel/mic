@@ -1,15 +1,6 @@
 =====
- mic
+ mic 
 =====
-
------------------------------------------------
-mic Means Image Creator for Linux distributions
------------------------------------------------
-:Date:           2012-03-02
-:Copyright:      GPLv2
-:Version:        0.1
-:Manual section: 1
-:Manual group:   System
 
 SYNOPSIS
 ========
@@ -20,6 +11,7 @@ SYNOPSIS
 
 DESCRIPTION
 ===========
+
 The tools `mic` is used to create and manipulate images for Linux distributions.
 It is composed of three subcommand: `create`, `convert`, `chroot`. 
 
