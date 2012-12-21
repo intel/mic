@@ -424,7 +424,7 @@ timeout %(timeout)d
 %(background)s
 menu title Welcome to %(distroname)s!
 menu color border 0 #ffffffff #00000000
-menu color sel 7 #ffffffff #ff000000
+menu color sel 7 #ff000000 #ffffffff
 menu color title 0 #ffffffff #00000000
 menu color tabmsg 0 #ffffffff #00000000
 menu color unsel 0 #ffffffff #00000000
