@@ -32,20 +32,9 @@ MBR_SECTOR_LEN = 1
 SECTOR_SIZE = 512
 
 class PartitionedMount(Mount):
-    def __init__(self, disks, mountdir, skipformat = False):
+    def __init__(self, mountdir, skipformat = False):
         Mount.__init__(self, mountdir)
         self.disks = {}
-        for name in disks.keys():
-            self.disks[name] = { 'disk': disks[name],  # Disk object
-                                 'mapped': False, # True if kpartx mapping exists
-                                 'numpart': 0, # Number of allocate partitions
-                                 'partitions': [], # indexes to self.partitions
-                                 # Partitions with part num higher than 3 will
-                                 # be put inside extended partition.
-                                 'extended': 0, # Size of extended partition
-                                 # Offset of next partition (in sectors)
-                                 'offset': 0 }
-
         self.partitions = []
         self.subvolumes = []
         self.mapped = False
@@ -61,6 +50,21 @@ class PartitionedMount(Mount):
         self.snapshot_created = self.skipformat
         # Size of a sector used in calculations
         self.sector_size = SECTOR_SIZE
+
+    def add_disks(self, disks):
+        """ Add the disks which have to be partitioned. """
+
+        for name in disks.keys():
+            self.disks[name] = { 'disk': disks[name],  # Disk object
+                                 'mapped': False, # True if kpartx mapping exists
+                                 'numpart': 0, # Number of allocate partitions
+                                 'partitions': [], # indexes to self.partitions
+                                 # Partitions with part num higher than 3 will
+                                 # be put inside extended partition.
+                                 'extended': 0, # Size of extended partition
+                                 # Offset of next partition (in sectors)
+                                 'offset': 0 }
+
 
     def add_partition(self, size, disk, mountpoint, fstype = None, label=None, fsopts = None, boot = False, align = None):
         # Converting MB to sectors for parted
@@ -358,13 +362,14 @@ class PartitionedMount(Mount):
 
     def cleanup(self):
         Mount.cleanup(self)
-        self.__unmap_partitions()
-        for dev in self.disks.keys():
-            d = self.disks[dev]
-            try:
-                d['disk'].cleanup()
-            except:
-                pass
+        if self.disks:
+            self.__unmap_partitions()
+            for dev in self.disks.keys():
+                d = self.disks[dev]
+                try:
+                    d['disk'].cleanup()
+                except:
+                    pass
 
     def unmount(self):
         self.__unmount_subvolumes()

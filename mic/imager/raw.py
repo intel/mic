@@ -206,7 +206,8 @@ class RawImageCreator(BaseImageCreator):
             disk = fs_related.SparseLoopbackDisk(full_path, item['size'])
             self.__disks[item['name']] = disk
 
-        self.__instloop = PartitionedMount(self.__disks, self._instroot)
+        self.__instloop = PartitionedMount(self._instroot)
+        self.__instloop.add_disks(self.__disks)
 
         for p in parts:
             self.__instloop.add_partition(int(p.size),

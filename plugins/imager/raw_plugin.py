@@ -135,7 +135,8 @@ class RawPlugin(ImagerPlugin):
         partedcmd = fs_related.find_binary_path("parted")
         disk = fs_related.SparseLoopbackDisk(img, imgsize)
         imgmnt = misc.mkdtemp()
-        imgloop = PartitionedMount({'/dev/sdb':disk}, imgmnt, skipformat = True)
+        imgloop = PartitionedMount(imgmnt, skipformat = True)
+        imgloop.add_disks({'/dev/sdb':disk})
         img_fstype = "ext3"
 
         msger.info("Partition Table:")
@@ -243,8 +244,9 @@ class RawPlugin(ImagerPlugin):
         srcimgsize = (misc.get_file_size(srcimg)) * 1024L * 1024L
         srcmnt = misc.mkdtemp("srcmnt")
         disk = fs_related.SparseLoopbackDisk(srcimg, srcimgsize)
-        srcloop = PartitionedMount({'/dev/sdb':disk}, srcmnt, skipformat = True)
+        srcloop = PartitionedMount(srcmnt, skipformat = True)
 
+        srcloop.add_disks({'/dev/sdb':disk})
         srcloop.add_partition(srcimgsize/1024/1024, "/dev/sdb", "/", "ext3", boot=False)
         try:
             srcloop.mount()

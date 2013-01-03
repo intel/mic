@@ -70,7 +70,8 @@ class LiveUSBImageCreator(LiveCDImageCreator):
                                                  % (self._outdir, self.name),
                                              usbimgsize)
         usbmnt = self._mkdtemp("usb-mnt")
-        usbloop = PartitionedMount({'/dev/sdb':disk}, usbmnt)
+        usbloop = PartitionedMount(usbmnt)
+        usbloop.add_disks({'/dev/sdb':disk})
 
         usbloop.add_partition(usbimgsize/1024/1024,
                               "/dev/sdb",
