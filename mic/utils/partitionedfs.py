@@ -151,23 +151,6 @@ class PartitionedMount(Mount):
 
             self.__add_partition(part)
 
-    def __create_partition(self, device, parttype, fstype, start, size):
-        # Start is included to the size so we need to substract one from the end.
-        end = start+size-1
-        msger.debug("Added '%s' part at Sector %d with size %d sectors" %
-                    (parttype, start, end))
-        part_cmd = [self.parted, "-s", device, "unit", "s", "mkpart", parttype]
-        if fstype:
-            part_cmd.extend([fstype])
-        part_cmd.extend(["%d" % start, "%d" % end])
-
-        msger.debug(part_cmd)
-        rc, out = runner.runtool(part_cmd, catch=3)
-        out = out.strip()
-        if out:
-            msger.debug('"parted" output: %s' % out)
-        return rc
-
     def layout_partitions(self, ptable_format = "msdos"):
         """ Layout the partitions, meaning calculate the position of every
         partition on the disk. The 'ptable_format' parameter defines the
@@ -262,6 +245,39 @@ class PartitionedMount(Mount):
 
             disk['min_size'] *= self.sector_size
 
+    def __run_parted(self, args):
+        """ Run parted with arguments specified in the 'args' list. """
+
+        args.insert(0, self.parted)
+        msger.debug(args)
+
+        rc, out = runner.runtool(args, catch = 3)
+        out = out.strip()
+        if out:
+            msger.debug('"parted" output: %s' % out)
+
+        if rc != 0:
+            # We don't throw exception when return code is not 0, because
+            # parted always fails to reload part table with loop devices. This
+            # prevents us from distinguishing real errors based on return
+            # code.
+            msger.debug("WARNING: parted returned '%s' instead of 0" % rc)
+
+    def __create_partition(self, device, parttype, fstype, start, size):
+        """ Create a partition on an image described by the 'device' object. """
+
+        # Start is included to the size so we need to substract one from the end.
+        end = start + size - 1
+        msger.debug("Added '%s' part at Sector %d with size %d sectors" %
+                    (parttype, start, end))
+
+        args = ["-s", device, "unit", "s", "mkpart", parttype]
+        if fstype:
+            args.extend([fstype])
+        args.extend(["%d" % start, "%d" % end])
+
+        return self.__run_parted(args)
+
     def __format_disks(self):
         self.layout_partitions()
 
@@ -271,17 +287,9 @@ class PartitionedMount(Mount):
 
         for dev in self.disks.keys():
             d = self.disks[dev]
-            msger.debug("Initializing partition table for %s" % (d['disk'].device))
-            rc, out = runner.runtool([self.parted, "-s", d['disk'].device, "mklabel", "msdos"], catch=3)
-            out = out.strip()
-            if out:
-                msger.debug('"parted" output: %s' % out)
-
-            if rc != 0:
-                # NOTE: We don't throw exception when return code is not 0, because
-                # parted always fails to reload part table with loop devices.
-                # This prevents us from distinguishing real errors based on return code.
-                msger.debug("WARNING: parted returned '%s' instead of 0 when creating partition-table for disk '%s'." % (rc, d['disk'].device))
+            msger.debug("Initializing partition table for %s" % \
+                        (d['disk'].device))
+            self.__run_parted([ "-s", d['disk'].device, "mklabel", "msdos" ])
 
         msger.debug("Creating partitions")
 
@@ -303,30 +311,21 @@ class PartitionedMount(Mount):
 
             # Boot ROM of OMAP boards require vfat boot partition to have an
             # even number of sectors.
-            if p['mountpoint'] == "/boot" and p['fstype'] in ["vfat","msdos"] and p['size'] % 2:
-                msger.debug("Substracting one sector from '%s' partition to get even number of sectors for the partition." % (p['mountpoint']))
+            if p['mountpoint'] == "/boot" and p['fstype'] in ["vfat", "msdos"] \
+               and p['size'] % 2:
+                msger.debug("Substracting one sector from '%s' partition to " \
+                            "get even number of sectors for the partition" % \
+                            p['mountpoint'])
                 p['size'] -= 1
 
-            ret = self.__create_partition(d['disk'].device, p['type'],
-                                          parted_fs_type, p['start'], p['size'])
-
-            if ret != 0:
-                # NOTE: We don't throw exception when return code is not 0, because
-                # parted always fails to reload part table with loop devices.
-                # This prevents us from distinguishing real errors based on return code.
-                msger.debug("WARNING: parted returned '%s' instead of 0 when creating partition '%s' for disk '%s'." % (ret, p['mountpoint'], d['disk'].device))
+            self.__create_partition(d['disk'].device, p['type'],
+                                    parted_fs_type, p['start'], p['size'])
 
             if p['boot']:
-                msger.debug("Setting boot flag for partition '%s' on disk '%s'." % (p['num'],d['disk'].device))
-                boot_cmd = [self.parted, "-s", d['disk'].device, "set", "%d" % p['num'], "boot", "on"]
-                msger.debug(boot_cmd)
-                rc = runner.show(boot_cmd)
-
-                if rc != 0:
-                    # NOTE: We don't throw exception when return code is not 0, because
-                    # parted always fails to reload part table with loop devices.
-                    # This prevents us from distinguishing real errors based on return code.
-                    msger.warning("parted returned '%s' instead of 0 when adding boot flag for partition '%s' disk '%s'." % (rc,p['num'],d['disk'].device))
+                msger.debug("Set boot flag for partition '%s' on disk '%s'" % \
+                            (p['num'], d['disk'].device))
+                self.__run_parted(["-s", d['disk'].device, "set",
+                                   "%d" % p['num'], "boot", "on"])
 
     def __map_partitions(self):
         """Load it if dm_snapshot isn't loaded. """
