@@ -71,7 +71,9 @@ class PartitionedMount(Mount):
                   # Partitions with part num higher than 3 will
                   # be put to the extended partition.
                   'extended': 0,    # Size of extended partition
-                  'offset': 0 }     # Offset of next partition (in sectors)
+                  'offset': 0,      # Offset of next partition (in sectors)
+                  # Minimum required disk size to fit all partitions (in bytes)
+                  'min_size': 0 }
 
     def add_disks(self, disks):
         """ Add the disks which have to be partitioned. """
@@ -238,6 +240,13 @@ class PartitionedMount(Mount):
                         "/ %d bytes." % (p['mountpoint'], p['disk'], p['num'],
                                          p['start'], p['size'],
                                          p['size'] * self.sector_size))
+
+        # Once all the partitions have been layed out, we can calculate the
+        # minumim disk sizes.
+        for disk_name, disk in self.disks.items():
+            last_partition = self.partitions[disk['partitions'][-1]]
+            disk['min_size'] = last_partition['start'] + last_partition['size']
+            disk['min_size'] *= self.sector_size
 
     def __format_disks(self):
         self.layout_partitions()
