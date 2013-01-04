@@ -25,8 +25,8 @@ from mic.utils import runner
 from mic.utils.errors import MountError
 from mic.utils.fs_related import *
 
-# Lenght of MBR in sectors
-MBR_SECTOR_LEN = 1
+# Overhead of the MBR partitioning scheme (just one sector)
+MBR_OVERHEAD = 1
 
 # Size of a sector in bytes
 SECTOR_SIZE = 512
@@ -186,10 +186,10 @@ class PartitionedMount(Mount):
 
             if d['numpart'] == 1:
                 # Skip one sector required for the MBR
-                d['offset'] += MBR_SECTOR_LEN
+                d['offset'] += MBR_OVERHEAD
                 # Steal one sector from the first partition to offset for the
                 # MBR sector.
-                p['size'] -= MBR_SECTOR_LEN
+                p['size'] -= MBR_OVERHEAD
 
             if p['align']:
                 # If not first partition and we do have alignment set we need
