@@ -189,17 +189,11 @@ class PartitionedMount(Mount):
             d = self.disks[p['disk']]
             d['numpart'] += 1
 
-            # alignment in sectors
-            align_sectors = None
-            # if first partition then we need to skip the first sector
-            # where the MBR is located, if the alignment isn't set
-            # See: https://wiki.linaro.org/WorkingGroups/Kernel/Projects/FlashCardSurvey
             if d['numpart'] == 1:
-                if p['align'] and p['align'] > 0:
-                    align_sectors = p['align'] * 1024 / self.sector_size
-                else:
-                    align_sectors = MBR_SECTOR_LEN
-            elif p['align']:
+                # Skip one sector required for the MBR
+                d['offset'] += MBR_SECTOR_LEN
+
+            if p['align']:
                 # If not first partition and we do have alignment set we need
                 # to align the partition.
                 # FIXME: This leaves a empty spaces to the disk. To fill the
@@ -210,12 +204,11 @@ class PartitionedMount(Mount):
                 # We need to move forward to the next alignment point
                 align_sectors = (p['align'] * 1024 / self.sector_size) - align_sectors
 
-            if align_sectors:
-                if p['align'] and p['align'] > 0:
-                    msger.debug("Realignment for %s%s with %s sectors, original"
-                                " offset %s, target alignment is %sK." %
-                                (p['disk'], d['numpart'], align_sectors,
-                                 d['offset'], p['align']))
+                msger.debug("Realignment for %s%s with %s sectors, original"
+                            " offset %s, target alignment is %sK." %
+                            (p['disk'], d['numpart'], align_sectors,
+                             d['offset'], p['align']))
+
                 # p['size'] already converted in secctors
                 if p['size'] <= align_sectors:
                     raise MountError("Partition for %s is too small to handle "
