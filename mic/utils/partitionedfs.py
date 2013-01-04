@@ -93,10 +93,13 @@ class PartitionedMount(Mount):
 
     def add_partition(self, size, disk_name, mountpoint, fstype = None,
                       label=None, fsopts = None, boot = False, align = None):
+        """ Add the next partition. Prtitions have to be added in the
+        first-to-last order. """
+
         # Converting MB to sectors for parted
         size = size * 1024 * 1024 / self.sector_size
 
-        """ We need to handle subvolumes for btrfs """
+        # We need to handle subvolumes for btrfs
         if fstype == "btrfs" and fsopts and fsopts.find("subvol=") != -1:
             self.btrfscmd=find_binary_path("btrfs")
             subvol = None
@@ -119,9 +122,9 @@ class PartitionedMount(Mount):
                                     'mounted': False # Mount flag
                                    })
 
-        """ We still need partition for "/" or non-subvolume """
+        # We still need partition for "/" or non-subvolume
         if mountpoint == "/" or not fsopts or fsopts.find("subvol=") == -1:
-            """ Don't need subvolume for "/" because it will be set as default subvolume """
+            # Don't need subvolume for "/" because it will be set as default subvolume
             if fsopts and fsopts.find("subvol=") != -1:
                 opts = fsopts.split(",")
                 for opt in opts:
@@ -306,7 +309,7 @@ class PartitionedMount(Mount):
                     msger.warning("parted returned '%s' instead of 0 when adding boot flag for partition '%s' disk '%s'." % (rc,p['num'],d['disk'].device))
 
     def __map_partitions(self):
-        """Load it if dm_snapshot isn't loaded"""
+        """Load it if dm_snapshot isn't loaded. """
         load_module("dm_snapshot")
 
         for dev in self.disks.keys():
@@ -420,7 +423,7 @@ class PartitionedMount(Mount):
 
             if p['mount'] != None:
                 try:
-                    """ Create subvolume snapshot here """
+                    # Create subvolume snapshot here
                     if p['fstype'] == "btrfs" and p['mountpoint'] == "/" and not self.snapshot_created:
                         self.__create_subvolume_snapshots(p, p["mount"])
                     p['mount'].cleanup()
@@ -428,7 +431,7 @@ class PartitionedMount(Mount):
                     pass
                 p['mount'] = None
 
-    """ Only for btrfs """
+    # Only for btrfs
     def __get_subvolume_id(self, rootpath, subvol):
         if not self.btrfscmd:
             self.btrfscmd=find_binary_path("btrfs")
@@ -509,7 +512,7 @@ class PartitionedMount(Mount):
                                    })
 
     def __create_subvolumes(self, p, pdisk):
-        """ Create all the subvolumes """
+        """ Create all the subvolumes. """
 
         for subvol in self.subvolumes:
             argv = [ self.btrfscmd, "subvolume", "create", pdisk.mountdir + "/" + subvol["subvol"]]
@@ -518,7 +521,7 @@ class PartitionedMount(Mount):
             if rc != 0:
                 raise MountError("Failed to create subvolume '%s', return code: %d." % (subvol["subvol"], rc))
 
-        """ Set default subvolume, subvolume for "/" is default """
+        # Set default subvolume, subvolume for "/" is default
         subvol = None
         for subvolume in self.subvolumes:
             if subvolume["mountpoint"] == "/" and p['disk_name'] == subvolume['disk_name']:
@@ -526,9 +529,9 @@ class PartitionedMount(Mount):
                 break
 
         if subvol:
-            """ Get default subvolume id """
+            # Get default subvolume id
             subvolid = self. __get_subvolume_id(pdisk.mountdir, subvol["subvol"])
-            """ Set default subvolume """
+            # Set default subvolume
             if subvolid != -1:
                 rc = runner.show([ self.btrfscmd, "subvolume", "set-default", "%d" % subvolid, pdisk.mountdir])
                 if rc != 0:
@@ -538,9 +541,9 @@ class PartitionedMount(Mount):
 
     def __mount_subvolumes(self, p, pdisk):
         if self.skipformat:
-            """ Get subvolume info """
+            # Get subvolume info
             self.__get_subvolume_metadata(p, pdisk)
-            """ Set default mount options """
+            # Set default mount options
             if len(self.subvolumes) != 0:
                 for subvol in self.subvolumes:
                     if subvol["mountpoint"] == p["mountpoint"] == "/":
@@ -553,10 +556,10 @@ class PartitionedMount(Mount):
                         break
 
         if len(self.subvolumes) == 0:
-            """ Return directly if no subvolumes """
+            # Return directly if no subvolumes
             return
 
-        """ Remount to make default subvolume mounted """
+        # Remount to make default subvolume mounted
         rc = runner.show([self.umountcmd, pdisk.mountdir])
         if rc != 0:
             raise MountError("Failed to umount %s" % pdisk.mountdir)
@@ -572,7 +575,7 @@ class PartitionedMount(Mount):
             if subvolid == -1:
                 msger.debug("WARNING: invalid subvolume %s" % subvol["subvol"])
                 continue
-            """ Replace subvolume name with subvolume ID """
+            # Replace subvolume name with subvolume ID
             opts = subvol["fsopts"].split(",")
             for opt in opts:
                 if opt.strip().startswith("subvol="):
@@ -608,7 +611,7 @@ class PartitionedMount(Mount):
         if self.snapshot_created:
             return
 
-        """ Remount with subvolid=0 """
+        # Remount with subvolid=0
         rc = runner.show([self.umountcmd, pdisk.mountdir])
         if rc != 0:
             raise MountError("Failed to umount %s" % pdisk.mountdir)
@@ -620,7 +623,7 @@ class PartitionedMount(Mount):
         if rc != 0:
             raise MountError("Failed to umount %s" % pdisk.mountdir)
 
-        """ Create all the subvolume snapshots """
+        # Create all the subvolume snapshots
         snapshotts = time.strftime("%Y%m%d-%H%M")
         for subvol in self.subvolumes:
             subvolpath = pdisk.mountdir + "/" + subvol["subvol"]
