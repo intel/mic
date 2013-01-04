@@ -83,7 +83,7 @@ class RawImageCreator(BaseImageCreator):
                     break
 
             if p['uuid'] is None:
-               device = "/dev/%s%-d" % (p['disk'], p['num'])
+               device = "/dev/%s%-d" % (p['disk_name'], p['num'])
             else:
                device = "UUID=%s" % p['uuid']
 
@@ -98,7 +98,7 @@ class RawImageCreator(BaseImageCreator):
                     if subvol['mountpoint'] == "/":
                         continue
                     s += "%(device)s  %(mountpoint)s  %(fstype)s  %(fsopts)s 0 0\n" % {
-                         'device': "/dev/%s%-d" % (p['disk'], p['num']),
+                         'device': "/dev/%s%-d" % (p['disk_name'], p['num']),
                          'mountpoint': subvol['mountpoint'],
                          'fstype': p['fstype'],
                          'fsopts': "defaults,noatime" if not subvol['fsopts'] else subvol['fsopts']}
@@ -230,7 +230,7 @@ class RawImageCreator(BaseImageCreator):
 
             if p['mountpoint'] == "/":
                 rootdevnum = p['num'] - 1
-                rootdev = "/dev/%s%-d" % (p['disk'], p['num'])
+                rootdev = "/dev/%s%-d" % (p['disk_name'], p['num'])
 
         prefix = ""
         if bootdevnum == rootdevnum:

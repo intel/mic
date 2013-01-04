@@ -89,9 +89,10 @@ class PartitionedMount(Mount):
         assert not self._partitions_layed_out
 
         self.partitions.append(part)
-        self.__add_disk(part['disk'])
+        self.__add_disk(part['disk_name'])
 
-    def add_partition(self, size, disk, mountpoint, fstype = None, label=None, fsopts = None, boot = False, align = None):
+    def add_partition(self, size, disk_name, mountpoint, fstype = None,
+                      label=None, fsopts = None, boot = False, align = None):
         # Converting MB to sectors for parted
         size = size * 1024 * 1024 / self.sector_size
 
@@ -110,7 +111,7 @@ class PartitionedMount(Mount):
                                     'mountpoint': mountpoint, # Mount relative to chroot
                                     'fstype': fstype, # Filesystem type
                                     'fsopts': fsopts, # Filesystem mount options
-                                    'disk': disk, # physical disk name holding partition
+                                    'disk_name': disk, # physical disk name holding partition
                                     'device': None, # kpartx device node for partition
                                     'mount': None, # Mount object
                                     'subvol': subvol, # Subvolume name
@@ -134,7 +135,7 @@ class PartitionedMount(Mount):
                      'fstype': fstype, # Filesystem type
                      'fsopts': fsopts, # Filesystem mount options
                      'label': label, # Partition label
-                     'disk': disk, # physical disk name holding partition
+                     'disk_name': disk_name, # physical disk name holding partition
                      'device': None, # kpartx device node for partition
                      'mount': None, # Mount object
                      'num': None, # Partition number
@@ -175,11 +176,12 @@ class PartitionedMount(Mount):
         for n in range(len(self.partitions)):
             p = self.partitions[n]
 
-            if not self.disks.has_key(p['disk']):
-                raise MountError("No disk %s for partition %s" % (p['disk'], p['mountpoint']))
+            if not self.disks.has_key(p['disk_name']):
+                raise MountError("No disk %s for partition %s" \
+                                 % (p['disk_name'], p['mountpoint']))
 
             # Get the disk where the partition is located
-            d = self.disks[p['disk']]
+            d = self.disks[p['disk_name']]
             d['numpart'] += 1
 
             if d['numpart'] == 1:
@@ -202,7 +204,7 @@ class PartitionedMount(Mount):
 
                 msger.debug("Realignment for %s%s with %s sectors, original"
                             " offset %s, target alignment is %sK." %
-                            (p['disk'], d['numpart'], align_sectors,
+                            (p['disk_name'], d['numpart'], align_sectors,
                              d['offset'], p['align']))
 
                 # p['size'] already converted in secctors
@@ -226,8 +228,8 @@ class PartitionedMount(Mount):
             d['offset'] += p['size']
             d['partitions'].append(n)
             msger.debug("Assigned %s to %s%d at Sector %d with size %d sectors "
-                        "/ %d bytes." % (p['mountpoint'], p['disk'], p['num'],
-                                         p['start'], p['size'],
+                        "/ %d bytes." % (p['mountpoint'], p['disk_name'],
+                                         p['num'], p['start'], p['size'],
                                          p['size'] * self.sector_size))
 
         # Once all the partitions have been layed out, we can calculate the
@@ -261,7 +263,7 @@ class PartitionedMount(Mount):
         msger.debug("Creating partitions")
 
         for p in self.partitions:
-            d = self.disks[p['disk']]
+            d = self.disks[p['disk_name']]
             if p['num'] == 5:
                 self.__create_part_to_image(d['disk'].device,"extended",None,p['start'],d['extended'])
 
@@ -498,7 +500,7 @@ class PartitionedMount(Mount):
                                         'mountpoint': items[2], # Mount relative to chroot
                                         'fstype': "btrfs", # Filesystem type
                                         'fsopts': items[3] + ",subvol=%s" %  items[1], # Filesystem mount options
-                                        'disk': p['disk'], # physical disk name holding partition
+                                        'disk_name': p['disk_name'], # physical disk name holding partition
                                         'device': None, # kpartx device node for partition
                                         'mount': None, # Mount object
                                         'subvol': items[1], # Subvolume name
@@ -519,7 +521,7 @@ class PartitionedMount(Mount):
         """ Set default subvolume, subvolume for "/" is default """
         subvol = None
         for subvolume in self.subvolumes:
-            if subvolume["mountpoint"] == "/" and p["disk"] == subvolume["disk"]:
+            if subvolume["mountpoint"] == "/" and p['disk_name'] == subvolume['disk_name']:
                 subvol = subvolume
                 break
 
