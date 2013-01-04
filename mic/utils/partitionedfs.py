@@ -50,6 +50,7 @@ class PartitionedMount(Mount):
         self.snapshot_created = self.skipformat
         # Size of a sector used in calculations
         self.sector_size = SECTOR_SIZE
+        self._partitions_layed_out = False
 
     def __add_disk(self, disk_name):
         """ Add a disk 'disk_name' to the internal list of disks. Note,
@@ -59,6 +60,8 @@ class PartitionedMount(Mount):
         if disk_name in self.disks:
             # We already have this disk
             return
+
+        assert not self._partitions_layed_out
 
         self.disks[disk_name] = \
                 { 'disk': None,     # Disk object
@@ -80,6 +83,8 @@ class PartitionedMount(Mount):
     def __add_partition(self, part):
         """ This is a helper function for 'add_partition()' which adds a
         partition to the internal list of partitions. """
+
+        assert not self._partitions_layed_out
 
         self.partitions.append(part)
         self.__add_disk(part['disk'])
@@ -153,9 +158,16 @@ class PartitionedMount(Mount):
             msger.debug('"parted" output: %s' % out)
         return rc
 
-    def __format_disks(self):
+    def layout_partitions(self):
+        """ Layout the partitions, meaning calculate the position of every
+        partition on the disk. """
+
         msger.debug("Assigning partitions to disks")
 
+        if self._partitions_layed_out:
+            return
+
+        self._partitions_layed_out = True
         mbr_sector_skipped = False
 
         # Go through partitions in the order they are added in .ks file
@@ -226,6 +238,9 @@ class PartitionedMount(Mount):
                         "/ %d bytes." % (p['mountpoint'], p['disk'], p['num'],
                                          p['start'], p['size'],
                                          p['size'] * self.sector_size))
+
+    def __format_disks(self):
+        self.layout_partitions()
 
         if self.skipformat:
             msger.debug("Skipping disk format, because skipformat flag is set.")
