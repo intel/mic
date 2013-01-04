@@ -75,12 +75,13 @@ class PartitionedMount(Mount):
                   # Minimum required disk size to fit all partitions (in bytes)
                   'min_size': 0 }
 
-    def add_disks(self, disks):
-        """ Add the disks which have to be partitioned. """
+    def add_disk(self, disk_name, disk_obj):
+        """ Add a disk object which have to be partitioned. More than one disk
+        can be added. In case of multiple disks, disk partitions have to be
+        added for each disk separately with 'add_partition()". """
 
-        for name in disks.keys():
-            self.__add_disk(name)
-            self.disks[name]['disk'] = disks[name]
+        self.__add_disk(disk_name)
+        self.disks[disk_name]['disk'] = disk_obj
 
     def __add_partition(self, part):
         """ This is a helper function for 'add_partition()' which adds a

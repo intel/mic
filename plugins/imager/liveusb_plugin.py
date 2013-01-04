@@ -216,7 +216,7 @@ class LiveUSBPlugin(ImagerPlugin):
         imgmnt = misc.mkdtemp()
         disk = fs_related.SparseLoopbackDisk(img, imgsize)
         imgloop = PartitionedMount(imgmnt, skipformat = True)
-        imgloop.add_disks({'/dev/sdb':disk})
+        imgloop.add_disk('/dev/sdb', disk)
         imgloop.add_partition(imgsize/1024/1024, "/dev/sdb", "/", "vfat", boot=False)
         try:
             imgloop.mount()

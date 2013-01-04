@@ -203,8 +203,7 @@ class RawImageCreator(BaseImageCreator):
             disk_obj = fs_related.SparseLoopbackDisk(full_path,
                                                      disk['min_size'])
             self.__disks[disk_name] = disk_obj
-
-        self.__instloop.add_disks(self.__disks)
+            self.__instloop.add_disk(disk_name, disk_obj)
 
         self.__instloop.mount()
         self._create_mkinitrd_config()
