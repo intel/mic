@@ -151,7 +151,7 @@ class PartitionedMount(Mount):
 
             self.__add_partition(part)
 
-    def __create_part_to_image(self, device, parttype, fstype, start, size):
+    def __create_partition(self, device, parttype, fstype, start, size):
         # Start is included to the size so we need to substract one from the end.
         end = start+size-1
         msger.debug("Added '%s' part at Sector %d with size %d sectors" %
@@ -288,7 +288,8 @@ class PartitionedMount(Mount):
         for p in self.partitions:
             d = self.disks[p['disk_name']]
             if p['num'] == 5:
-                self.__create_part_to_image(d['disk'].device, "extended",None,p['start'], d['extended'])
+                self.__create_partition(d['disk'].device, "extended", None,
+                                        p['start'], d['extended'])
 
             if p['fstype'] == "swap":
                 parted_fs_type = "linux-swap"
@@ -306,9 +307,8 @@ class PartitionedMount(Mount):
                 msger.debug("Substracting one sector from '%s' partition to get even number of sectors for the partition." % (p['mountpoint']))
                 p['size'] -= 1
 
-            ret = self.__create_part_to_image(d['disk'].device, p['type'],
-                                              parted_fs_type, p['start'],
-                                              p['size'])
+            ret = self.__create_partition(d['disk'].device, p['type'],
+                                          parted_fs_type, p['start'], p['size'])
 
             if ret != 0:
                 # NOTE: We don't throw exception when return code is not 0, because
