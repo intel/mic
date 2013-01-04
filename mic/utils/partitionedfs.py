@@ -51,20 +51,38 @@ class PartitionedMount(Mount):
         # Size of a sector used in calculations
         self.sector_size = SECTOR_SIZE
 
+    def __add_disk(self, disk_name):
+        """ Add a disk 'disk_name' to the internal list of disks. Note,
+        'disk_name' is the name of the disk in the target system
+        (e.g., sdb). """
+
+        if disk_name in self.disks:
+            # We already have this disk
+            return
+
+        self.disks[disk_name] = \
+                { 'disk': None,     # Disk object
+                  'mapped': False,  # True if kpartx mapping exists
+                  'numpart': 0,     # Number of allocate partitions
+                  'partitions': [], # Indexes to self.partitions
+                  # Partitions with part num higher than 3 will
+                  # be put to the extended partition.
+                  'extended': 0,    # Size of extended partition
+                  'offset': 0 }     # Offset of next partition (in sectors)
+
     def add_disks(self, disks):
         """ Add the disks which have to be partitioned. """
 
         for name in disks.keys():
-            self.disks[name] = { 'disk': disks[name],  # Disk object
-                                 'mapped': False, # True if kpartx mapping exists
-                                 'numpart': 0, # Number of allocate partitions
-                                 'partitions': [], # indexes to self.partitions
-                                 # Partitions with part num higher than 3 will
-                                 # be put inside extended partition.
-                                 'extended': 0, # Size of extended partition
-                                 # Offset of next partition (in sectors)
-                                 'offset': 0 }
+            self.__add_disk(name)
+            self.disks[name]['disk'] = disks[name]
 
+    def __add_partition(self, part):
+        """ This is a helper function for 'add_partition()' which adds a
+        partition to the internal list of partitions. """
+
+        self.partitions.append(part)
+        self.__add_disk(part['disk'])
 
     def add_partition(self, size, disk, mountpoint, fstype = None, label=None, fsopts = None, boot = False, align = None):
         # Converting MB to sectors for parted
@@ -103,17 +121,20 @@ class PartitionedMount(Mount):
                         opts.remove(opt)
                         break
                 fsopts = ",".join(opts)
-            self.partitions.append({'size': size, # In sectors
-                                    'mountpoint': mountpoint, # Mount relative to chroot
-                                    'fstype': fstype, # Filesystem type
-                                    'fsopts': fsopts, # Filesystem mount options
-                                    'label': label, # Partition label
-                                    'disk': disk, # physical disk name holding partition
-                                    'device': None, # kpartx device node for partition
-                                    'mount': None, # Mount object
-                                    'num': None, # Partition number
-                                    'boot': boot, # Bootable flag
-                                    'align': align}) # Partition alignment
+
+            part = { 'size': size, # In sectors
+                     'mountpoint': mountpoint, # Mount relative to chroot
+                     'fstype': fstype, # Filesystem type
+                     'fsopts': fsopts, # Filesystem mount options
+                     'label': label, # Partition label
+                     'disk': disk, # physical disk name holding partition
+                     'device': None, # kpartx device node for partition
+                     'mount': None, # Mount object
+                     'num': None, # Partition number
+                     'boot': boot, # Bootable flag
+                     'align': align } # Partition alignment
+
+            self.__add_partition(part)
 
     def __create_part_to_image(self, device, parttype, fstype, start, size):
         # Start is included to the size so we need to substract one from the end.
