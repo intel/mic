@@ -193,21 +193,8 @@ class RawImageCreator(BaseImageCreator):
     # Actual implemention
     #
     def _mount_instroot(self, base_on = None):
-        self.__imgdir = self._mkdtemp()
-
         parts = self._get_parts()
-
-        #create disk
-        for item in self.get_diskinfo():
-            full_path = self._full_path(self.__imgdir, item['name'], "raw")
-            msger.debug("Adding disk %s as %s with size %s bytes" \
-                        % (item['name'], full_path, item['size']))
-
-            disk = fs_related.SparseLoopbackDisk(full_path, item['size'])
-            self.__disks[item['name']] = disk
-
         self.__instloop = PartitionedMount(self._instroot)
-        self.__instloop.add_disks(self.__disks)
 
         for p in parts:
             self.__instloop.add_partition(int(p.size),
@@ -218,6 +205,21 @@ class RawImageCreator(BaseImageCreator):
                                           fsopts = p.fsopts,
                                           boot = p.active,
                                           align = p.align)
+
+        self.__instloop.layout_partitions()
+
+        # Create the disks
+        self.__imgdir = self._mkdtemp()
+        for disk_name, disk in self.__instloop.disks.items():
+            full_path = self._full_path(self.__imgdir, disk_name, "raw")
+            msger.debug("Adding disk %s as %s with size %s bytes" \
+                        % (disk_name, full_path, disk['min_size']))
+
+            disk_obj = fs_related.SparseLoopbackDisk(full_path,
+                                                     disk['min_size'])
+            self.__disks[disk_name] = disk_obj
+
+        self.__instloop.add_disks(self.__disks)
 
         self.__instloop.mount()
         self._create_mkinitrd_config()
