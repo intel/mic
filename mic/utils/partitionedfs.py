@@ -170,7 +170,6 @@ class PartitionedMount(Mount):
             return
 
         self._partitions_layed_out = True
-        mbr_sector_skipped = False
 
         # Go through partitions in the order they are added in .ks file
         for n in range(len(self.partitions)):
@@ -179,12 +178,6 @@ class PartitionedMount(Mount):
             if not self.disks.has_key(p['disk']):
                 raise MountError("No disk %s for partition %s" % (p['disk'], p['mountpoint']))
 
-            if not mbr_sector_skipped:
-                #  This hack is used to remove one sector from the first partition,
-                #  that is the used to the MBR.
-                p['size'] -= 1
-                mbr_sector_skipped = True
-
             # Get the disk where the partition is located
             d = self.disks[p['disk']]
             d['numpart'] += 1
@@ -192,6 +185,9 @@ class PartitionedMount(Mount):
             if d['numpart'] == 1:
                 # Skip one sector required for the MBR
                 d['offset'] += MBR_SECTOR_LEN
+                # Steal one sector from the first partition to offset for the
+                # MBR sector.
+                p['size'] -= MBR_SECTOR_LEN
 
             if p['align']:
                 # If not first partition and we do have alignment set we need
