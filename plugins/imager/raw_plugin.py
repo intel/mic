@@ -100,8 +100,8 @@ class RawPlugin(ImagerPlugin):
         if len(recording_pkgs) > 0:
             creator._recording_pkgs = recording_pkgs
 
-        images = ["%s-%s.raw" % (creator.name, part['name'])
-                  for part in creator.get_diskinfo()]
+        images = ["%s-%s.raw" % (creator.name, disk_name)
+                  for disk_name in creator.get_disk_names()]
         self.check_image_exists(creator.destdir,
                                 creator.pack_to,
                                 images,

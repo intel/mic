@@ -48,7 +48,7 @@ class RawImageCreator(BaseImageCreator):
         self.__imgdir = None
         self.__disks = {}
         self.__disk_format = "raw"
-        self._diskinfo = []
+        self._disk_names = []
         self.vmem = 512
         self.vcpu = 1
         self.checksum = False
@@ -141,17 +141,19 @@ class RawImageCreator(BaseImageCreator):
         # partitions list from kickstart file
         return kickstart.get_partitions(self.ks)
 
-    def get_diskinfo(self):
+    def get_disk_names(self):
+        """ Returns a list of physical target disk names (e.g., 'sdb') which
+        will be created. """
 
-        if self._diskinfo:
-            return self._diskinfo
+        if self._disk_names:
+            return self._disk_names
 
         #get partition info from ks handler
         parts = self._get_parts()
 
         for i in range(len(parts)):
             if parts[i].disk:
-                disk = parts[i].disk
+                disk_name = parts[i].disk
             else:
                 raise CreatorError("Failed to create disks, no --ondisk "
                                    "specified in partition line of ks file")
@@ -160,26 +162,9 @@ class RawImageCreator(BaseImageCreator):
                  raise CreatorError("Failed to create disks, no --fstype "
                                     "specified in partition line of ks file")
 
-            size =   parts[i].size * 1024L * 1024L
+            self._disk_names.append(disk_name)
 
-            # If we have alignment set for partition we need to enlarge the
-            # drive, so that the alignment changes fits there as well
-            if parts[i].align:
-                size += parts[i].align * 1024L
-
-            found = False
-            for j in range(len(self._diskinfo)):
-                if self._diskinfo[j]['name'] == disk:
-                    self._diskinfo[j]['size'] = self._diskinfo[j]['size'] + size
-                    found = True
-                    break
-                else:
-                    found = False
-
-            if not found:
-                self._diskinfo.append({ 'name': disk, 'size': size })
-
-        return self._diskinfo
+        return self._disk_names
 
     def _full_name(self, name, extention):
         """ Construct full file name for a file we generate. """
