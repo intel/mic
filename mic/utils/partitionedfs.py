@@ -27,6 +27,8 @@ from mic.utils.fs_related import *
 
 # Overhead of the MBR partitioning scheme (just one sector)
 MBR_OVERHEAD = 1
+# Overhead of the GPT partitioning scheme
+GPT_OVERHEAD = 34
 
 # Size of a sector in bytes
 SECTOR_SIZE = 512
@@ -73,7 +75,8 @@ class PartitionedMount(Mount):
                   'extended': 0,    # Size of extended partition
                   'offset': 0,      # Offset of next partition (in sectors)
                   # Minimum required disk size to fit all partitions (in bytes)
-                  'min_size': 0 }
+                  'min_size': 0,
+                  'ptable_format': "msdos" } # Partition table format
 
     def add_disk(self, disk_name, disk_obj):
         """ Add a disk object which have to be partitioned. More than one disk
@@ -165,11 +168,16 @@ class PartitionedMount(Mount):
             msger.debug('"parted" output: %s' % out)
         return rc
 
-    def layout_partitions(self):
+    def layout_partitions(self, ptable_format = "msdos"):
         """ Layout the partitions, meaning calculate the position of every
-        partition on the disk. """
+        partition on the disk. The 'ptable_format' parameter defines the
+        partition table format, and may be either "msdos" or "gpt". """
 
-        msger.debug("Assigning partitions to disks")
+        msger.debug("Assigning %s partitions to disks" % ptable_format)
+
+        if ptable_format not in ('msdos', 'gpt'):
+            raise MountError("Unknown partition table format '%s', supported " \
+                             "formats are: 'msdos' and 'gpt'" % ptable_format)
 
         if self._partitions_layed_out:
             return
@@ -187,13 +195,19 @@ class PartitionedMount(Mount):
             # Get the disk where the partition is located
             d = self.disks[p['disk_name']]
             d['numpart'] += 1
+            d['ptable_format'] = ptable_format
 
             if d['numpart'] == 1:
-                # Skip one sector required for the MBR
-                d['offset'] += MBR_OVERHEAD
-                # Steal one sector from the first partition to offset for the
-                # MBR sector.
-                p['size'] -= MBR_OVERHEAD
+                if ptable_format == "msdos":
+                    overhead = MBR_OVERHEAD
+                else:
+                    overhead = GPT_OVERHEAD
+
+                # Skip one sector required for the partitioning scheme overhead
+                d['offset'] += overhead
+                # Steal few sectors from the first partition to offset for the
+                # partitioning overhead
+                p['size'] -= overhead
 
             if p['align']:
                 # If not first partition and we do have alignment set we need
@@ -241,6 +255,11 @@ class PartitionedMount(Mount):
         for disk_name, disk in self.disks.items():
             last_partition = self.partitions[disk['partitions'][-1]]
             disk['min_size'] = last_partition['start'] + last_partition['size']
+
+            if disk['ptable_format'] == 'gpt':
+                # Account for the backup partition table at the end of the disk
+                disk['min_size'] += GPT_OVERHEAD
+
             disk['min_size'] *= self.sector_size
 
     def __format_disks(self):
@@ -269,7 +288,7 @@ class PartitionedMount(Mount):
         for p in self.partitions:
             d = self.disks[p['disk_name']]
             if p['num'] == 5:
-                self.__create_part_to_image(d['disk'].device,"extended",None,p['start'],d['extended'])
+                self.__create_part_to_image(d['disk'].device, "extended",None,p['start'], d['extended'])
 
             if p['fstype'] == "swap":
                 parted_fs_type = "linux-swap"
@@ -287,9 +306,9 @@ class PartitionedMount(Mount):
                 msger.debug("Substracting one sector from '%s' partition to get even number of sectors for the partition." % (p['mountpoint']))
                 p['size'] -= 1
 
-            ret = self.__create_part_to_image(d['disk'].device,p['type'],
-                                             parted_fs_type, p['start'],
-                                             p['size'])
+            ret = self.__create_part_to_image(d['disk'].device, p['type'],
+                                              parted_fs_type, p['start'],
+                                              p['size'])
 
             if ret != 0:
                 # NOTE: We don't throw exception when return code is not 0, because
