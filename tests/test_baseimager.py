@@ -13,11 +13,12 @@ from mic import conf as configmgr
 from mic import msger
 from mic.imager import fs
 
-TEST_BASEIMGR_LOC = os.path.join(os.getcwd(), 'baseimgr_fixtures')
-KSCONF = os.path.join(os.getcwd(), 'baseimgr_fixtures', 'test.ks')
-KSBAK = os.path.join(os.getcwd(), 'baseimgr_fixtures', 'test.ks.bak')
-REPOURI = os.path.join(os.getcwd(), 'baseimgr_fixtures')
-CACHEDIR = os.path.join(os.getcwd(), 'baseimgr_fixtures', 'cache')
+CWD = os.path.dirname(__file__) or '.'
+TEST_BASEIMGR_LOC = os.path.join(CWD, 'baseimgr_fixtures')
+KSCONF = os.path.join(CWD, 'baseimgr_fixtures', 'test.ks')
+KSBAK = os.path.join(CWD, 'baseimgr_fixtures', 'test.ks.bak')
+REPOURI = os.path.join(CWD, 'baseimgr_fixtures')
+CACHEDIR = os.path.join(CWD, 'baseimgr_fixtures', 'cache')
 RPMLOCK_PATH = None
 
 def suite():
@@ -56,7 +57,7 @@ class BaseImgrTest(unittest.TestCase):
         
         for entry in p.communicate()[0].split('\n'):
             if entry.find(pattern) > 0:
-                real_mount_list.append(entry.split(' ')[0])
+                real_mount_list.append(entry.split(' ')[2])
         real_mount_list.sort()
         os.close(dev_null)
         return real_mount_list
@@ -102,6 +103,7 @@ class BaseImgrTest(unittest.TestCase):
             RPMLOCK_PATH = "%s/var/lib/rpm" % creator._instroot
         exp_mount_list = ['/sys', '/proc', '/proc/sys/fs/binfmt_misc', '/dev/pts']
         exp_mount_list.sort()
+        exp_mount_list = [os.path.join(creator._instroot, pth.lstrip('/')) for pth in exp_mount_list]
         real_mount_list = self.getMountList(creator._instroot)
         self.assertEqual(real_mount_list, exp_mount_list)
         
@@ -128,6 +130,7 @@ class BaseImgrTest(unittest.TestCase):
         real_pkglist = f.read()
         self.assertEqual(real_pkglist, '\n'.join(pkglist))
 
+if os.getuid == 0:
     def testBaseImagerZypp(self):
         self.BaseImager('zypp')
 

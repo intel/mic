@@ -8,7 +8,8 @@ import StringIO
 import unittest
 from mic import chroot
 
-TEST_CHROOT_LOC = os.path.join(os.getcwd(), 'chroot_fixtures')
+CWD = os.path.dirname(__file__) or '.'
+TEST_CHROOT_LOC = os.path.join(CWD, 'chroot_fixtures')
 TEST_CHROOT_TAR = os.path.join(TEST_CHROOT_LOC, 'minchroot.tar.gz')
 TEST_CHROOT_DIR = os.path.join(TEST_CHROOT_LOC, 'minchroot')
 
@@ -31,6 +32,7 @@ class ChrootTest(unittest.TestCase):
         sys.stderr = self.stderr
         shutil.rmtree(TEST_CHROOT_DIR, ignore_errors=True)
 
+if os.getuid() == 0:
     def testChroot(self):
         try:
             chroot.chroot(TEST_CHROOT_DIR, None, 'exit')

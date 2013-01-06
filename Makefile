@@ -19,7 +19,6 @@ build:
 dist-common: man
 	git archive --format=tar --prefix=$(PKGNAME)-$(TAGVER)/ $(TAG) | tar xpf -
 	git show $(TAG) --oneline | head -1 > $(PKGNAME)-$(TAGVER)/commit-id
-	mkdir $(PKGNAME)-$(TAGVER)/doc; mv mic.1 $(PKGNAME)-$(TAGVER)/doc
 	rm -rf $(PKGNAME)-$(TAGVER)/tests
 
 dist-bz2: dist-common
@@ -30,8 +29,8 @@ dist-gz: dist-common
 	tar zcpf $(PKGNAME)-$(TAGVER).tar.gz $(PKGNAME)-$(TAGVER)
 	rm -rf $(PKGNAME)-$(TAGVER)
 
-man: USAGE.rst
-	rst2man $< >mic.1
+man:
+	rst2man doc/man.rst > doc/mic.1
 
 install: build
 	$(PYTHON) setup.py install
@@ -40,7 +39,7 @@ develop: build
 	$(PYTHON) setup.py develop
 
 test:
-	cd tests/unittest/ && $(PYTHON) suite.py 
+	cd tests/ && $(PYTHON) suite.py 
 
 clean:
 	rm -f *.tar.gz

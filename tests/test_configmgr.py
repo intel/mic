@@ -4,16 +4,17 @@ import os
 import sys
 import shutil
 import StringIO
+import unittest
 
 from mic import conf, msger
 from pykickstart.parser import KickstartParser
-import unittest2 as unittest
 
-SITECONF = os.path.join(os.getcwd(), 'configmgr_fixtures', 'mic.conf')
-KSCONF = os.path.join(os.getcwd(), 'configmgr_fixtures', 'test.ks')
-KSBAK = os.path.join(os.getcwd(), 'configmgr_fixtures', 'test.ks.bak')
-REPOURI = os.path.join(os.getcwd(), 'configmgr_fixtures', 'packages')
-CACHEDIR = os.path.join(os.getcwd(), 'configmgr_fixtures', 'cache')
+CWD = os.path.dirname(__file__) or '.'
+SITECONF = os.path.join(CWD, 'configmgr_fixtures', 'mic.conf')
+KSCONF = os.path.join(CWD, 'configmgr_fixtures', 'test.ks')
+KSBAK = os.path.join(CWD, 'configmgr_fixtures', 'test.ks.bak')
+REPOURI = os.path.join(CWD, 'configmgr_fixtures', 'packages')
+CACHEDIR = os.path.join(CWD, 'configmgr_fixtures', 'cache')
 
 def suite():
     return unittest.makeSuite(ConfigMgrTest)

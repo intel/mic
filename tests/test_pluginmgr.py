@@ -9,7 +9,8 @@ from mic import pluginbase
 from mic import msger
 import unittest
 
-TEST_PLUGINS_LOC = os.path.join(os.getcwd(), 'pluginmgr_fixtures')
+CWD = os.path.dirname(__file__) or '.'
+TEST_PLUGINS_LOC = os.path.join(CWD, 'pluginmgr_fixtures')
 
 def suite():
     return unittest.makeSuite(PluginMgrTest)
@@ -17,9 +18,9 @@ def suite():
 class PluginMgrTest(unittest.TestCase):
 
     def setUp(self):
-        self.defploc = plugin.DEFAULT_PLUGIN_LOCATION
-        plugin.DEFAULT_PLUGIN_LOCATION = TEST_PLUGINS_LOC
         self.plugin = plugin.PluginMgr()
+        self.defploc = self.plugin.plugin_dir
+        self.plugin.plugin_dir = TEST_PLUGINS_LOC
         self.stdout = sys.stdout
         self.stderr = sys.stderr
         sys.stdout = StringIO.StringIO()
@@ -28,16 +29,7 @@ class PluginMgrTest(unittest.TestCase):
     def tearDown(self):
         sys.stdout = self.stdout
         sys.stderr = self.stderr
-        #dirs = map(lambda pt: os.path.join(TEST_PLUGINS_LOC, pt), \
-        #    plugin.PLUGIN_TYPES) 
-        #pys = reduce(lambda p, q: p+q, map(lambda d: filter(
-        #    lambda x: x.endswith(".py"), os.listdir(d)),  dirs))
-        #for mod in pys:
-        #    if mod.strip('.py') in sys.modules: 
-        #        del sys.modules[mod.strip('.py')]
-        #self.plugin._intance = None
-        #self.plugin.plugin_dirs = {}
-        plugin.DEFAULT_PLUGIN_LOCATION = self.defploc
+        self.plugin.plugin_dir = self.defploc
 
     def testPluginDir(self):
         plugindir = {}

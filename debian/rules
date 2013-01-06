@@ -25,10 +25,7 @@ install: build
 
 	# Installing package
 	mkdir -p $(CURDIR)/debian/mic $(CURDIR)/debian/mic/usr/bin $(CURDIR)/debian/mic/usr/share/man/man1
-	install -m644 mic.1 $(CURDIR)/debian/mic/usr/share/man/man1
-	#make DESTDIR=$(CURDIR)/debian/mic installman
-	#make DESTDIR=$(CURDIR)/debian/micng installconf
-	#make DESTDIR=$(CURDIR)/debian/micng installsymlinks
+	install -m644 doc/mic.1 $(CURDIR)/debian/mic/usr/share/man/man1
 	python setup.py install --root=$(CURDIR)/debian/mic
 
 binary-indep: build install
