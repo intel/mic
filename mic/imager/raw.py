@@ -329,21 +329,6 @@ class RawImageCreator(BaseImageCreator):
         if rc != 0:
             raise MountError("Unable to set MBR to %s" % loopdev)
 
-        #Set Bootable flag
-        parted = fs_related.find_binary_path("parted")
-        rc = runner.quiet([parted,
-                           "-s",
-                           loopdev,
-                           "set",
-                           "%d" % (bootdevnum + 1),
-                           "boot",
-                           "on"])
-        #XXX disabled return code check because parted always fails to
-        #reload part table with loop devices. Annoying because we can't
-        #distinguish this failure from real partition failures :-(
-        if rc != 0 and 1 == 0:
-            raise MountError("Unable to set bootable flag to %sp%d" \
-                             % (loopdev, (bootdevnum + 1)))
 
         #Ensure all data is flushed to disk before doing syslinux install
         runner.quiet('sync')
