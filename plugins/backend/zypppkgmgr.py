@@ -707,14 +707,9 @@ class Zypp(BackendPlugin):
 
             if not os.path.exists(rpmpath):
                 # Maybe it is a local repo
-                baseurl = str(po.repoInfo().baseUrls()[0])
-                baseurl = baseurl.strip()
-
-                location = zypp.asKindPackage(po).location()
-                location = str(location.filename())
-
-                if baseurl.startswith("file:/"):
-                    rpmpath = baseurl[5:] + "/%s" % (location)
+                rpmuri = self.get_url(po)
+                if rpmuri.startswith("file:/"):
+                    rpmpath = rpmuri[5:]
 
             if not os.path.exists(rpmpath):
                 raise RpmError("Error: %s doesn't exist" % rpmpath)
