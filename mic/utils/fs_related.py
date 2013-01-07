@@ -961,4 +961,14 @@ def get_loop_device(losetupcmd, lofile):
 
     return loopdev
 
-
+DEVICE_LEFT = "/var/tmp/mic/device"
+def cleanup_loops():
+    with open(DEVICE_LEFT, 'r') as rf:
+        for line in rf.readlines():
+            dev = line.strip()
+            devinst = LoopDevice()
+            devinst.device = dev
+            try:
+                devinst.cleanup()
+            except:
+                pass

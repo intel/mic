@@ -341,6 +341,8 @@ class PartitionedMount(Mount):
             msger.debug("Unmapping %s" % d['disk'].device)
             rc = runner.quiet([self.kpartx, "-d", d['disk'].device])
             if rc != 0:
+                with open(DEVICE_LEFT, 'w') as wf:
+                    wf.write(d['disk'].device)
                 raise MountError("Failed to unmap partitions for '%s'" %
                                  d['disk'].device)
 

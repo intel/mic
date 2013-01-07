@@ -23,7 +23,7 @@ import shutil
 import subprocess
 import rpm
 from mic import msger
-from mic.utils import errors, proxy, misc
+from mic.utils import errors, proxy, misc, fs_related
 from mic.utils.rpmmisc import readRpmHeader, RPMInstallCallback
 from mic.chroot import cleanup_mounts, setup_chrootenv, cleanup_chrootenv
 
@@ -278,6 +278,7 @@ class Bootstrap(object):
 
     def cleanup(self):
         try:
+            fs_related.cleanup_loops()
             # clean mounts
             cleanup_mounts(self.rootdir)
             # remove rootdir
