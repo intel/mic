@@ -260,7 +260,7 @@ class Bootstrap(object):
         except (OSError, IOError), err:
             raise RuntimeError(err)
         finally:
-            if self.logfile:
+            if self.logfile and os.path.isfile(self.logfile):
                 msger.log(file(self.logfile).read())
             cleanup_chrootenv(rootdir, bindmounts, gloablmounts)
             proxy.unset_proxy_environ()
