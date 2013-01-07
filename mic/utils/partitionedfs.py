@@ -289,7 +289,8 @@ class PartitionedMount(Mount):
             d = self.disks[dev]
             msger.debug("Initializing partition table for %s" % \
                         (d['disk'].device))
-            self.__run_parted([ "-s", d['disk'].device, "mklabel", "msdos" ])
+            self.__run_parted(["-s", d['disk'].device, "mklabel",
+                               d['ptable_format']])
 
         msger.debug("Creating partitions")
 
@@ -322,10 +323,14 @@ class PartitionedMount(Mount):
                                     parted_fs_type, p['start'], p['size'])
 
             if p['boot']:
-                msger.debug("Set boot flag for partition '%s' on disk '%s'" % \
-                            (p['num'], d['disk'].device))
+                if d['ptable_format'] == 'gpt':
+                    flag_name = "legacy_boot"
+                else:
+                    flag_name = "boot"
+                msger.debug("Set '%s' flag for partition '%s' on disk '%s'" % \
+                            (flag_name, p['num'], d['disk'].device))
                 self.__run_parted(["-s", d['disk'].device, "set",
-                                   "%d" % p['num'], "boot", "on"])
+                                   "%d" % p['num'], flag_name, "on"])
 
     def __map_partitions(self):
         """Load it if dm_snapshot isn't loaded. """

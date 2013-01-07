@@ -49,6 +49,7 @@ class RawImageCreator(BaseImageCreator):
         self.__disks = {}
         self.__disk_format = "raw"
         self._disk_names = []
+        self._ptable_format = self.ks.handler.bootloader.ptable
         self.vmem = 512
         self.vcpu = 1
         self.checksum = False
@@ -191,7 +192,7 @@ class RawImageCreator(BaseImageCreator):
                                           boot = p.active,
                                           align = p.align)
 
-        self.__instloop.layout_partitions()
+        self.__instloop.layout_partitions(self._ptable_format)
 
         # Create the disks
         self.__imgdir = self._mkdtemp()
@@ -314,18 +315,22 @@ class RawImageCreator(BaseImageCreator):
             loopdev = self.__disks[name].device
             i =i+1
 
-        msger.debug("Installing syslinux bootloader to %s" % loopdev)
-
         (bootdevnum, rootdevnum, rootdev, prefix) = \
                                     self._get_syslinux_boot_config()
 
 
         #Set MBR
-        mbrsize = os.stat("%s/usr/share/syslinux/mbr.bin" \
-                          % self._instroot)[stat.ST_SIZE]
-        rc = runner.show(['dd',
-                          'if=%s/usr/share/syslinux/mbr.bin' % self._instroot,
-                          'of=' + loopdev])
+        mbrfile = "%s/usr/share/syslinux/" % self._instroot
+        if self._ptable_format == 'gpt':
+            mbrfile += "gptmbr.bin"
+        else:
+            mbrfile += "mbr.bin"
+
+        msger.debug("Installing syslinux bootloader '%s' to %s" % \
+                    (mbrfile, loopdev))
+
+        mbrsize = os.stat(mbrfile)[stat.ST_SIZE]
+        rc = runner.show(['dd', 'if=%s' % mbrfile, 'of=' + loopdev])
         if rc != 0:
             raise MountError("Unable to set MBR to %s" % loopdev)
 
