@@ -238,7 +238,16 @@ class Bootstrap(object):
                 shutil.copyfile("/etc/localtime", rootdir + "/etc/localtime")
             except:
                 pass
-            
+
+        def sync_passwdfile(rootdir):
+            try:
+                # sync passwd file to bootstrap, saving the user info
+                if os.path.exists(rootdir + "/etc/passwd"):
+                    os.unlink(rootdir + "/etc/passwd")
+                shutil.copyfile("/etc/passwd", rootdir + "/etc/passwd")
+            except:
+                pass
+
         if not rootdir:
             rootdir = self.rootdir
 
@@ -256,6 +265,7 @@ class Bootstrap(object):
             proxy.set_proxy_environ()
             gloablmounts = setup_chrootenv(rootdir, bindmounts, False)
             sync_timesetting(rootdir)
+            sync_passwdfile(rootdir)
             retcode = subprocess.call(cmd, preexec_fn=mychroot, env=env, shell=shell)
         except (OSError, IOError), err:
             raise RuntimeError(err)
