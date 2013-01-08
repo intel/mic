@@ -236,7 +236,7 @@ class RawImageCreator(BaseImageCreator):
         if bootdevnum == rootdevnum:
             prefix = "/boot"
 
-        return (bootdevnum, rootdevnum, rootdev, prefix)
+        return (rootdevnum, rootdev, prefix)
 
     def _create_syslinux_config(self):
 
@@ -246,8 +246,7 @@ class RawImageCreator(BaseImageCreator):
         else:
             splashline = ""
 
-        (bootdevnum, rootdevnum, rootdev, prefix) = \
-                                            self._get_syslinux_boot_config()
+        (rootdevnum, rootdev, prefix) = self._get_syslinux_boot_config()
         options = self.ks.handler.bootloader.appendLine
 
         #XXX don't hardcode default kernel - see livecd code
@@ -313,8 +312,7 @@ class RawImageCreator(BaseImageCreator):
         for name in self.__disks.keys():
             loopdev = self.__disks[name].device
 
-            (bootdevnum, rootdevnum, rootdev, prefix) = \
-                                        self._get_syslinux_boot_config()
+            (rootdevnum, rootdev, prefix) = self._get_syslinux_boot_config()
 
             # Set MBR
             mbrfile = "%s/usr/share/syslinux/" % self._instroot
@@ -340,8 +338,8 @@ class RawImageCreator(BaseImageCreator):
                               "-i",
                               "%s/boot/extlinux" % self._instroot])
             if rc != 0:
-                raise MountError("Unable to install syslinux bootloader to %sp%d" \
-                                 % (loopdev, (bootdevnum + 1)))
+                raise MountError("Unable to install syslinux bootloader to %s" \
+                                 % loopdev)
 
     def _create_bootconfig(self):
         #If syslinux is available do the required configurations.
