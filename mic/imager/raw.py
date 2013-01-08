@@ -310,41 +310,38 @@ class RawImageCreator(BaseImageCreator):
         cfg.close()
 
     def _install_syslinux(self):
-        i = 0
         for name in self.__disks.keys():
             loopdev = self.__disks[name].device
-            i =i+1
 
-        (bootdevnum, rootdevnum, rootdev, prefix) = \
-                                    self._get_syslinux_boot_config()
+            (bootdevnum, rootdevnum, rootdev, prefix) = \
+                                        self._get_syslinux_boot_config()
 
+            # Set MBR
+            mbrfile = "%s/usr/share/syslinux/" % self._instroot
+            if self._ptable_format == 'gpt':
+                mbrfile += "gptmbr.bin"
+            else:
+                mbrfile += "mbr.bin"
 
-        #Set MBR
-        mbrfile = "%s/usr/share/syslinux/" % self._instroot
-        if self._ptable_format == 'gpt':
-            mbrfile += "gptmbr.bin"
-        else:
-            mbrfile += "mbr.bin"
+            msger.debug("Installing syslinux bootloader '%s' to %s" % \
+                        (mbrfile, loopdev))
 
-        msger.debug("Installing syslinux bootloader '%s' to %s" % \
-                    (mbrfile, loopdev))
-
-        mbrsize = os.stat(mbrfile)[stat.ST_SIZE]
-        rc = runner.show(['dd', 'if=%s' % mbrfile, 'of=' + loopdev])
-        if rc != 0:
-            raise MountError("Unable to set MBR to %s" % loopdev)
+            mbrsize = os.stat(mbrfile)[stat.ST_SIZE]
+            rc = runner.show(['dd', 'if=%s' % mbrfile, 'of=' + loopdev])
+            if rc != 0:
+                raise MountError("Unable to set MBR to %s" % loopdev)
 
 
-        #Ensure all data is flushed to disk before doing syslinux install
-        runner.quiet('sync')
+            # Ensure all data is flushed to disk before doing syslinux install
+            runner.quiet('sync')
 
-        fullpathsyslinux = fs_related.find_binary_path("extlinux")
-        rc = runner.show([fullpathsyslinux,
-                          "-i",
-                          "%s/boot/extlinux" % self._instroot])
-        if rc != 0:
-            raise MountError("Unable to install syslinux bootloader to %sp%d" \
-                             % (loopdev, (bootdevnum + 1)))
+            fullpathsyslinux = fs_related.find_binary_path("extlinux")
+            rc = runner.show([fullpathsyslinux,
+                              "-i",
+                              "%s/boot/extlinux" % self._instroot])
+            if rc != 0:
+                raise MountError("Unable to install syslinux bootloader to %sp%d" \
+                                 % (loopdev, (bootdevnum + 1)))
 
     def _create_bootconfig(self):
         #If syslinux is available do the required configurations.
