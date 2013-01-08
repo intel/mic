@@ -219,24 +219,12 @@ class RawImageCreator(BaseImageCreator):
         return BaseImageCreator._get_excluded_packages(self)
 
     def _get_syslinux_boot_config(self):
-        bootdevnum = None
-        rootdevnum = None
         rootdev = None
         for p in self.__instloop.partitions:
-            if p['boot']:
-                bootdevnum = p['num'] - 1
-            elif p['mountpoint'] == "/" and bootdevnum is None:
-                bootdevnum = p['num'] - 1
-
             if p['mountpoint'] == "/":
-                rootdevnum = p['num'] - 1
                 rootdev = "/dev/%s%-d" % (p['disk_name'], p['num'])
 
-        prefix = ""
-        if bootdevnum == rootdevnum:
-            prefix = "/boot"
-
-        return (rootdevnum, rootdev, prefix)
+        return rootdev
 
     def _create_syslinux_config(self):
 
@@ -246,7 +234,7 @@ class RawImageCreator(BaseImageCreator):
         else:
             splashline = ""
 
-        (rootdevnum, rootdev, prefix) = self._get_syslinux_boot_config()
+        rootdev = self._get_syslinux_boot_config()
         options = self.ks.handler.bootloader.appendLine
 
         #XXX don't hardcode default kernel - see livecd code
@@ -311,8 +299,7 @@ class RawImageCreator(BaseImageCreator):
     def _install_syslinux(self):
         for name in self.__disks.keys():
             loopdev = self.__disks[name].device
-
-            (rootdevnum, rootdev, prefix) = self._get_syslinux_boot_config()
+            rootdev = self._get_syslinux_boot_config()
 
             # Set MBR
             mbrfile = "%s/usr/share/syslinux/" % self._instroot
