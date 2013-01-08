@@ -223,7 +223,7 @@ class RawImageCreator(BaseImageCreator):
         rootdevnum = None
         rootdev = None
         for p in self.__instloop.partitions:
-            if p['mountpoint'] == "/boot":
+            if p['boot']:
                 bootdevnum = p['num'] - 1
             elif p['mountpoint'] == "/" and bootdevnum is None:
                 bootdevnum = p['num'] - 1
