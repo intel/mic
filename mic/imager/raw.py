@@ -220,11 +220,13 @@ class RawImageCreator(BaseImageCreator):
 
     def _get_syslinux_boot_config(self):
         rootdev = None
+        root_part_uuid = None
         for p in self.__instloop.partitions:
             if p['mountpoint'] == "/":
                 rootdev = "/dev/%s%-d" % (p['disk_name'], p['num'])
+                root_part_uuid = self.__instloop.get_partuuid(p['device'])
 
-        return rootdev
+        return (rootdev, root_part_uuid)
 
     def _create_syslinux_config(self):
 
@@ -234,7 +236,7 @@ class RawImageCreator(BaseImageCreator):
         else:
             splashline = ""
 
-        rootdev = self._get_syslinux_boot_config()
+        (rootdev, root_part_uuid) = self._get_syslinux_boot_config()
         options = self.ks.handler.bootloader.appendLine
 
         #XXX don't hardcode default kernel - see livecd code
@@ -268,7 +270,13 @@ class RawImageCreator(BaseImageCreator):
             syslinux_conf += "label %s\n" % self.distro_name.lower()
             syslinux_conf += "\tmenu label %s (%s)\n" % (self.distro_name, v)
             syslinux_conf += "\tlinux /vmlinuz\n"
-            syslinux_conf += "\tappend ro root=%s %s\n" % (rootdev, options)
+            if self._ptable_format == 'msdos':
+                rootstr = rootdev
+            else:
+                if not root_part_uuid:
+                    raise MountError("Cannot find the root GPT partition UUID")
+                rootstr = "PARTUUID=%s" % root_part_uuid
+            syslinux_conf += "\tappend ro root=%s %s\n" % (rootstr, options)
             syslinux_conf += "\tmenu default\n"
         else:
             for kernel in kernels:
@@ -299,7 +307,7 @@ class RawImageCreator(BaseImageCreator):
     def _install_syslinux(self):
         for name in self.__disks.keys():
             loopdev = self.__disks[name].device
-            rootdev = self._get_syslinux_boot_config()
+            rootdev = self._get_syslinux_boot_config()[0]
 
             # Set MBR
             mbrfile = "%s/usr/share/syslinux/" % self._instroot
