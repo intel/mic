@@ -42,12 +42,13 @@ class PartitionedMount(Mount):
         self.mapped = False
         self.mountOrder = []
         self.unmountOrder = []
-        self.parted=find_binary_path("parted")
-        self.kpartx=find_binary_path("kpartx")
-        self.mkswap=find_binary_path("mkswap")
+        self.parted = find_binary_path("parted")
+        self.kpartx = find_binary_path("kpartx")
+        self.mkswap = find_binary_path("mkswap")
+        self.blkid = find_binary_path("blkid")
         self.btrfscmd=None
-        self.mountcmd=find_binary_path("mount")
-        self.umountcmd=find_binary_path("umount")
+        self.mountcmd = find_binary_path("mount")
+        self.umountcmd = find_binary_path("umount")
         self.skipformat = skipformat
         self.snapshot_created = self.skipformat
         # Size of a sector used in calculations
@@ -412,6 +413,26 @@ class PartitionedMount(Mount):
                                  d['disk'].device)
 
             d['mapped'] = False
+
+    def get_partuuid(self, device):
+        """ Find UUID of a partition corresponding to a device node
+        'device'. """
+
+        args = [ self.blkid, '-c', '/dev/null', '-p', '-i', device ]
+        msger.debug("Running 'blkid': " + str(args))
+        rc, output = runner.runtool(args)
+        if rc != 0:
+            raise MountError("blkid failed: %s" % output)
+
+        # Parse blkid output and search for the PART_ENTRY_UUID value
+        partuuid = None
+        for line in output.splitlines():
+            var, value = line.partition("=")[::2]
+            if var.strip() == "PART_ENTRY_UUID":
+                partuuid = value.strip()
+
+        return partuuid
+
 
     def __calculate_mountorder(self):
         msger.debug("Calculating mount order")
