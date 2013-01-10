@@ -30,16 +30,20 @@ class Moblin_Bootloader(F8_Bootloader):
                                 forceLBA, location, md5pass, password, upgrade)
 
         self.menus = ""
+        self.ptable = "msdos"
 
     def _getArgsAsStr(self):
         ret = F8_Bootloader._getArgsAsStr(self)
 
         if self.menus == "":
             ret += " --menus=%s" %(self.menus,)
+        if self.ptable:
+            ret += " --ptable=\"%s\"" %(self.ptable,)
         return ret
 
     def _getParser(self):
         op = F8_Bootloader._getParser(self)
         op.add_option("--menus", dest="menus")
+        op.add_option("--ptable", dest="ptable", type="string")
         return op
 
