@@ -1189,10 +1189,10 @@ class BaseImageCreator(object):
             os.rename(_rpath(f), _rpath(newf))
             outimages.append(_rpath(newf))
 
-        # generate MANIFEST
-        with open(_rpath("MANIFEST"), "w") as wf:
+        # generate MD5SUMS
+        with open(_rpath("MD5SUMS"), "w") as wf:
             for f in os.listdir(destdir):
-                if f == "MANIFEST":
+                if f == "MD5SUMS":
                     continue
 
                 if os.path.isdir(os.path.join(destdir, f)):
@@ -1201,10 +1201,10 @@ class BaseImageCreator(object):
                 md5sum = misc.get_md5sum(_rpath(f))
                 # There needs to be two spaces between the sum and
                 # filepath to match the syntax with md5sum.
-                # This way also md5sum -c MANIFEST can be used by users
+                # This way also md5sum -c MD5SUMS can be used by users
                 wf.write("%s *%s\n" % (md5sum, f))
 
-        outimages.append("%s/MANIFEST" % destdir)
+        outimages.append("%s/MD5SUMS" % destdir)
 
         # Filter out the nonexist file
         for fp in outimages[:]:
