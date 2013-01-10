@@ -1016,11 +1016,13 @@ class BaseImageCreator(object):
 
             try:
                 try:
-                    subprocess.call([s.interp, script],
-                                    preexec_fn = preexec,
-                                    env = env,
-                                    stdout = sys.stdout,
-                                    stderr = sys.stderr)
+                    p = subprocess.Popen([s.interp, script],
+                                       preexec_fn = preexec,
+                                       env = env,
+                                       stdout = subprocess.PIPE,
+                                       stderr = subprocess.STDOUT)
+                    for entry in p.communicate()[0].splitlines():
+                        msger.info(entry)
                 except OSError, (err, msg):
                     raise CreatorError("Failed to execute %%post script "
                                        "with '%s' : %s" % (s.interp, msg))
