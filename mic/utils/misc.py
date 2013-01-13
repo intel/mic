@@ -906,19 +906,17 @@ def setup_qemu_emulator(rootdir, arch):
 
     if not os.path.exists(rootdir + "/usr/bin"):
         makedirs(rootdir + "/usr/bin")
-    shutil.copy(qemu_emulator, rootdir + qemu_emulator)
+    shutil.copy(qemu_emulator, rootdir + "/usr/bin/qemu-arm-static")
+    qemu_emulator = "/usr/bin/qemu-arm-static"
 
     # disable selinux, selinux will block qemu emulator to run
     if os.path.exists("/usr/sbin/setenforce"):
         msger.info('Try to disable selinux')
         runner.show(["/usr/sbin/setenforce", "0"])
 
-    node = "/proc/sys/fs/binfmt_misc/arm"
-    if is_statically_linked(qemu_emulator) and os.path.exists(node):
-        return qemu_emulator
-
     # unregister it if it has been registered and is a dynamically-linked executable
-    if not is_statically_linked(qemu_emulator) and os.path.exists(node):
+    node = "/proc/sys/fs/binfmt_misc/arm"
+    if os.path.exists(node):
         qemu_unregister_string = "-1\n"
         fd = open("/proc/sys/fs/binfmt_misc/arm", "w")
         fd.write(qemu_unregister_string)
