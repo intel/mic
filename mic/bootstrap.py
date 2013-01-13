@@ -92,9 +92,6 @@ class MiniBackend(object):
         self.downloadPkgs()
         self.installPkgs()
 
-        if self.arch.startswith("arm"):
-            misc.setup_qemu_emulator(self.rootdir, self.arch)
-
         if not self.scriptlets:
             return
 
