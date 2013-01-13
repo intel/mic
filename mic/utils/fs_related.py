@@ -29,6 +29,8 @@ from errors import *
 from mic import msger
 import runner
 
+PATH_DEVICES_LEFT = "/var/tmp/mic/device"
+
 def find_binary_inchroot(binary, chroot):
     paths = ["/usr/sbin",
              "/usr/bin",
@@ -928,8 +930,13 @@ class LoopDevice(object):
             runner.quiet([self.losetupcmd, "-d", self.device])
         # FIXME: should sleep a while between two loseek
         if self._loseek(self.device):
+            makedirs(PATH_DEVICES_LEFT)
+            left_path = os.path.join(PATH_DEVICES_LEFT,
+                                     os.path.basename(self.device))
+            with open(left_path, 'w') as wf:
+                wf.write(self.device)
             msger.warning("Can't cleanup loop device %s" % self.device)
-        else:
+        elif self.loopid:
             os.unlink(self.device)
 
 def get_loop_device(losetupcmd, lofile):
@@ -938,10 +945,11 @@ def get_loop_device(losetupcmd, lofile):
     fcntl.flock(fp, fcntl.LOCK_EX)
     try:
         rc, out = runner.runtool([losetupcmd, "--find"])
+        devinst = LoopDevice()
         if rc == 0:
 	    loopdev = out.split()[0]
+	    devinst.device = loopdev
 	else:
-	    devinst = LoopDevice()
 	    devinst.create()
 	    loopdev = devinst.device
 	rc = runner.show([losetupcmd, loopdev, lofile])
@@ -961,14 +969,19 @@ def get_loop_device(losetupcmd, lofile):
 
     return loopdev
 
-DEVICE_LEFT = "/var/tmp/mic/device"
 def cleanup_loops():
-    with open(DEVICE_LEFT, 'r') as rf:
-        for line in rf.readlines():
-            dev = line.strip()
-            devinst = LoopDevice()
-            devinst.device = dev
-            try:
-                devinst.cleanup()
-            except:
-                pass
+    if not os.path.exists(PATH_DEVICES_LEFT) \
+       or not os.path.isdir(PATH_DEVICES_LEFT):
+        return
+
+    for loopdev in os.listdir(PATH_DEVICES_LEFT):
+        devpath = os.path.join(PATH_DEVICES_LEFT, loopdev)
+        if not os.path.isfile(devpath):
+            return
+
+        devinst = LoopDevice()
+        devinst.device = os.path.join('/dev', loopdev)
+        try:
+            devinst.cleanup()
+        except:
+            pass
