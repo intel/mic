@@ -57,6 +57,7 @@ class ConfigMgr(object):
                     "record_pkgs": [],
                     "pack_to": None,
                     "name_prefix": None,
+                    "name_suffix": None,
                     "proxy": None,
                     "no_proxy": None,
                     "copy_kernel": False,
@@ -182,9 +183,7 @@ class ConfigMgr(object):
         self.create['ks'] = ks
         self.create['name'] = os.path.splitext(os.path.basename(ksconf))[0]
 
-        if self.create['name_prefix']:
-            self.create['name'] = "%s-%s" % (self.create['name_prefix'],
-                                             self.create['name'])
+        self.create['name'] = misc.build_name(ksconf, self.create['name_prefix'], self.create['name_suffix'])
 
         msger.info("Retrieving repo metadata:")
         ksrepos = misc.get_repostrs_from_ks(ks)
