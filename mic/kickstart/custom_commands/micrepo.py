@@ -22,7 +22,7 @@ from pykickstart.errors import *
 from pykickstart.options import *
 from pykickstart.commands.repo import *
 
-class Moblin_RepoData(F8_RepoData):
+class Mic_RepoData(F8_RepoData):
     def __init__(self, baseurl="", mirrorlist="", name="", priority=None,
                  includepkgs=[], excludepkgs=[], save=False, proxy=None,
                  proxy_username=None, proxy_password=None, debuginfo=False,
@@ -67,7 +67,7 @@ class Moblin_RepoData(F8_RepoData):
 
         return retval
 
-class Moblin_Repo(F8_Repo):
+class Mic_Repo(F8_Repo):
     def __init__(self, writePriority=0, repoList=None):
         F8_Repo.__init__(self, writePriority, repoList)
 

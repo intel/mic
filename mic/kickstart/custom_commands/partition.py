@@ -17,7 +17,7 @@
 
 from pykickstart.commands.partition import *
 
-class MeeGo_PartData(FC4_PartData):
+class Mic_PartData(FC4_PartData):
     removedKeywords = FC4_PartData.removedKeywords
     removedAttrs = FC4_PartData.removedAttrs
 
@@ -37,7 +37,7 @@ class MeeGo_PartData(FC4_PartData):
             retval += " --extoptions=%s" % self.extopts
         return retval
 
-class MeeGo_Partition(FC4_Partition):
+class Mic_Partition(FC4_Partition):
     removedKeywords = FC4_Partition.removedKeywords
     removedAttrs = FC4_Partition.removedAttrs
 

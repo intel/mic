@@ -21,7 +21,7 @@ from pykickstart.base import *
 from pykickstart.errors import *
 from pykickstart.options import *
 
-class Moblin_Desktop(KickstartCommand):
+class Mic_Desktop(KickstartCommand):
     def __init__(self, writePriority=0,
                        defaultdesktop=None,
                        defaultdm=None,

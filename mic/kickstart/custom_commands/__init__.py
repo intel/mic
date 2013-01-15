@@ -1,10 +1,10 @@
 import desktop
-import moblinrepo
+import micrepo
 import partition
 
 __all__ = (
-    "Moblin_Desktop",
-    "Moblin_Repo",
-    "Moblin_RepoData",
-    "MeeGo_Partition",
+    "Mic_Desktop",
+    "Mic_Repo",
+    "Mic_RepoData",
+    "Mic_Partition",
 )

@@ -34,7 +34,7 @@ from pykickstart.handlers.control import commandMap
 from pykickstart.handlers.control import dataMap
 
 import custom_commands.desktop as desktop
-import custom_commands.moblinrepo as moblinrepo
+import custom_commands.micrepo as micrepo
 import custom_commands.micboot as micboot
 import custom_commands.partition as partition
 
@@ -98,13 +98,13 @@ def read_kickstart(path):
     #ks = ksparser.KickstartParser(version)
 
     using_version = ksversion.DEVEL
-    commandMap[using_version]["desktop"] = desktop.Moblin_Desktop
-    commandMap[using_version]["repo"] = moblinrepo.Moblin_Repo
-    commandMap[using_version]["bootloader"] = micboot.Moblin_Bootloader
-    commandMap[using_version]["part"] = partition.MeeGo_Partition
-    commandMap[using_version]["partition"] = partition.MeeGo_Partition
-    dataMap[using_version]["RepoData"] = moblinrepo.Moblin_RepoData
-    dataMap[using_version]["PartData"] = partition.MeeGo_PartData
+    commandMap[using_version]["desktop"] = desktop.Mic_Desktop
+    commandMap[using_version]["repo"] = micrepo.Mic_Repo
+    commandMap[using_version]["bootloader"] = micboot.Mic_Bootloader
+    commandMap[using_version]["part"] = partition.Mic_Partition
+    commandMap[using_version]["partition"] = partition.Mic_Partition
+    dataMap[using_version]["RepoData"] = micrepo.Mic_RepoData
+    dataMap[using_version]["PartData"] = partition.Mic_PartData
     superclass = ksversion.returnClassForVersion(version=using_version)
 
     class KSHandlers(superclass):
