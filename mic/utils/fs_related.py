@@ -853,6 +853,7 @@ class LoopDevice(object):
         self.kpartxcmd = find_binary_path("kpartx")
         self.losetupcmd = find_binary_path("losetup")
 
+    def regexit(self):
         import atexit
         atexit.register(self.close)
 
@@ -903,6 +904,7 @@ class LoopDevice(object):
                 raise MountError("Failed to create device %s" % self.device)
             else:
                 self.created = True
+                return
 
     def close(self):
         if self.created:
@@ -910,13 +912,12 @@ class LoopDevice(object):
                 self.cleanup()
                 self.device = None
             except MountError, e:
-                msger.error("%s" % e)
+                msger.warning("%s" % e)
 
     def cleanup(self):
 
         if self.device is None:
             return
-
 
         if self._kpseek(self.device):
             if self.created:
@@ -930,11 +931,6 @@ class LoopDevice(object):
             runner.quiet([self.losetupcmd, "-d", self.device])
         # FIXME: should sleep a while between two loseek
         if self._loseek(self.device):
-            makedirs(PATH_DEVICES_LEFT)
-            left_path = os.path.join(PATH_DEVICES_LEFT,
-                                     os.path.basename(self.device))
-            with open(left_path, 'w') as wf:
-                wf.write(self.device)
             msger.warning("Can't cleanup loop device %s" % self.device)
         elif self.loopid:
             os.unlink(self.device)
@@ -944,17 +940,29 @@ def get_loop_device(losetupcmd, lofile):
     fp = open("/var/lock/__mic_loopdev.lock", 'w')
     fcntl.flock(fp, fcntl.LOCK_EX)
     try:
+        cleanup_loops()
         rc, out = runner.runtool([losetupcmd, "--find"])
         devinst = LoopDevice()
+        devinst.regexit()
         if rc == 0:
-	    loopdev = out.split()[0]
-	    devinst.device = loopdev
-	else:
-	    devinst.create()
-	    loopdev = devinst.device
-	rc = runner.show([losetupcmd, loopdev, lofile])
-	if rc != 0:
-	    raise MountError("Failed to setup loop device for '%s'" % lofile)
+            loopdev = out.split()[0]
+            devinst.device = loopdev
+            devinst.created = True
+        else:
+            devinst.create()
+            loopdev = devinst.device
+        rc = runner.show([losetupcmd, loopdev, lofile])
+        if rc != 0:
+            raise MountError("Failed to setup loop device for '%s'" % lofile)
+
+        # try to save device and pid
+        makedirs(PATH_DEVICES_LEFT)
+        dev_path = os.path.join(PATH_DEVICES_LEFT, os.path.basename(loopdev))
+        if os.path.exists(dev_path):
+            os.unlink(dev_path)
+        with open(dev_path, 'w') as wf:
+            wf.write(str(os.getpid()))
+
     except MountError, err:
         raise CreatorError("%s" % str(err))
     except:
@@ -975,13 +983,23 @@ def cleanup_loops():
         return
 
     for loopdev in os.listdir(PATH_DEVICES_LEFT):
-        devpath = os.path.join(PATH_DEVICES_LEFT, loopdev)
-        if not os.path.isfile(devpath):
+        dev_path = os.path.join(PATH_DEVICES_LEFT, loopdev)
+        if not os.path.isfile(dev_path):
             return
+
+        try:
+            with open(dev_path, 'r') as rf:
+                dev_pid = int(rf.read())
+        except:
+            dev_pid = None
+
+        if not dev_pid or os.path.exists(os.path.join('/proc', str(dev_pid))):
+            continue
 
         devinst = LoopDevice()
         devinst.device = os.path.join('/dev', loopdev)
         try:
             devinst.cleanup()
+            os.unlink(dev_path)
         except:
             pass
