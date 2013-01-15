@@ -28,6 +28,7 @@ import yum
 from mic import msger
 from mic.kickstart import ksparser
 from mic.utils import misc, rpmmisc
+from mic.utils.grabber import TextProgress
 from mic.utils.proxy import get_proxy_for
 from mic.utils.errors import CreatorError
 from mic.imager.baseimager import BaseImageCreator
@@ -404,8 +405,7 @@ class Yum(BackendPlugin, yum.YumBase):
         try:
             repos = self.repos.listEnabled()
             for repo in repos:
-                repo.setCallback(
-                            rpmmisc.TextProgress(total_count - cached_count))
+                repo.setCallback(TextProgress(total_count - cached_count))
 
             self.downloadPkgs(dlpkgs)
             # FIXME: sigcheck?

@@ -42,7 +42,7 @@ xmlparse = cElementTree.parse
 
 from errors import *
 from fs_related import *
-from rpmmisc import myurlgrab
+from grabber import myurlgrab
 from proxy import get_proxy_for
 import runner
 

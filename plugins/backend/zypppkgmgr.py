@@ -30,6 +30,7 @@ if not hasattr(zypp, 'PoolQuery') or \
 from mic import msger
 from mic.kickstart import ksparser
 from mic.utils import misc, rpmmisc, runner, fs_related
+from mic.utils.grabber import myurlgrab, TextProgress
 from mic.utils.proxy import get_proxy_for
 from mic.utils.errors import CreatorError, RepoError, RpmError
 from mic.imager.baseimager import BaseImageCreator
@@ -628,7 +629,7 @@ class Zypp(BackendPlugin):
 
     def downloadPkgs(self, package_objects, count):
         localpkgs = self.localpkgs.keys()
-        progress_obj = rpmmisc.TextProgress(count)
+        progress_obj = TextProgress(count)
 
         for po in package_objects:
             if po.name() in localpkgs:
@@ -647,10 +648,7 @@ class Zypp(BackendPlugin):
             proxies = self.get_proxies(po)
 
             try:
-                filename = rpmmisc.myurlgrab(url,
-                                             filename,
-                                             proxies,
-                                             progress_obj)
+                filename = myurlgrab(url, filename, proxies, progress_obj)
             except CreatorError:
                 self.close()
                 raise

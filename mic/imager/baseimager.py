@@ -32,7 +32,7 @@ import rpm
 from mic import kickstart
 from mic import msger
 from mic.utils.errors import CreatorError, Abort
-from mic.utils import misc, rpmmisc, runner, fs_related as fs
+from mic.utils import misc, grabber, runner, fs_related as fs
 
 class BaseImageCreator(object):
     """Installs a system to a chroot directory.
@@ -861,7 +861,7 @@ class BaseImageCreator(object):
             if not os.path.exists(fpath):
                 # download pkgs
                 try:
-                    fpath = rpmmisc.myurlgrab(url, fpath, proxies, None)
+                    fpath = grabber.myurlgrab(url, fpath, proxies, None)
                 except CreatorError:
                     raise
 
