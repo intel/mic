@@ -183,7 +183,10 @@ class ConfigMgr(object):
         self.create['ks'] = ks
         self.create['name'] = os.path.splitext(os.path.basename(ksconf))[0]
 
-        self.create['name'] = misc.build_name(ksconf, self.create['name_prefix'], self.create['name_suffix'])
+        self.create['name'] = misc.build_name(ksconf,
+                                              self.create['release'],
+                                              self.create['name_prefix'],
+                                              self.create['name_suffix'])
 
         msger.info("Retrieving repo metadata:")
         ksrepos = misc.get_repostrs_from_ks(ks)

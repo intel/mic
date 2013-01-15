@@ -52,25 +52,19 @@ RPM_RE  = re.compile("(.*)\.(.*) (.*)-(.*)")
 RPM_FMT = "%(name)s.%(arch)s %(ver_rel)s"
 SRPM_RE = re.compile("(.*)-(\d+.*)-(\d+\.\d+).src.rpm")
 
-def build_name(kscfg, prefix = None, suffix = None, maxlen = None):
+def build_name(kscfg, release=None, prefix = None, suffix = None):
     """Construct and return an image name string.
 
     This is a utility function to help create sensible name and fslabel
     strings. The name is constructed using the sans-prefix-and-extension
     kickstart filename and the supplied prefix and suffix.
 
-    If the name exceeds the maxlen length supplied, the prefix is first dropped
-    and then the kickstart filename portion is reduced until it fits. In other
-    words, the suffix takes precedence over the kickstart portion and the
-    kickstart portion takes precedence over the prefix.
-
     kscfg -- a path to a kickstart file
+    release --  a replacement to suffix for image release
     prefix -- a prefix to prepend to the name; defaults to None, which causes
               no prefix to be used
     suffix -- a suffix to append to the name; defaults to None, which causes
               a YYYYMMDDHHMM suffix to be used
-    maxlen -- the maximum length for the returned string; defaults to None,
-              which means there is no restriction on the name length
 
     Note, if maxlen is less then the len(suffix), you get to keep both pieces.
 
@@ -84,14 +78,13 @@ def build_name(kscfg, prefix = None, suffix = None, maxlen = None):
         prefix = ""
     if suffix is None:
         suffix = time.strftime("%Y%m%d%H%M")
+    if release is not None:
+        suffix = release
 
     if name.startswith(prefix):
         name = name[len(prefix):]
 
     ret = prefix + name + "-" + suffix
-    if not maxlen is None and len(ret) > maxlen:
-        ret = name[:maxlen - len(suffix) - 1] + "-" + suffix
-
     return ret
 
 def get_distro():
