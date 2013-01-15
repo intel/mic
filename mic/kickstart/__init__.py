@@ -748,6 +748,9 @@ def get_repos(ks, repo_urls = {}):
         ssl_verify = True
         if hasattr(repo, "ssl_verify"):
             ssl_verify = repo.ssl_verify == "yes"
+        nocache = False
+        if hasattr(repo, "nocache"):
+            nocache = repo.nocache
         cost = None
         if hasattr(repo, "cost"):
             cost = repo.cost
@@ -757,7 +760,8 @@ def get_repos(ks, repo_urls = {}):
 
         repos[repo.name] = (repo.name, baseurl, mirrorlist, inc, exc,
                             proxy, proxy_username, proxy_password, debuginfo,
-                            source, gpgkey, disable, ssl_verify, cost, priority)
+                            source, gpgkey, disable, ssl_verify, nocache,
+                            cost, priority)
 
     return repos.values()
 

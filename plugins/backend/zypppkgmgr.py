@@ -43,6 +43,7 @@ class RepositoryStub:
         self.proxy = None
         self.proxy_username = None
         self.proxy_password = None
+        self.nocache = False
 
         self.enabled = True
         self.autorefresh = True
@@ -303,6 +304,7 @@ class Zypp(BackendPlugin):
                             inc = None,
                             exc = None,
                             ssl_verify = True,
+                            nocache = False,
                             cost=None,
                             priority=None):
         # TODO: Handle cost attribute for repos
@@ -320,6 +322,7 @@ class Zypp(BackendPlugin):
         repo.proxy_username = proxy_username
         repo.proxy_password = proxy_password
         repo.ssl_verify = ssl_verify
+        repo.nocache = nocache
         repo.baseurl.append(url)
         if inc:
             for pkg in inc:
@@ -448,8 +451,15 @@ class Zypp(BackendPlugin):
                 cached_count += 1
             else:
                 local = self.getLocalPkgPath(po)
+                name = str(po.repoInfo().name())
+                try:
+                    repo = filter(lambda r: r.name == name, self.repos)[0]
+                except IndexError:
+                    repo = None
+                nocache = repo.nocache if repo else False
+
                 if os.path.exists(local):
-                    if self.checkPkg(local) != 0:
+                    if nocache or self.checkPkg(local) !=0:
                         os.unlink(local)
                     else:
                         download_total_size -= int(po.downloadSize())

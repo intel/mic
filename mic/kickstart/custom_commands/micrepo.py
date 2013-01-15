@@ -26,7 +26,8 @@ class Mic_RepoData(F8_RepoData):
     def __init__(self, baseurl="", mirrorlist="", name="", priority=None,
                  includepkgs=[], excludepkgs=[], save=False, proxy=None,
                  proxy_username=None, proxy_password=None, debuginfo=False,
-                 source=False, gpgkey=None, disable=False, ssl_verify="yes"):
+                 source=False, gpgkey=None, disable=False, ssl_verify="yes",
+                 nocache=False):
         F8_RepoData.__init__(self, baseurl=baseurl, mirrorlist=mirrorlist,
                              name=name,  includepkgs=includepkgs,
                              excludepkgs=excludepkgs)
@@ -40,6 +41,7 @@ class Mic_RepoData(F8_RepoData):
         self.gpgkey = gpgkey
         self.ssl_verify = ssl_verify.lower()
         self.priority = priority
+        self.nocache = nocache
 
     def _getArgsAsStr(self):
         retval = F8_RepoData._getArgsAsStr(self)
@@ -64,6 +66,8 @@ class Mic_RepoData(F8_RepoData):
             retval += " --ssl_verify=%s" % self.ssl_verify
         if self.priority:
             retval += " --priority=%s" % self.priority
+        if self.nocache:
+            retval += " --nocache"
 
         return retval
 
@@ -104,4 +108,6 @@ class Mic_Repo(F8_Repo):
                       dest="ssl_verify", default="yes")
         op.add_option("--priority", type="int", action="store", dest="priority",
                       default=None)
+        op.add_option("--nocache", action="store_true", dest="nocache",
+                      default=False)
         return op

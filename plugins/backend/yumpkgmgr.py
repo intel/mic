@@ -257,8 +257,8 @@ class Yum(BackendPlugin, yum.YumBase):
 
     def addRepository(self, name, url = None, mirrorlist = None, proxy = None,
                       proxy_username = None, proxy_password = None,
-                      inc = None, exc = None, ssl_verify=True, cost = None,
-                      priority=None):
+                      inc = None, exc = None, ssl_verify=True, nocache=False,
+                      cost = None, priority=None):
         # TODO: Handle priority attribute for repos
         def _varSubstitute(option):
             # takes a variable and substitutes like yum configs do
@@ -290,6 +290,7 @@ class Yum(BackendPlugin, yum.YumBase):
                 repo.setAttribute(k, v)
 
         repo.sslverify = ssl_verify
+        repo.cache = not nocache
 
         repo.basecachedir = self.cachedir
         repo.base_persistdir = self.conf.persistdir
@@ -371,6 +372,9 @@ class Yum(BackendPlugin, yum.YumBase):
         msger.info("\nChecking packages cache and packages integrity ...")
         for po in dlpkgs:
             local = po.localPkg()
+            repo = filter(lambda r: r.id == po.repoid, self.repos.listEnabled())[0]
+            if not repo.cache and os.path.exists(local):
+                os.unlink(local)
             if not os.path.exists(local):
                 continue
             if not self.verifyPkg(local, po, False):
