@@ -74,6 +74,10 @@ def bootstrap_mic(argv=None):
         bsenv.dirsetup(rootdir)
         sync_mic(rootdir)
 
+        #FIXME: sync the ks file to bootstrap
+        if "/" == os.path.dirname(os.path.abspath(configmgr._ksconf)):
+            safecopy(configmgr._ksconf, rootdir)
+
         msger.info("Start mic in bootstrap: %s\n" % rootdir)
         bindmounts = get_bindmounts(cropts)
         ret = bsenv.run(argv, cwd, rootdir, bindmounts)
