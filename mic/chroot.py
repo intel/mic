@@ -124,7 +124,7 @@ def setup_chrootenv(chrootdir, bindmounts = None, mountparent = True):
                 continue
 
             if srcdst[0] in BIND_MOUNTS or srcdst[0] == '/':
-                msger.warning("%s will be mounted by default." % srcdst[0])
+                msger.verbose("%s will be mounted by default." % srcdst[0])
                 continue
 
             if srcdst[1] == "" or srcdst[1] == "none":
@@ -225,7 +225,10 @@ def cleanup_chrootenv(chrootdir, bindmounts = None, globalmounts = []):
             srcdst = mount.split(":")
 
             if len(srcdst) == 1:
-               srcdst.append("none")
+                srcdst.append("none")
+
+            if srcdst[0] == "/":
+                continue
 
             if srcdst[1] == "" or srcdst[1] == "none":
                 srcdst[1] = srcdst[0]
