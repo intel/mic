@@ -179,6 +179,12 @@ class Creator(cmdln.Cmdln):
             configmgr.create['cachedir'] = abspath(self.options.cachedir)
         os.environ['ZYPP_LOCKFILE_ROOT'] = configmgr.create['cachedir']
 
+        for cdir in ('outdir', 'cachedir'):
+            if os.path.exists(configmgr.create[cdir]) \
+              and not os.path.isdir(configmgr.create[cdir]):
+                msger.error('Invalid directory specified: %s' \
+                            % configmgr.create[cdir])
+
         if self.options.local_pkgs_path is not None:
             if not os.path.exists(self.options.local_pkgs_path):
                 msger.error('Local pkgs directory: \'%s\' not exist' \
