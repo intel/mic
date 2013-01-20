@@ -49,7 +49,7 @@ import runner
 from mic import msger
 
 RPM_RE  = re.compile("(.*)\.(.*) (.*)-(.*)")
-RPM_FMT = "%(name)s.%(arch)s %(ver_rel)s"
+RPM_FMT = "%(name)s.%(arch)s %(version)s-%(release)s"
 SRPM_RE = re.compile("(.*)-(\d+.*)-(\d+\.\d+).src.rpm")
 
 def build_name(kscfg, release=None, prefix = None, suffix = None):

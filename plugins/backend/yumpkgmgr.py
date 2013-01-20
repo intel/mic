@@ -356,7 +356,8 @@ class Yum(BackendPlugin, yum.YumBase):
             pkg_long_name = misc.RPM_FMT % {
                                 'name': pkg.name,
                                 'arch': pkg.arch,
-                                'ver_rel': pkg.printVer(),
+                                'version': pkg.version,
+                                'release': pkg.release
                             }
             self.__pkgs_content[pkg_long_name] = pkg.files
             license = pkg.license

@@ -417,8 +417,8 @@ class Zypp(BackendPlugin):
                 pkg_long_name = misc.RPM_FMT % {
                                     'name': hdr['name'],
                                     'arch': hdr['arch'],
-                                    'ver_rel': '%s-%s' % (hdr['version'],
-                                                          hdr['release']),
+                                    'version': hdr['version'],
+                                    'release': hdr['release']
                                 }
                 license = hdr['license']
 
@@ -426,7 +426,8 @@ class Zypp(BackendPlugin):
                 pkg_long_name = misc.RPM_FMT % {
                                     'name': pkg.name(),
                                     'arch': pkg.arch(),
-                                    'ver_rel': pkg.edition(),
+                                    'version': pkg.edition().version(),
+                                    'release': pkg.edition().release()
                                 }
 
                 package = zypp.asKindPackage(pkg)
