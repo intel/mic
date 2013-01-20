@@ -53,6 +53,7 @@ class RawImageCreator(BaseImageCreator):
         self.vmem = 512
         self.vcpu = 1
         self.checksum = False
+        self.use_uuid = False
         self.appliance_version = None
         self.appliance_release = None
         self.compress_image = compress_image
@@ -83,10 +84,10 @@ class RawImageCreator(BaseImageCreator):
                     p = p1
                     break
 
-            if p['uuid'] is None:
-               device = "/dev/%s%-d" % (p['disk_name'], p['num'])
-            else:
+            if self.use_uuid and p['uuid']:
                device = "UUID=%s" % p['uuid']
+            else:
+               device = "/dev/%s%-d" % (p['disk_name'], p['num'])
 
             s += "%(device)s  %(mountpoint)s  %(fstype)s  %(fsopts)s 0 0\n" % {
                'device': device,
