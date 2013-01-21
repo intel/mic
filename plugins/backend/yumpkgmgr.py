@@ -127,6 +127,8 @@ class Yum(BackendPlugin, yum.YumBase):
         self.__pkgs_license = {}
         self.__pkgs_content = {}
 
+        self.install_debuginfo = False
+
     def doFileLogSetup(self, uid, logfile):
         # don't do the file log for the livecd as it can lead to open fds
         # being left and an inability to clean up after ourself

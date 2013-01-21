@@ -77,6 +77,7 @@ class Zypp(BackendPlugin):
                                  rpm.RPMPROB_FILTER_REPLACEPKG ]
 
         self.has_prov_query = True
+        self.install_debuginfo = False
 
     def doFileLogSetup(self, uid, logfile):
         # don't do the file log for the livecd as it can lead to open fds
@@ -128,6 +129,15 @@ class Zypp(BackendPlugin):
         query = zypp.PoolQuery()
         query.addKind(zypp.ResKind.package)
         query.addAttribute(zypp.SolvAttr.obsoletes, pkg)
+        query.setMatchExact()
+        for pi in query.queryResults(self.Z.pool()):
+            return pi
+        return None
+
+    def _zyppQueryPackage(self, pkg):
+        query = zypp.PoolQuery()
+        query.addKind(zypp.ResKind.package)
+        query.addAttribute(zypp.SolvAttr.name,pkg)
         query.setMatchExact()
         for pi in query.queryResults(self.Z.pool()):
             return pi
@@ -422,8 +432,18 @@ class Zypp(BackendPlugin):
         dlpkgs = []
         for item in installed_pkgs:
             if not zypp.isKindPattern(item) and \
-               not self.inDeselectPackages(item):
+              not self.inDeselectPackages(item):
                 dlpkgs.append(item)
+
+                if not self.install_debuginfo or str(item.arch()) == "noarch":
+                    continue
+
+                dipkg = self._zyppQueryPackage("%s-debuginfo" % item.name())
+                if dipkg:
+                    dlpkgs.append(dipkg)
+                else:
+                    msger.warning("No debuginfo rpm found for: %s" \
+                                  % item.name())
 
         # record all pkg and the content
         localpkgs = self.localpkgs.keys()
