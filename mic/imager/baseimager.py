@@ -920,29 +920,31 @@ class BaseImageCreator(object):
             rpm.addMacro("_install_langs", kickstart.inst_langs(self.ks))
 
         try:
-            try:
-                self.__preinstall_packages(pkg_manager)
-                self.__select_packages(pkg_manager)
-                self.__select_groups(pkg_manager)
-                self.__deselect_packages(pkg_manager)
-                self.__localinst_packages(pkg_manager)
+            self.__preinstall_packages(pkg_manager)
+            self.__select_packages(pkg_manager)
+            self.__select_groups(pkg_manager)
+            self.__deselect_packages(pkg_manager)
+            self.__localinst_packages(pkg_manager)
 
-                BOOT_SAFEGUARD = 256L * 1024 * 1024 # 256M
-                checksize = self._root_fs_avail
-                if checksize:
-                    checksize -= BOOT_SAFEGUARD
-                if self.target_arch:
-                    pkg_manager._add_prob_flags(rpm.RPMPROB_FILTER_IGNOREARCH)
-                pkg_manager.runInstall(checksize)
-            except CreatorError, e:
-                raise
+            BOOT_SAFEGUARD = 256L * 1024 * 1024 # 256M
+            checksize = self._root_fs_avail
+            if checksize:
+                checksize -= BOOT_SAFEGUARD
+            if self.target_arch:
+                pkg_manager._add_prob_flags(rpm.RPMPROB_FILTER_IGNOREARCH)
+            pkg_manager.runInstall(checksize)
+        except CreatorError, e:
+            raise
+        except  KeyboardInterrupt:
+            raise
         finally:
-            self._pkgs_content = pkg_manager.getAllContent()
-            self._pkgs_license = pkg_manager.getPkgsLicense()
-            self._pkgs_vcsinfo = pkg_manager.getVcsInfo()
-            self.__attachment_packages(pkg_manager)
-
             pkg_manager.close()
+
+        self._pkgs_content = pkg_manager.getAllContent()
+        self._pkgs_license = pkg_manager.getPkgsLicense()
+        self._pkgs_vcsinfo = pkg_manager.getVcsInfo()
+        self.__attachment_packages(pkg_manager)
+
 
         # hook post install
         self.postinstall()
