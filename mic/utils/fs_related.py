@@ -948,6 +948,10 @@ def get_loop_device(losetupcmd, lofile):
         loopdev = None
         devinst = LoopDevice()
 
+        # clean up left loop device first
+        clean_loop_devices()
+
+        # provide an avaible loop device
         rc, out = runner.runtool([losetupcmd, "--find"])
         if rc == 0:
             loopdev = out.split()[0]
@@ -956,6 +960,7 @@ def get_loop_device(losetupcmd, lofile):
             devinst.create()
             loopdev = devinst.device
 
+        # setup a loop device for image file
         rc = runner.show([losetupcmd, loopdev, lofile])
         if rc != 0:
             raise MountError("Failed to setup loop device for '%s'" % lofile)
@@ -983,4 +988,29 @@ def get_loop_device(losetupcmd, lofile):
             pass
 
     return loopdev
+
+def clean_loop_devices(piddir=DEVICE_PIDFILE_DIR):
+    if not os.path.exists(piddir) or not os.path.isdir(piddir):
+        return
+
+    for loopdev in os.listdir(piddir):
+        pidfile = os.path.join(piddir, loopdev)
+        try:
+            with open(pidfile, 'r') as rf:
+                devpid = int(rf.read())
+        except:
+            devpid = None
+
+        # if the process using this device is alive, skip it
+        if not devpid or os.path.exists(os.path.join('/proc', str(devpid))):
+            continue
+
+        # try to clean it up
+        try:
+            devinst = LoopDevice()
+            devinst.register(os.path.join('/dev', loopdev))
+            devinst.cleanup()
+            os.unlink(pidfile)
+        except:
+            pass
 
