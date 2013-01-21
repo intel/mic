@@ -115,6 +115,12 @@ class Zypp(BackendPlugin):
         for f in glob.glob(installroot + "/var/lib/rpm/__db*"):
             os.unlink(f)
 
+    def _cleanupZyppJunk(self, installroot):
+        try:
+            shutil.rmtree(os.path.join(installroot, '.zypp'))
+        except:
+            pass
+
     def setup(self):
         self._cleanupRpmdbLocks(self.instroot)
 
@@ -380,7 +386,17 @@ class Zypp(BackendPlugin):
             if repo.priority:
                 repo_info.setPriority(repo.priority)
 
+            # this hack is used to change zypp credential file location
+            # the default one is $HOME/.zypp, which cause conflicts when
+            # installing some basic packages, and the location doesn't
+            # have any interface actually, so use a tricky way anyway
+            homedir = os.environ['HOME']
+            os.environ['HOME'] = '/'
+
             self.repo_manager.addRepository(repo_info)
+
+            # save back the $HOME env
+            os.environ['HOME'] = homedir
 
             self.__build_repo_cache(name)
 
@@ -732,6 +748,7 @@ class Zypp(BackendPlugin):
 
         # clean rpm lock
         self._cleanupRpmdbLocks(self.instroot)
+        self._cleanupZyppJunk(self.instroot)
         # Set filters
         probfilter = 0
         for flag in self.probFilterFlags:
