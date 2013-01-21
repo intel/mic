@@ -938,6 +938,8 @@ class LoopDevice(object):
         elif self.loopid:
             os.unlink(self.device)
 
+DEVICE_PIDFILE_DIR = "/var/tmp/mic/device"
+
 def get_loop_device(losetupcmd, lofile):
     import fcntl
     fp = open("/var/lock/__mic_loopdev.lock", 'w')
@@ -959,6 +961,14 @@ def get_loop_device(losetupcmd, lofile):
             raise MountError("Failed to setup loop device for '%s'" % lofile)
 
         devinst.reg_atexit()
+
+        # try to save device and pid
+        makedirs(DEVICE_PIDFILE_DIR)
+        pidfile = os.path.join(DEVICE_PIDFILE_DIR, os.path.basename(loopdev))
+        if os.path.exists(pidfile):
+            os.unlink(pidfile)
+        with open(pidfile, 'w') as wf:
+            wf.write(str(os.getpid()))
 
     except MountError, err:
         raise CreatorError("%s" % str(err))
