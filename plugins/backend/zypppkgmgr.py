@@ -433,8 +433,6 @@ class Zypp(BackendPlugin):
                 package = zypp.asKindPackage(pkg)
                 license = package.license()
 
-            self.__pkgs_content[pkg_long_name] = {} #TBD: to get file list
-
             if license in self.__pkgs_license.keys():
                 self.__pkgs_license[license].append(pkg_long_name)
             else:
@@ -498,6 +496,22 @@ class Zypp(BackendPlugin):
             raise CreatorError("Package installation failed: %s" % (e,))
 
     def getAllContent(self):
+        if self.__pkgs_content:
+            return self.__pkgs_content
+
+        if not self.ts:
+            self.__initialize_transaction()
+
+        mi = self.ts.dbMatch()
+        for hdr in mi:
+            lname = misc.RPM_FMT % {
+                        'name': hdr['name'],
+                        'arch': hdr['arch'],
+                        'version': hdr['version'],
+                        'release': hdr['release']
+                    }
+            self.__pkgs_content[lname] = hdr['FILENAMES']
+
         return self.__pkgs_content
 
     def getPkgsLicense(self):

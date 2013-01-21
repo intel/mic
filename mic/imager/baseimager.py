@@ -288,16 +288,9 @@ class BaseImageCreator(object):
                 content = pkg + '\n'
 
                 pkgcont = self._pkgs_content[pkg]
-                items = []
-                if pkgcont.has_key('dir'):
-                    items = map(lambda x:x+'/', pkgcont['dir'])
-                if pkgcont.has_key('file'):
-                    items.extend(pkgcont['file'])
-
-                if items:
-                    content += '    '
-                    content += '\n    '.join(items)
-                    content += '\n'
+                content += '    '
+                content += '\n    '.join(pkgcont)
+                content += '\n'
 
                 content += '\n'
                 f.write(content)
@@ -323,7 +316,7 @@ class BaseImageCreator(object):
                 f.write('\n')
 
             f.close()
-            self.outimage.append(licensefile);
+            self.outimage.append(licensefile)
 
     def _get_required_packages(self):
         """Return a list of required packages.
