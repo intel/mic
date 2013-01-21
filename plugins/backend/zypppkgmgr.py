@@ -480,7 +480,7 @@ class Zypp(BackendPlugin):
         download_total_size = sum(map(lambda x: int(x.downloadSize()), dlpkgs))
         localpkgs = self.localpkgs.keys()
 
-        msger.info("Checking packages cache and packages integrity ...")
+        msger.info("Checking packages cached ...")
         for po in dlpkgs:
             # Check if it is cached locally
             if po.name() in localpkgs:
@@ -515,9 +515,7 @@ class Zypp(BackendPlugin):
         #                       "please resize partition size in ks file")
 
         download_count =  total_count - cached_count
-        msger.info("%d packages to be installed, "
-                   "%d packages gotten from cache, "
-                   "%d packages to be downloaded" \
+        msger.info("Packages: %d Total, %d Cached, %d Missed" \
                    % (total_count, cached_count, download_count))
 
         try:

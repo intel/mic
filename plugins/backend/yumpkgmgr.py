@@ -372,7 +372,7 @@ class Yum(BackendPlugin, yum.YumBase):
         cached_count = 0
         download_total_size = sum(map(lambda x: int(x.packagesize), dlpkgs))
 
-        msger.info("\nChecking packages cache and packages integrity ...")
+        msger.info("\nChecking packages cached ...")
         for po in dlpkgs:
             local = po.localPkg()
             repo = filter(lambda r: r.id == po.repoid, self.repos.listEnabled())[0]
@@ -404,9 +404,7 @@ class Yum(BackendPlugin, yum.YumBase):
             raise CreatorError("No enough space used for installing, "
                                "please resize partition size in ks file")
 
-        msger.info("%d packages to be installed, "
-                   "%d packages gotten from cache, "
-                   "%d packages to be downloaded" \
+        msger.info("Packages: %d Total, %d Cached, %d Missed" \
                    % (total_count, cached_count, total_count - cached_count))
 
         try:
