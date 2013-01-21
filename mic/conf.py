@@ -61,6 +61,7 @@ class ConfigMgr(object):
                     "proxy": None,
                     "no_proxy": None,
                     "copy_kernel": False,
+                    "install_pkgs": None,
                     "repourl": {},
                     "localrepos": [],  # save localrepos
                     "runtime": "bootstrap",

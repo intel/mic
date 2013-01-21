@@ -902,6 +902,10 @@ class BaseImageCreator(object):
         pkg_manager = self.get_pkg_manager()
         pkg_manager.setup()
 
+        if hasattr(self, 'install_pkgs') and self.install_pkgs:
+            if 'debuginfo' in self.install_pkgs:
+                pkg_manager.install_debuginfo = True
+
         for repo in kickstart.get_repos(self.ks, repo_urls):
             (name, baseurl, mirrorlist, inc, exc,
              proxy, proxy_username, proxy_password, debuginfo,

@@ -107,6 +107,10 @@ class Creator(cmdln.Cmdln):
                              dest='copy_kernel',
                              help='Copy kernel files from image /boot directory'
                                   ' to the image output directory.')
+        optparser.add_option('', '--install-pkgs', type='string', action='store',
+                             dest='install_pkgs', default=None,
+                             help='Specify what type of packages to be installed,'
+                                  ' valid: source, debuginfo, debugsource')
         optparser.add_option('', '--repourl', action='append',
                              dest='repourl', default=[],
                              help=SUPPRESS_HELP)
@@ -225,6 +229,16 @@ class Creator(cmdln.Cmdln):
 
         if self.options.copy_kernel:
             configmgr.create['copy_kernel'] = self.options.copy_kernel
+
+        if self.options.install_pkgs:
+            configmgr.create['install_pkgs'] = []
+            for pkgtype in self.options.install_pkgs.split(','):
+                if pkgtype not in ('source', 'debuginfo'):
+                    raise errors.Usage('Invalid parameter specified: "%s", '
+                                       'valid values: source, debuginfo, '
+                                       'debusource' % pkgtype)
+
+                configmgr.create['install_pkgs'].append(pkgtype)
 
         if self.options.repourl:
             for item in self.options.repourl:
