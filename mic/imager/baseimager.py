@@ -318,6 +318,13 @@ class BaseImageCreator(object):
             f.close()
             self.outimage.append(licensefile)
 
+        if 'vcs' in self._recording_pkgs:
+            vcsfile = os.path.join(destdir, self.name + '.vcs')
+            f = open(vcsfile, "w")
+            f.write('\n'.join(["%s\n    %s" % (k, v)
+                               for (k, v) in self._pkgs_vcsinfo.items()]))
+            f.close()
+
     def _get_required_packages(self):
         """Return a list of required packages.
 
@@ -932,6 +939,7 @@ class BaseImageCreator(object):
         finally:
             self._pkgs_content = pkg_manager.getAllContent()
             self._pkgs_license = pkg_manager.getPkgsLicense()
+            self._pkgs_vcsinfo = pkg_manager.getVcsInfo()
             self.__attachment_packages(pkg_manager)
 
             pkg_manager.close()

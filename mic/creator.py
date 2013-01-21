@@ -197,9 +197,9 @@ class Creator(cmdln.Cmdln):
         if self.options.record_pkgs:
             configmgr.create['record_pkgs'] = []
             for infotype in self.options.record_pkgs.split(','):
-                if infotype not in ('name', 'content', 'license'):
+                if infotype not in ('name', 'content', 'license', 'vcs'):
                     raise errors.Usage('Invalid pkg recording: %s, valid ones:'
-                                       ' "name", "content", "license"' \
+                                       ' "name", "content", "license", "vcs"' \
                                        % infotype)
 
                 configmgr.create['record_pkgs'].append(infotype)

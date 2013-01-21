@@ -61,6 +61,7 @@ class Zypp(BackendPlugin):
 
         self.__pkgs_license = {}
         self.__pkgs_content = {}
+        self.__pkgs_vcsinfo = {}
         self.repos = []
         self.to_deselect = []
         self.localpkgs = {}
@@ -494,6 +495,25 @@ class Zypp(BackendPlugin):
             raise
         except Exception, e:
             raise CreatorError("Package installation failed: %s" % (e,))
+
+    def getVcsInfo(self):
+        if self.__pkgs_vcsinfo:
+            return
+
+        if not self.ts:
+            self.__initialize_transaction()
+
+        mi = self.ts.dbMatch()
+        for hdr in mi:
+            lname = misc.RPM_FMT % {
+                        'name': hdr['name'],
+                        'arch': hdr['arch'],
+                        'version': hdr['version'],
+                        'release': hdr['release']
+                    }
+            self.__pkgs_vcsinfo[lname] = hdr['VCS']
+
+        return self.__pkgs_vcsinfo
 
     def getAllContent(self):
         if self.__pkgs_content:
