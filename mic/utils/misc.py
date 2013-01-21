@@ -84,7 +84,7 @@ def build_name(kscfg, release=None, prefix = None, suffix = None):
     if name.startswith(prefix):
         name = name[len(prefix):]
 
-    ret = prefix + name + "-" + suffix
+    ret = prefix + "-" + name + "-" + suffix
     return ret
 
 def get_distro():
