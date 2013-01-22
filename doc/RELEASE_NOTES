@@ -1,3 +1,49 @@
+Release 0.16 - Mon Jan 28 2013
+===========================================================
+ * add GPT support for UEFI format
+   - add --ptable=gpt option in kickstart to enable GPT
+   - use PARTUUID in syslinux.cfg if gpt required
+   - clean up the mess code and improve readability
+ * improve alignment to reduce unused space
+   - add interface add_disks for PartitionedMount
+   - clean up the mess code in partitionfs.py
+ * append timestamp suffix to image name by default
+ * add a new option --nocache in kickstart to disable caching rpm
+ * add a new value 'vcs' for --record-pkgs to save VCS info
+ * introduce a new option '--install-pkgs' in mic
+   - valid values imagined: source, debuginfo, debugsource
+   - enable 'debuginfo' to install '-debuginfo' rpm in the meantime
+ * switch to the BmapCreate module to generate bmap file
+ * improve loop device generating and cleaning mechanism
+ * code clean:
+   - update documentation
+   - rename MANIFEST to MD5SUM
+   - clean up moblin stuff in kickstart
+   - clean mic tests and keep only unittest
+   - sepreate the download related as independent module
+ * bug fix:
+   - cleanup zypp credential file to fix conflicts during installing
+   - fix the issue that outdir/cachedir is not dir
+   - recalculate package content recording
+   - refactor try except statement in baseimager
+   - revert back to use device name
+
+Release 0.15.3 - Wed Jan 23 2013
+===========================================================
+ * urgent bug fix:
+   - fix loop device not cleaned issue
+   - fix bootstrap dirs not unmounted issue
+   - fix mic failed in kvmic issue
+   - fix binfmt register in bootstrap incorrect
+   - fix rpm path incorrect when local repo and sslverify used
+ * other bug fix:
+   - fix x86_64 image conflicts installing x86_64 and x86 rpm
+   - verify if logfile is a file
+   - fix type error when calling mknod
+   - fix the failure if ks under / dir
+   - clean up the mess 'directory not empty'
+   - fix type error when calling mknod
+
 Release 0.15 - Tue Dec 13 2012
 ===========================================================
  * adapt new mechanism for bootstrap mode
