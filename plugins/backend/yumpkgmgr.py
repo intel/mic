@@ -126,6 +126,7 @@ class Yum(BackendPlugin, yum.YumBase):
 
         self.__pkgs_license = {}
         self.__pkgs_content = {}
+        self.__pkgs_vcsinfo = {}
 
         self.install_debuginfo = False
 
@@ -449,6 +450,9 @@ class Yum(BackendPlugin, yum.YumBase):
             raise CreatorError("Unable to install: %s" % e)
         finally:
             msger.disable_logstderr()
+
+    def getVcsInfo(self):
+        return self.__pkgs_vcsinfo
 
     def getAllContent(self):
         return self.__pkgs_content
