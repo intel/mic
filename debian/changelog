@@ -1,3 +1,9 @@
+mic (0.16-0.rc1) unstable; urgency=low
+
+  * Release 0.16
+
+ -- Gui Chen <gui.chen@intel.com>  Wed, 23 Jan 2013 17:25:35 +0800
+
 mic (0.15) unstable; urgency=low
 
   * Release 0.15, changes including:
