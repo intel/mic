@@ -8,7 +8,7 @@ Homepage: http://www.tizen.org
 
 Package: mic
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends},
+Depends: ${misc:Depends}, ${python:Depends}, ${dist:Depends},
  python-rpm,
  bzip2,
  dmsetup,
@@ -20,18 +20,16 @@ Depends: ${misc:Depends}, ${python:Depends},
  parted,
  psmisc,
  squashfs-tools (>= 4.0),
- qemu-user-static | qemu-arm-static,
- syslinux (>= 4.05),
- extlinux (>= 4.05),
  yum (>= 3.2),
  libzypp,
  python-zypp,
- python-urlgrabber
+ python-m2crypto,
+ python-urlgrabber,
 Recommends:
  binfmt-support,
  btrfs-tools,
  udisks | hal
-Replaces:
+Conflicts:
  mic2
 Description: image creator for Linux distributions
   The tool mic is used to create and manipulate images for Linux distributions.

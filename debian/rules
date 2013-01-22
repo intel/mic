@@ -3,6 +3,13 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
+ifeq ($(shell cat /etc/issue | cut -d' ' -f2), 11.10)
+	SUBSTVARS = -Vdist:Depends="qemu-arm-static, syslinux (>= 2:4.05)"
+else
+	SUBSTVARS = -Vdist:Depends="qemu-user-static, syslinux (>= 2:4.05), extlinux (>= 2:4.05)"
+endif
+
+
 build: build-stamp
 build-stamp:
 	dh_testdir
@@ -42,7 +49,7 @@ binary-indep: build install
 	dh_pysupport
 	dh_installdeb
 	dh_shlibdeps
-	dh_gencontrol
+	dh_gencontrol -- $(SUBSTVARS)
 	dh_md5sums
 	dh_builddeb
 
