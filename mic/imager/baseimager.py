@@ -941,14 +941,13 @@ class BaseImageCreator(object):
             raise
         except  KeyboardInterrupt:
             raise
+        else:
+            self._pkgs_content = pkg_manager.getAllContent()
+            self._pkgs_license = pkg_manager.getPkgsLicense()
+            self._pkgs_vcsinfo = pkg_manager.getVcsInfo()
+            self.__attachment_packages(pkg_manager)
         finally:
             pkg_manager.close()
-
-        self._pkgs_content = pkg_manager.getAllContent()
-        self._pkgs_license = pkg_manager.getPkgsLicense()
-        self._pkgs_vcsinfo = pkg_manager.getVcsInfo()
-        self.__attachment_packages(pkg_manager)
-
 
         # hook post install
         self.postinstall()
