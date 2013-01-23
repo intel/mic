@@ -3,7 +3,7 @@
 Name:       mic
 Summary:    Image Creator for Linux Distributions
 Version:    0.16
-Release:    0.rc1
+Release:    0.rc2
 Group:      System/Base
 License:    GPLv2
 BuildArch:  noarch
