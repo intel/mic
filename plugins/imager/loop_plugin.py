@@ -102,9 +102,11 @@ class LoopPlugin(ImagerPlugin):
         if len(recording_pkgs) > 0:
             creator._recording_pkgs = recording_pkgs
 
+        image_names = [creator.name + ".img"]
+        image_names.extend(creator.get_image_names())
         self.check_image_exists(creator.destdir,
                                 creator.pack_to,
-                                [creator.name + ".img"],
+                                image_names,
                                 creatoropts['release'])
 
         try:

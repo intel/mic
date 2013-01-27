@@ -170,6 +170,12 @@ class LoopImageCreator(BaseImageCreator):
 
         self._img_name = self.name + ".img"
 
+    def get_image_names(self):
+        if not self._instloops:
+            return None
+
+        return [lo['name'] for lo in self._instloops]
+
     def _set_fstype(self, fstype):
         self.__fstype = fstype
 
