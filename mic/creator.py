@@ -83,7 +83,7 @@ class Creator(cmdln.Cmdln):
                              help='Record the info of installed packages, '
                                   'multiple values can be specified which '
                                   'joined by ",", valid values: "name", '
-                                  '"content", "license"')
+                                  '"content", "license", "vcs"')
         optparser.add_option('', '--pkgmgr', type='string', dest='pkgmgr',
                              default=None,
                              help='Specify backend package manager')
@@ -233,7 +233,7 @@ class Creator(cmdln.Cmdln):
         if self.options.install_pkgs:
             configmgr.create['install_pkgs'] = []
             for pkgtype in self.options.install_pkgs.split(','):
-                if pkgtype not in ('source', 'debuginfo'):
+                if pkgtype not in ('source', 'debuginfo', 'debugsource'):
                     raise errors.Usage('Invalid parameter specified: "%s", '
                                        'valid values: source, debuginfo, '
                                        'debusource' % pkgtype)
