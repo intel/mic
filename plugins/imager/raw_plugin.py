@@ -41,6 +41,10 @@ class RawPlugin(ImagerPlugin):
                   help="Compress all raw images before package")
     @cmdln.option("--generate-bmap", action="store_true", default = None,
                   help="also generate the block map file")
+    @cmdln.option("--fstab-entry", dest="fstab_entry", type='choice',
+                  choices=("name", "uuid"), default="uuid",
+                  help="Set fstab entry, 'name' means using device names, "
+                       "'uuid' means using filesystem uuid")
     def do_create(self, subcmd, opts, *args):
         """${cmd_name}: create raw image
 
@@ -95,7 +99,7 @@ class RawPlugin(ImagerPlugin):
                                        ','.join(backends.keys())))
 
         creator = raw.RawImageCreator(creatoropts, pkgmgr, opts.compress_image,
-                                      opts.generate_bmap)
+                                      opts.generate_bmap, opts.fstab_entry)
 
         if len(recording_pkgs) > 0:
             creator._recording_pkgs = recording_pkgs

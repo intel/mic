@@ -37,7 +37,7 @@ class RawImageCreator(BaseImageCreator):
     subsequently be booted in a virtual machine or accessed with kpartx
     """
 
-    def __init__(self, creatoropts=None, pkgmgr=None, compress_image=None, generate_bmap=None):
+    def __init__(self, creatoropts=None, pkgmgr=None, compress_image=None, generate_bmap=None, fstab_entry="uuid"):
         """Initialize a ApplianceImageCreator instance.
 
             This method takes the same arguments as ImageCreator.__init__()
@@ -53,7 +53,7 @@ class RawImageCreator(BaseImageCreator):
         self.vmem = 512
         self.vcpu = 1
         self.checksum = False
-        self.use_uuid = False
+        self.use_uuid = fstab_entry == "uuid"
         self.appliance_version = None
         self.appliance_release = None
         self.compress_image = compress_image
