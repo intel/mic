@@ -10,10 +10,10 @@ Release 0.16 - Mon Jan 28 2013
  * append timestamp suffix to image name by default
  * add a new option --nocache in kickstart to disable caching rpm
  * add a new value 'vcs' for --record-pkgs to save VCS info
+ * add a new option --fstab-entry for raw image to set fstab entry
  * introduce a new option '--install-pkgs' in mic
    - valid values imagined: source, debuginfo, debugsource
    - enable 'debuginfo' to install '-debuginfo' rpm in the meantime
- * switch to the BmapCreate module to generate bmap file
  * improve loop device generating and cleaning mechanism
  * code clean:
    - update documentation
@@ -26,7 +26,7 @@ Release 0.16 - Mon Jan 28 2013
    - fix the issue that outdir/cachedir is not dir
    - recalculate package content recording
    - refactor try except statement in baseimager
-   - revert back to use device name
+   - fix existing loop images overwritten
 
 Release 0.15.3 - Wed Jan 23 2013
 ===========================================================
