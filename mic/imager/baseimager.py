@@ -324,6 +324,7 @@ class BaseImageCreator(object):
             f.write('\n'.join(["%s\n    %s" % (k, v)
                                for (k, v) in self._pkgs_vcsinfo.items()]))
             f.close()
+            self.outimage.append(vcsfile)
 
     def _get_required_packages(self):
         """Return a list of required packages.
