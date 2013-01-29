@@ -1,7 +1,8 @@
-Release 0.16 - Mon Jan 28 2013
+Release 0.16 - Wed Jan 30 2013
 ===========================================================
  * add GPT support for UEFI format
    - add --ptable=gpt option in kickstart to enable GPT
+   - add simple GPT parser to parse PARTUUID
    - use PARTUUID in syslinux.cfg if gpt required
    - clean up the mess code and improve readability
  * improve alignment to reduce unused space
