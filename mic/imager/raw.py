@@ -225,10 +225,7 @@ class RawImageCreator(BaseImageCreator):
         for p in self.__instloop.partitions:
             if p['mountpoint'] == "/":
                 rootdev = "/dev/%s%-d" % (p['disk_name'], p['num'])
-                try:
-                    root_part_uuid = self.__instloop.get_partuuid(p['device'])
-                except:
-                    pass
+                root_part_uuid = p['partuuid']
 
         return (rootdev, root_part_uuid)
 

@@ -24,6 +24,7 @@ from mic import msger
 from mic.utils import runner
 from mic.utils.errors import MountError
 from mic.utils.fs_related import *
+from mic.utils.gpt_parser import GptParser
 
 # Overhead of the MBR partitioning scheme (just one sector)
 MBR_OVERHEAD = 1
@@ -45,7 +46,6 @@ class PartitionedMount(Mount):
         self.parted = find_binary_path("parted")
         self.kpartx = find_binary_path("kpartx")
         self.mkswap = find_binary_path("mkswap")
-        self.blkid = find_binary_path("blkid")
         self.btrfscmd=None
         self.mountcmd = find_binary_path("mount")
         self.umountcmd = find_binary_path("umount")
@@ -148,7 +148,8 @@ class PartitionedMount(Mount):
                      'mount': None, # Mount object
                      'num': None, # Partition number
                      'boot': boot, # Bootable flag
-                     'align': align } # Partition alignment
+                     'align': align, # Partition alignment
+                     'partuuid': None } # Partition UUID (GPT-only)
 
             self.__add_partition(part)
 
@@ -333,6 +334,29 @@ class PartitionedMount(Mount):
                 self.__run_parted(["-s", d['disk'].device, "set",
                                    "%d" % p['num'], flag_name, "on"])
 
+        # If the partition table format is "gpt", find out PARTUUIDs for all
+        # the partitions
+        for disk_name, disk in self.disks.items():
+            if disk['ptable_format'] != 'gpt':
+                continue
+
+            pnum = 0
+            gpt_parser = GptParser(d['disk'].device, SECTOR_SIZE)
+            # Iterate over all GPT partitions on this disk
+            for entry in gpt_parser.get_partitions():
+                pnum += 1
+                # Find the matching partition in the 'self.partitions' list
+                for n in d['partitions']:
+                    p = self.partitions[n]
+                    if p['num'] == pnum:
+                        # Found, assign PARTUUID
+                        p['partuuid'] = entry[1]
+                        msger.debug("PARTUUID for partition %d of disk '%s' " \
+                                    "(mount point '%s') is '%s'" % (pnum, \
+                                    disk_name, p['mountpoint'], p['partuuid']))
+
+            del gpt_parser
+
     def __map_partitions(self):
         """Load it if dm_snapshot isn't loaded. """
         load_module("dm_snapshot")
@@ -413,26 +437,6 @@ class PartitionedMount(Mount):
                                  d['disk'].device)
 
             d['mapped'] = False
-
-    def get_partuuid(self, device):
-        """ Find UUID of a partition corresponding to a device node
-        'device'. """
-
-        args = [ self.blkid, '-c', '/dev/null', '-p', '-i', device ]
-        msger.debug("Running 'blkid': " + str(args))
-        rc, output = runner.runtool(args)
-        if rc != 0:
-            raise MountError("blkid failed: %s" % output)
-
-        # Parse blkid output and search for the PART_ENTRY_UUID value
-        partuuid = None
-        for line in output.splitlines():
-            var, value = line.partition("=")[::2]
-            if var.strip() == "PART_ENTRY_UUID":
-                partuuid = value.strip()
-
-        return partuuid
-
 
     def __calculate_mountorder(self):
         msger.debug("Calculating mount order")
