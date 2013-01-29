@@ -1,3 +1,33 @@
+* Wed Jan 30 2013 Gui Chen <gui.chen@intel.com> - 0.16
+  - add GPT support for UEFI format
+    - add --ptable=gpt option in kickstart to enable GPT
+    - add simple GPT parser to parse PARTUUID
+    - use PARTUUID in syslinux.cfg if gpt required
+    - clean up the mess code and improve readability
+  - improve alignment to reduce unused space
+    - add interface add_disks for PartitionedMount
+    - clean up the mess code in partitionfs.py
+  - append timestamp suffix to image name by default
+  - add a new option --nocache in kickstart to disable caching rpm
+  - add a new value 'vcs' for --record-pkgs to save VCS info
+  - add a new option --fstab-entry for raw image to set fstab entry
+  - introduce a new option '--install-pkgs' in mic
+    - valid values imagined: source, debuginfo, debugsource
+    - enable 'debuginfo' to install '-debuginfo' rpm in the meantime
+  - improve loop device generating and cleaning mechanism
+  - code clean:
+    - update documentation
+    - rename MANIFEST to MD5SUM
+    - clean up moblin stuff in kickstart
+    - clean mic tests and keep only unittest
+    - sepreate the download related as independent module
+  - bug fix:
+    - cleanup zypp credential file to fix conflicts during installing
+    - fix the issue that outdir/cachedir is not dir
+    - recalculate package content recording
+    - refactor try except statement in baseimager
+    - fix existing loop images overwritten
+ 
 * Fri Aug 31 2012 Gui Chen <gui.chen@intel.com> - 0.15
 - Release 0.15, changes including:
   - new bootstrap implementation: use bootstrap as default
