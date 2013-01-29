@@ -311,7 +311,6 @@ class RawImageCreator(BaseImageCreator):
     def _install_syslinux(self):
         for name in self.__disks.keys():
             loopdev = self.__disks[name].device
-            rootdev = self._get_syslinux_boot_config()[0]
 
             # Set MBR
             mbrfile = "%s/usr/share/syslinux/" % self._instroot
