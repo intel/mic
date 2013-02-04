@@ -400,13 +400,20 @@ class Zypp(BackendPlugin):
             # the default one is $HOME/.zypp, which cause conflicts when
             # installing some basic packages, and the location doesn't
             # have any interface actually, so use a tricky way anyway
-            homedir = os.environ['HOME']
-            os.environ['HOME'] = '/'
+            homedir = None
+            if 'HOME' in os.environ:
+                homedir = os.environ['HOME']
+                os.environ['HOME'] = '/'
+            else:
+                os.environ['HOME'] = '/'
 
             self.repo_manager.addRepository(repo_info)
 
             # save back the $HOME env
-            os.environ['HOME'] = homedir
+            if homedir:
+                os.environ['HOME'] = homedir
+            else:
+                del os.environ['HOME']
 
             self.__build_repo_cache(name)
 
