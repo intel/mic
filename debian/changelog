@@ -1,3 +1,9 @@
+mic (0.16.1-1) unstable; urgency=low
+
+  * fix bug KeyError 'HOME' in os.environ
+
+ -- Gui Chen <gui.chen@intel.com>  Wed, 30 Jan 2013 17:25:35 +0800
+
 mic (0.16-1) unstable; urgency=low
 
   * add GPT support for UEFI format
