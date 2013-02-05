@@ -74,12 +74,12 @@ def build_name(kscfg, release=None, prefix = None, suffix = None):
     if idx >= 0:
         name = name[:idx]
 
+    if release is not None:
+        suffix = ""
     if prefix is None:
         prefix = ""
     if suffix is None:
         suffix = time.strftime("%Y%m%d%H%M")
-    if release is not None:
-        suffix = release
 
     if name.startswith(prefix):
         name = name[len(prefix):]
