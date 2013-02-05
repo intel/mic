@@ -1,8 +1,9 @@
-mic (0.16.1-1) unstable; urgency=low
+mic (0.16.2-1) unstable; urgency=low
 
   * fix bug KeyError 'HOME' in os.environ
+  * remove suffix when release specified
 
- -- Gui Chen <gui.chen@intel.com>  Wed, 30 Jan 2013 17:25:35 +0800
+ -- Gui Chen <gui.chen@intel.com>  Wed, 06 Feb 2013 17:25:35 +0800
 
 mic (0.16-1) unstable; urgency=low
 

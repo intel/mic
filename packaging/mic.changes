@@ -1,3 +1,7 @@
+* Wed Feb 06 2013 Gui Chen <gui.chen@intel.com> - 0.16.2
+  - fix bug KeyError 'HOME' in os.environ
+  - remove suffix when release specified
+
 * Wed Jan 30 2013 Gui Chen <gui.chen@intel.com> - 0.16
   - add GPT support for UEFI format
     - add --ptable=gpt option in kickstart to enable GPT
