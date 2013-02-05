@@ -24,14 +24,15 @@ Requires:   cpio
 Requires:   isomd5sum
 Requires:   gzip
 Requires:   bzip2
-Requires:   squashfs-tools >= 4.0
 Requires:   qemu-arm-static
 Requires:   python-urlgrabber
 Requires:   yum >= 3.2.24
 %if 0%{?suse_version}
 Requires:   btrfsprogs
+Requires:   squashfs >= 4.0
 %else
 Requires:   btrfs-progs
+Requires:   squashfs-tools >= 4.0
 %endif
 
 %if 0%{?fedora_version} > 13
