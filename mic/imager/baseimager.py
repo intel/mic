@@ -99,6 +99,9 @@ class BaseImageCreator(object):
 
             self.destdir = os.path.abspath(os.path.expanduser(self.destdir))
 
+            if 'release' in createopts and createopts['release']:
+                self.name += '-' + createopts['release']
+
             if self.pack_to:
                 if '@NAME@' in self.pack_to:
                     self.pack_to = self.pack_to.replace('@NAME@', self.name)
