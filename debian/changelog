@@ -1,7 +1,8 @@
-mic (0.16.2-1) unstable; urgency=low
+mic (0.16.3-1) unstable; urgency=low
 
   * fix bug KeyError 'HOME' in os.environ
   * remove suffix when release specified
+  * roll back to original naming for relase
 
  -- Gui Chen <gui.chen@intel.com>  Wed, 06 Feb 2013 17:25:35 +0800
 
