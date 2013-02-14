@@ -210,11 +210,6 @@ class PartitionedMount(Mount):
                             (p['disk_name'], d['numpart'], align_sectors,
                              d['offset'], p['align']))
 
-                # p['size'] already converted in secctors
-                if p['size'] <= align_sectors:
-                    raise MountError("Partition for %s is too small to handle "
-                                     "the alignment change." % p['mountpoint'])
-
                 # increase the offset so we actually start the partition on right alignment
                 d['offset'] += align_sectors
 
