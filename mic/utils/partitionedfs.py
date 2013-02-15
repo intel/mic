@@ -233,15 +233,13 @@ class PartitionedMount(Mount):
 
         # Once all the partitions have been layed out, we can calculate the
         # minumim disk sizes.
-        for disk_name, disk in self.disks.items():
-            last_partition = self.partitions[disk['partitions'][-1]]
-            disk['min_size'] = last_partition['start'] + last_partition['size']
-
-            if disk['ptable_format'] == 'gpt':
+        for disk_name, d in self.disks.items():
+            d['min_size'] = d['offset']
+            if d['ptable_format'] == 'gpt':
                 # Account for the backup partition table at the end of the disk
-                disk['min_size'] += GPT_OVERHEAD
+                d['min_size'] += GPT_OVERHEAD
 
-            disk['min_size'] *= self.sector_size
+            d['min_size'] *= self.sector_size
 
     def __run_parted(self, args):
         """ Run parted with arguments specified in the 'args' list. """
