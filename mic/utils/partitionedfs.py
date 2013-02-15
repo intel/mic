@@ -384,12 +384,23 @@ class PartitionedMount(Mount):
                 i = i + 1
             kpartxOutput = kpartxOutput[i:]
 
-            # Quick sanity check that the number of partitions matches
-            # our expectation. If it doesn't, someone broke the code
-            # further up
+            # Make sure kpartx reported the right count of partitions
             if len(kpartxOutput) != d['numpart']:
-                raise MountError("Unexpected number of partitions from kpartx: %d != %d" %
-                                 (len(kpartxOutput), d['numpart']))
+                # If this disk has more than 3 partitions, then in case of MBR
+                # paritions there is an extended parition. Different versions
+                # of kpartx behave differently WRT the extended partition -
+                # some map it, some ignore it. This is why we do the below hack
+                # - if kpartx reported one more partition and the partition
+                # table type is "msdos" and the amount of partitions is more
+                # than 3, we just assume kpartx mapped the extended parition
+                # and we remove it.
+                if len(kpartxOutput) == d['numpart'] + 1 \
+                   and d['ptable_format'] == 'msdos' and len(kpartxOutput) > 3:
+                    kpartxOutput.pop(3)
+                else:
+                    raise MountError("Unexpected number of partitions from " \
+                                     "kpartx: %d != %d" % \
+                                        (len(kpartxOutput), d['numpart']))
 
             for i in range(len(kpartxOutput)):
                 line = kpartxOutput[i]
