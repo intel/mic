@@ -160,9 +160,10 @@ class RawImageCreator(BaseImageCreator):
                 raise CreatorError("Failed to create disks, no --ondisk "
                                    "specified in partition line of ks file")
 
-            if not parts[i].fstype:
+            if parts[i].mountpoint and not parts[i].fstype:
                 raise CreatorError("Failed to create disks, no --fstype "
-                                    "specified in partition line of ks file")
+                                    "specified for partition with mountpoint "
+                                    "'%s' in the ks file")
 
             self._disk_names.append(disk_name)
 
