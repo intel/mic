@@ -213,19 +213,21 @@ class PartitionedMount(Mount):
             p['start'] = d['offset']
             d['offset'] += p['size']
 
-            if d['ptable_format'] == "msdos" and d['numpart'] > 2:
-                # Every logical partition requires an additional sector for the
-                # EBR, so steal the last sector from the end of each partition
-                # starting from the 3rd one for the EBR. This will make sure
-                # the logical partitions are aligned correctly.
-                p['size'] -= 1
+            p['type'] = 'primary'
+            p['num'] = d['numpart']
 
-            if d['numpart'] > 3:
-                p['type'] = 'logical'
-                p['num'] = d['numpart'] + 1
-            else:
-                p['type'] = 'primary'
-                p['num'] = d['numpart']
+            if d['ptable_format'] == "msdos":
+                if d['numpart'] > 2:
+                    # Every logical partition requires an additional sector for
+                    # the EBR, so steal the last sector from the end of each
+                    # partition starting from the 3rd one for the EBR. This
+                    # will make sure the logical partitions are aligned
+                    # correctly.
+                    p['size'] -= 1
+
+                if d['numpart'] > 3:
+                    p['type'] = 'logical'
+                    p['num'] = d['numpart'] + 1
 
             d['partitions'].append(n)
             msger.debug("Assigned %s to %s%d, sectors range %d-%d size %d "
@@ -295,7 +297,7 @@ class PartitionedMount(Mount):
 
         for p in self.partitions:
             d = self.disks[p['disk_name']]
-            if p['num'] == 5:
+            if d['ptable_format'] == "msdos" and p['num'] == 5:
                 # The last sector of the 3rd partition was reserved for the EBR
                 # of the first _logical_ partition. This is why the extended
                 # partition should start one sector before the first logical
