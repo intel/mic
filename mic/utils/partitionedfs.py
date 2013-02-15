@@ -456,8 +456,9 @@ class PartitionedMount(Mount):
     def __calculate_mountorder(self):
         msger.debug("Calculating mount order")
         for p in self.partitions:
-            self.mountOrder.append(p['mountpoint'])
-            self.unmountOrder.append(p['mountpoint'])
+            if p['mountpoint']:
+                self.mountOrder.append(p['mountpoint'])
+                self.unmountOrder.append(p['mountpoint'])
 
         self.mountOrder.sort()
         self.unmountOrder.sort()
