@@ -438,22 +438,23 @@ def get_image_type(path):
     else:
         raise CreatorError("Cannot detect the type of image: %s" % path)
 
-def get_file_size(file):
-    """ Return size in MB unit """
-    rc, duOutput  = runner.runtool(['du', "-s", "-b", "-B", "1M", file])
-    if rc != 0:
-        raise CreatorError("Failed to run %s" % du)
 
-    size1 = int(duOutput.split()[0])
-    rc, duOutput = runner.runtool(['du', "-s", "-B", "1M", file])
+def get_file_size(filename):
+    """ Return size in MB unit """
+    cmd = ['du', "-s", "-b", "-B", "1M", filename]
+    rc, duOutput  = runner.runtool(cmd)
     if rc != 0:
-        raise CreatorError("Failed to run %s" % du)
+        raise CreatorError("Failed to run: %s" % ' '.join(cmd))
+    size1 = int(duOutput.split()[0])
+
+    cmd = ['du', "-s", "-B", "1M", filename]
+    rc, duOutput = runner.runtool(cmd)
+    if rc != 0:
+        raise CreatorError("Failed to run: %s" % ' '.join(cmd))
 
     size2 = int(duOutput.split()[0])
-    if size1 > size2:
-        return size1
-    else:
-        return size2
+    return max(size1, size2)
+
 
 def get_filesystem_avail(fs):
     vfstat = os.statvfs(fs)
