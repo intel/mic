@@ -123,6 +123,7 @@ def get_distro_str():
         return distro_str.strip()
 
 _LOOP_RULE_PTH = None
+
 def hide_loopdev_presentation():
     udev_rules = "80-prevent-loop-present.rules"
     udev_rules_dir = [
@@ -130,6 +131,8 @@ def hide_loopdev_presentation():
                        '/lib/udev/rules.d/',
                        '/etc/udev/rules.d/'
                      ]
+
+    global _LOOP_RULE_PTH
 
     for rdir in udev_rules_dir:
         if os.path.exists(rdir):
@@ -147,6 +150,8 @@ def hide_loopdev_presentation():
         pass
 
 def unhide_loopdev_presentation():
+    global _LOOP_RULE_PTH
+
     if not _LOOP_RULE_PTH:
         return
 
@@ -706,7 +711,7 @@ def get_arch(repometadata):
                  uniq_arch.append(archlist[i])
 
         return uniq_arch
-    
+
 
     ret_uniq_arch = []
     ret_arch_list = []
@@ -731,7 +736,7 @@ def get_arch(repometadata):
 
         uniq_arch = uniqarch(archlist)
         if not ret_uniq_arch and len(uniq_arch) == 1:
-            ret_uniq_arch = uniq_arch 
+            ret_uniq_arch = uniq_arch
         ret_arch_list += uniq_arch
 
     ret_arch_list = uniqarch(ret_arch_list)
