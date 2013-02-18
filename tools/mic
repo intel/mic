@@ -22,6 +22,15 @@ from mic.conf import configmgr
 from mic.plugin import pluginmgr
 from mic.__version__ import VERSION
 
+
+def optparser_setup(func):
+    """Setup optparser for a function"""
+    if not hasattr(func, "optparser"):
+        func.optparser = cmdln.SubCmdOptionParser()
+        func.optparser.disable_interspersed_args()
+    return func
+
+
 class MicCmd(cmdln.Cmdln):
     """
     Usage: mic SUBCOMMAND [OPTS] [ARGS...]
@@ -68,13 +77,6 @@ class MicCmd(cmdln.Cmdln):
             msger.set_loglevel('debug')
 
         self.print_version()
-
-    def optparser_setup(func):
-        """Setup optparser for a function"""
-        if not hasattr(func, "optparser"):
-            func.optparser = cmdln.SubCmdOptionParser()
-            func.optparser.disable_interspersed_args()
-        return func
 
     def help_create(self):
         cr = creator.Creator()
@@ -139,14 +141,14 @@ class MicCmd(cmdln.Cmdln):
         srcimager = None
         destimager = None
         for iname, icls in pluginmgr.get_plugins('imager').iteritems():
-           if iname == srcformat and hasattr(icls, "do_unpack"):
-               srcimager = icls
-           if iname == destformat and hasattr(icls, "do_pack"):
-               destimager = icls
+            if iname == srcformat and hasattr(icls, "do_unpack"):
+                srcimager = icls
+            if iname == destformat and hasattr(icls, "do_pack"):
+                destimager = icls
 
         if (srcimager and destimager) is None:
-           raise errors.CreatorError("Can't convert from %s to %s" \
-                                     % (srcformat, destformat))
+            raise errors.CreatorError("Can't convert from %s to %s" \
+                                      % (srcformat, destformat))
 
         else:
             maptab = {
@@ -189,7 +191,7 @@ class MicCmd(cmdln.Cmdln):
             if hasattr(handler, "optparser"):
                 handler.optparser.print_help()
             return 1
-        
+
         targetimage = args[0]
 
         if not os.path.exists(targetimage):
