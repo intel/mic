@@ -225,10 +225,11 @@ class PartitionedMount(Mount):
             p['start'] = d['offset']
             d['offset'] += p['size']
             d['partitions'].append(n)
-            msger.debug("Assigned %s to %s%d at Sector %d with size %d sectors "
-                        "/ %d bytes." % (p['mountpoint'], p['disk_name'],
-                                         p['num'], p['start'], p['size'],
-                                         p['size'] * self.sector_size))
+            msger.debug("Assigned %s to %s%d, sectors range %d-%d size %d "
+                        "sectors (%d bytes)." \
+                            % (p['mountpoint'], p['disk_name'], p['num'],
+                               p['start'], p['start'] + p['size'] - 1,
+                               p['size'], p['size'] * self.sector_size))
 
         # Once all the partitions have been layed out, we can calculate the
         # minumim disk sizes.
@@ -265,8 +266,8 @@ class PartitionedMount(Mount):
 
         # Start is included to the size so we need to substract one from the end.
         end = start + size - 1
-        msger.debug("Added '%s' part at Sector %d with size %d sectors" %
-                    (parttype, start, end))
+        msger.debug("Added '%s' partition, sectors %d-%d, size %d sectors" %
+                    (parttype, start, end, size))
 
         args = ["-s", device, "unit", "s", "mkpart", parttype]
         if fstype:
