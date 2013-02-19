@@ -85,9 +85,9 @@ class RawImageCreator(BaseImageCreator):
                     break
 
             if self.use_uuid and p['uuid']:
-               device = "UUID=%s" % p['uuid']
+                device = "UUID=%s" % p['uuid']
             else:
-               device = "/dev/%s%-d" % (p['disk_name'], p['num'])
+                device = "/dev/%s%-d" % (p['disk_name'], p['num'])
 
             s += "%(device)s  %(mountpoint)s  %(fstype)s  %(fsopts)s 0 0\n" % {
                'device': device,
@@ -161,7 +161,7 @@ class RawImageCreator(BaseImageCreator):
                                    "specified in partition line of ks file")
 
             if not parts[i].fstype:
-                 raise CreatorError("Failed to create disks, no --fstype "
+                raise CreatorError("Failed to create disks, no --fstype "
                                     "specified in partition line of ks file")
 
             self._disk_names.append(disk_name)
@@ -371,7 +371,7 @@ class RawImageCreator(BaseImageCreator):
             misc.packing(dst, self.__imgdir)
         else:
             msger.debug("moving disks to stage location")
-	    for imgfile in os.listdir(self.__imgdir):
+            for imgfile in os.listdir(self.__imgdir):
                 src = os.path.join(self.__imgdir, imgfile)
                 dst = os.path.join(self._outdir, imgfile)
                 msger.debug("moving %s to %s" % (src,dst))

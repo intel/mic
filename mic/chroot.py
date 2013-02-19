@@ -56,7 +56,7 @@ def check_bind_mounts(chrootdir, bindmounts):
 
         srcdst = mount.split(":")
         if len(srcdst) == 1:
-           srcdst.append("none")
+            srcdst.append("none")
 
         if not os.path.isdir(srcdst[0]):
             return False
@@ -113,12 +113,12 @@ def setup_chrootenv(chrootdir, bindmounts = None, mountparent = True):
             srcdst = mount.split(":")
             srcdst[0] = os.path.abspath(os.path.expanduser(srcdst[0]))
             if len(srcdst) == 1:
-               srcdst.append("none")
+                srcdst.append("none")
 
             # if some bindmount is not existed, but it's created inside
             # chroot, this is not expected
             if not os.path.exists(srcdst[0]):
-               os.makedirs(srcdst[0])
+                os.makedirs(srcdst[0])
 
             if not os.path.isdir(srcdst[0]):
                 continue

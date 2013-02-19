@@ -27,11 +27,11 @@ class _Plugin(object):
                 cls.plugins = {}
 
             elif 'mic_plugin_type' in attrs:
-                    if attrs['mic_plugin_type'] not in cls.plugins:
-                        cls.plugins[attrs['mic_plugin_type']] = {}
+                if attrs['mic_plugin_type'] not in cls.plugins:
+                    cls.plugins[attrs['mic_plugin_type']] = {}
 
             elif hasattr(cls, 'mic_plugin_type') and 'name' in attrs:
-                    cls.plugins[cls.mic_plugin_type][attrs['name']] = cls
+                cls.plugins[cls.mic_plugin_type][attrs['name']] = cls
 
         def show_plugins(cls):
             for cls in cls.plugins[cls.mic_plugin_type]:

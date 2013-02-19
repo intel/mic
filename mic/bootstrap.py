@@ -147,7 +147,7 @@ class MiniBackend(object):
             return
 
         if prog == "<lua>":
-             prog = "/usr/bin/lua"
+            prog = "/usr/bin/lua"
 
         tmpdir = os.path.join(self.rootdir, "tmp")
         if not os.path.exists(tmpdir):

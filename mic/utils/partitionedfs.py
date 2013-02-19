@@ -367,7 +367,7 @@ class PartitionedMount(Mount):
             # Strip trailing blank and mask verbose output
             i = 0
             while i < len(kpartxOutput) and kpartxOutput[i][0:4] != "loop":
-               i = i + 1
+                i = i + 1
             kpartxOutput = kpartxOutput[i:]
 
             # Quick sanity check that the number of partitions matches

@@ -53,16 +53,16 @@ def _set_proxies(proxy = None, no_proxy = None):
     _my_noproxy = None
     proxies = []
     if proxy:
-       proxies.append(("http_proxy", proxy))
+        proxies.append(("http_proxy", proxy))
     if no_proxy:
-       proxies.append(("no_proxy", no_proxy))
+        proxies.append(("no_proxy", no_proxy))
 
     # Get proxy settings from environment if not provided
     if not proxy and not no_proxy:
-       proxies = os.environ.items()
+        proxies = os.environ.items()
 
-       # Remove proxy env variables, urllib2 can't handle them correctly
-       unset_proxy_environ()
+        # Remove proxy env variables, urllib2 can't handle them correctly
+        unset_proxy_environ()
 
     for name, value in proxies:
         name = name.lower()

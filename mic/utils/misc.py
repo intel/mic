@@ -578,7 +578,7 @@ def get_metadata_from_repos(repos, cachedir):
 
         proxies = None
         if proxy:
-           proxies = {str(baseurl.split(":")[0]):str(proxy)}
+            proxies = {str(baseurl.split(":")[0]):str(proxy)}
 
         makedirs(os.path.join(cachedir, reponame))
         url = os.path.join(baseurl, "repodata/repomd.xml")
@@ -709,7 +709,7 @@ def get_arch(repometadata):
                         continue
                 j += 1
             if need_append:
-                 uniq_arch.append(archlist[i])
+                uniq_arch.append(archlist[i])
 
         return uniq_arch
 

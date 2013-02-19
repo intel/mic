@@ -215,7 +215,7 @@ class LiveUSBImageCreator(LiveCDImageCreator):
                             homefile]
                     rc = runner.show(args)
                     if rc:
-                         raise CreatorError("Can't tune2fs home file")
+                        raise CreatorError("Can't tune2fs home file")
 
             if fstype == "vfat" or fstype == "msdos":
                 syslinuxcmd = fs_related.find_binary_path("syslinux")
