@@ -271,7 +271,7 @@ class RawImageCreator(BaseImageCreator):
             v = os.path.realpath(symkern).replace('%s-' % symkern, "")
             syslinux_conf += "label %s\n" % self.distro_name.lower()
             syslinux_conf += "\tmenu label %s (%s)\n" % (self.distro_name, v)
-            syslinux_conf += "\tlinux /vmlinuz\n"
+            syslinux_conf += "\tlinux ../vmlinuz\n"
             if self._ptable_format == 'msdos':
                 rootstr = rootdev
             else:
@@ -293,7 +293,7 @@ class RawImageCreator(BaseImageCreator):
                 syslinux_conf += "label %s%d\n" \
                                  % (self.distro_name.lower(), footlabel)
                 syslinux_conf += "\tmenu label %s (%s)\n" % (self.distro_name, v)
-                syslinux_conf += "\tlinux vmlinuz-%s\n" % v
+                syslinux_conf += "\tlinux ../vmlinuz-%s\n" % v
                 syslinux_conf += "\tappend ro root=%s %s\n" \
                                  % (rootdev, options)
                 if footlabel == 0:
