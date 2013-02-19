@@ -71,9 +71,6 @@ class PartitionedMount(Mount):
                   'mapped': False,  # True if kpartx mapping exists
                   'numpart': 0,     # Number of allocate partitions
                   'partitions': [], # Indexes to self.partitions
-                  # Partitions with part num higher than 3 will
-                  # be put to the extended partition.
-                  'extended': 0,    # Size of extended partition
                   'offset': 0,      # Offset of next partition (in sectors)
                   # Minimum required disk size to fit all partitions (in bytes)
                   'min_size': 0,
@@ -214,8 +211,6 @@ class PartitionedMount(Mount):
                 d['offset'] += align_sectors
 
             if d['numpart'] > 3:
-                # Increase allocation of extended partition to hold this partition
-                d['extended'] += p['size']
                 p['type'] = 'logical'
                 p['num'] = d['numpart'] + 1
             else:
@@ -293,8 +288,9 @@ class PartitionedMount(Mount):
         for p in self.partitions:
             d = self.disks[p['disk_name']]
             if p['num'] == 5:
-                self.__create_partition(d['disk'].device, "extended", None,
-                                        p['start'], d['extended'])
+                self.__create_partition(d['disk'].device, "extended",
+                                        None, p['start'],
+                                        d['offset'] - p['start'])
 
             if p['fstype'] == "swap":
                 parted_fs_type = "linux-swap"
