@@ -24,25 +24,38 @@ Requires:   cpio
 Requires:   isomd5sum
 Requires:   gzip
 Requires:   bzip2
-Requires:   qemu-arm-static
 Requires:   python-urlgrabber
 Requires:   yum >= 3.2.24
+%if ! 0%{?centos_version}
 %if 0%{?suse_version}
 Requires:   btrfsprogs
-Requires:   squashfs >= 4.0
 %else
 Requires:   btrfs-progs
+%endif
+%endif
+
+%if 0%{?suse_version}
+Requires:   squashfs >= 4.0
+%else
 Requires:   squashfs-tools >= 4.0
 %endif
 
-%if 0%{?fedora_version} > 13
+%if 0%{?fedora_version} || 0%{?centos_version}
 Requires:   syslinux-extlinux
+%endif
+
+%if "0%{?tizen_version}" != "0"
+Requires:   qemu-linux-user
+%else
+Requires:   qemu-arm-static
 %endif
 
 Requires:   python-zypp
 
 BuildRequires:  python-devel
+%if "0%{?tizen_version}" == "0"
 BuildRequires:  python-docutils
+%endif
 
 Obsoletes:  mic2
 
@@ -62,7 +75,9 @@ an image.
 
 %build
 CFLAGS="$RPM_OPT_FLAGS" %{__python} setup.py build
+%if "0%{?tizen_version}" == "0"
 make man
+%endif
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -74,16 +89,21 @@ rm -rf $RPM_BUILD_ROOT
 
 # install man page
 mkdir -p %{buildroot}/%{_prefix}/share/man/man1
+%if "0%{?tizen_version}" == "0"
 install -m644 doc/mic.1 %{buildroot}/%{_prefix}/share/man/man1
+%endif
 
 %files
 %defattr(-,root,root,-)
-%doc README.rst AUTHORS COPYING ChangeLog
 %doc doc/*
+%doc README.rst AUTHORS COPYING ChangeLog
+%if "0%{?tizen_version}" == "0"
 %{_mandir}/man1/*
+%endif
 %dir %{_sysconfdir}/%{name}
 %config(noreplace) %{_sysconfdir}/%{name}/%{name}.conf
 %{python_sitelib}/*
 %dir %{_prefix}/lib/%{name}
 %{_prefix}/lib/%{name}/*
 %{_bindir}/*
+
