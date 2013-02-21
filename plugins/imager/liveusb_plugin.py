@@ -62,6 +62,8 @@ class LiveUSBPlugin(ImagerPlugin):
         if creatoropts['release'] is not None:
             if 'name' not in recording_pkgs:
                 recording_pkgs.append('name')
+            if 'vcs' not in recording_pkgs:
+                recording_pkgs.append('vcs')
 
         configmgr._ksconf = ksconf
 
