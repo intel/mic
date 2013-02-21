@@ -287,9 +287,6 @@ class RawImageCreator(BaseImageCreator):
 
             footlabel = 0
             for v in versions:
-                shutil.copy("%s/boot/vmlinuz-%s" %(self._instroot, v),
-                            "%s%s/vmlinuz-%s" % (self._instroot,
-                                                 "/boot/extlinux/", v))
                 syslinux_conf += "label %s%d\n" \
                                  % (self.distro_name.lower(), footlabel)
                 syslinux_conf += "\tmenu label %s (%s)\n" % (self.distro_name, v)
