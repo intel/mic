@@ -274,16 +274,22 @@ class BaseImageCreator(object):
 
         if not os.path.exists(destdir):
             os.makedirs(destdir)
-        if 'name' in self._recording_pkgs :
+
+        content = None
+        if 'vcs' in self._recording_pkgs:
+            vcslst = ["%s %s" % (k, v) for (k, v) in self._pkgs_vcsinfo.items()]
+            content = '\n'.join(sorted(vcslst))
+        elif 'name' in self._recording_pkgs:
+            content = '\n'.join(pkgs)
+        if content:
             namefile = os.path.join(destdir, self.name + '.packages')
             f = open(namefile, "w")
-            content = '\n'.join(pkgs)
             f.write(content)
             f.close()
             self.outimage.append(namefile);
 
         # if 'content', save more details
-        if 'content' in self._recording_pkgs :
+        if 'content' in self._recording_pkgs:
             contfile = os.path.join(destdir, self.name + '.files')
             f = open(contfile, "w")
 
@@ -320,14 +326,6 @@ class BaseImageCreator(object):
 
             f.close()
             self.outimage.append(licensefile)
-
-        if 'vcs' in self._recording_pkgs:
-            vcsfile = os.path.join(destdir, self.name + '.vcs')
-            f = open(vcsfile, "w")
-            f.write('\n'.join(["%s\n    %s" % (k, v)
-                               for (k, v) in self._pkgs_vcsinfo.items()]))
-            f.close()
-            self.outimage.append(vcsfile)
 
     def _get_required_packages(self):
         """Return a list of required packages.
