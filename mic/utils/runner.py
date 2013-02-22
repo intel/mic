@@ -16,7 +16,7 @@
 # Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 import os
-from subprocess import *
+import subprocess
 
 from mic import msger
 
@@ -52,17 +52,18 @@ def runtool(cmdln_or_args, catch=1):
         sout = dev_null
         serr = dev_null
     elif catch == 1:
-        sout = PIPE
+        sout = subprocess.PIPE
         serr = dev_null
     elif catch == 2:
         sout = dev_null
-        serr = PIPE
+        serr = subprocess.PIPE
     elif catch == 3:
-        sout = PIPE
-        serr = STDOUT
+        sout = subprocess.PIPE
+        serr = subprocess.STDOUT
 
     try:
-        p = Popen(cmdln_or_args, stdout=sout, stderr=serr, shell=shell)
+        p = subprocess.Popen(cmdln_or_args, stdout=sout,
+                             stderr=serr, shell=shell)
         (sout, serr) = p.communicate()
         # combine stdout and stderr, filter None out
         out = ''.join(filter(None, [sout, serr]))
