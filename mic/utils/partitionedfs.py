@@ -116,7 +116,7 @@ class PartitionedMount(Mount):
                                     'mountpoint': mountpoint, # Mount relative to chroot
                                     'fstype': fstype, # Filesystem type
                                     'fsopts': fsopts, # Filesystem mount options
-                                    'disk_name': disk, # physical disk name holding partition
+                                    'disk_name': disk_name, # physical disk name holding partition
                                     'device': None, # kpartx device node for partition
                                     'mount': None, # Mount object
                                     'subvol': subvol, # Subvolume name
