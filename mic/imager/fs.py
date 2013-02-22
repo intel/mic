@@ -15,13 +15,13 @@
 # with this program; if not, write to the Free Software Foundation, Inc., 59
 # Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-import os, sys
+import os
 
-from baseimager import BaseImageCreator
 from mic import msger
 from mic.utils import runner, misc
-from mic.utils.fs_related import *
-from subprocess import call
+from mic.utils.errors import CreatorError
+from mic.utils.fs_related import find_binary_path
+from mic.imager.baseimager import BaseImageCreator
 
 class FsImageCreator(BaseImageCreator):
     def __init__(self, cfgmgr = None, pkgmgr = None):
