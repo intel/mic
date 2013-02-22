@@ -16,7 +16,6 @@
 # Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 import os
-import sys
 import time
 import tempfile
 import re
@@ -26,8 +25,6 @@ import hashlib
 import subprocess
 import platform
 import rpmmisc
-import hashlib
-import sqlite3 as sqlite
 
 try:
     import sqlite3 as sqlite
@@ -40,8 +37,8 @@ except ImportError:
     import cElementTree
 xmlparse = cElementTree.parse
 
-from errors import *
-from fs_related import *
+from errors import CreatorError, SquashfsError
+from fs_related import find_binary_path, makedirs
 from grabber import myurlgrab
 from proxy import get_proxy_for
 import runner
@@ -289,7 +286,7 @@ def calc_hashes(file_path, hash_names, start = 0, end = None):
         end = os.path.getsize(file_path)
 
     chunk_size = 65536
-    to_read = end - start;
+    to_read = end - start
     read = 0
 
     hashes = []
