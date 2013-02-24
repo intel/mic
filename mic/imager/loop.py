@@ -321,7 +321,7 @@ class LoopImageCreator(BaseImageCreator):
                  "name": imgname,
                  "size": self.__image_size or 4096L,
                  "fstype": self.__fstype or "ext3",
-                 "extopts": part.extopts or None,
+                 "extopts": None,
                  "loop": None
                  })
 
