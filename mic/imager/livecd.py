@@ -153,11 +153,8 @@ class LiveImageCreatorBase(LoopImageCreator):
         def _exists(path):
             return os.path.exists(self._instroot + path)
 
-        if (_exists("/usr/lib/moblin-installer-runtime/checkisomd5") or \
-            _exists("/usr/bin/checkisomd5")):
-            if (os.path.exists("/usr/bin/implantisomd5") or
-               os.path.exists("/usr/lib/anaconda-runtime/implantisomd5")):
-                return True
+        if _exists("/usr/bin/checkisomd5") and os.path.exists("/usr/bin/implantisomd5"):
+            return True
 
         return False
 
@@ -269,8 +266,6 @@ class LiveImageCreatorBase(LoopImageCreator):
         """Implant an isomd5sum."""
         if os.path.exists("/usr/bin/implantisomd5"):
             implantisomd5 = "/usr/bin/implantisomd5"
-        elif os.path.exists("/usr/lib/anaconda-runtime/implantisomd5"):
-            implantisomd5 = "/usr/lib/anaconda-runtime/implantisomd5"
         else:
             msger.warning("isomd5sum not installed; not setting up mediacheck")
             implantisomd5 = ""
