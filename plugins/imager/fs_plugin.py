@@ -129,16 +129,15 @@ class FsPlugin(ImagerPlugin):
 
     @classmethod
     def do_chroot(self, target, cmd=[]):#chroot.py parse opts&args
-            try:
-                if len(cmd) != 0:
-                    cmdline = ' '.join(cmd)
-                else:
-                    cmdline = "/bin/bash"
-                envcmd = fs_related.find_binary_inchroot("env", target)
-                if envcmd:
-                    cmdline = "%s HOME=/root %s" % (envcmd, cmdline)
-                chroot.chroot(target, None, cmdline)
-            finally:
-                chroot.cleanup_after_chroot("dir", None, None, None)
-                return 1
-
+        try:
+            if len(cmd) != 0:
+                cmdline = ' '.join(cmd)
+            else:
+                cmdline = "/bin/bash"
+            envcmd = fs_related.find_binary_inchroot("env", target)
+            if envcmd:
+                cmdline = "%s HOME=/root %s" % (envcmd, cmdline)
+            chroot.chroot(target, None, cmdline)
+        finally:
+            chroot.cleanup_after_chroot("dir", None, None, None)
+            return 1

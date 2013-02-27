@@ -175,7 +175,7 @@ class LiveCDPlugin(ImagerPlugin):
             try:
                 subprocess.call(args, preexec_fn = instance._chroot)
             except OSError, (err, msg):
-               raise errors.CreatorError("Failed to execute /usr/libexec/mkliveinitrd: %s" % msg)
+                raise errors.CreatorError("Failed to execute /usr/libexec/mkliveinitrd: %s" % msg)
 
         def __run_post_cleanups(instance):
             kernelver = instance._get_kernel_versions().values()[0][0]
@@ -184,7 +184,7 @@ class LiveCDPlugin(ImagerPlugin):
             try:
                 subprocess.call(args, preexec_fn = instance._chroot)
             except OSError, (err, msg):
-               raise errors.CreatorError("Failed to run post cleanups: %s" % msg)
+                raise errors.CreatorError("Failed to run post cleanups: %s" % msg)
 
         convertoropts = configmgr.convert
         convertoropts['name'] = os.path.splitext(os.path.basename(base_on))[0]

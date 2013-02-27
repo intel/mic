@@ -278,9 +278,9 @@ class Zypp(BackendPlugin):
                         return True;
             else:
                 if startx and name.endswith(pkg[1:]):
-                        return True;
+                    return True;
                 if endx and name.startswith(pkg[:-1]):
-                        return True;
+                    return True;
 
         return False;
 
@@ -883,8 +883,8 @@ class Zypp(BackendPlugin):
 
     def _add_prob_flags(self, *flags):
         for flag in flags:
-           if flag not in self.probFilterFlags:
-               self.probFilterFlags.append(flag)
+            if flag not in self.probFilterFlags:
+                self.probFilterFlags.append(flag)
 
     def get_proxies(self, pobj):
         if not pobj:

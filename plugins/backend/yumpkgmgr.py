@@ -78,12 +78,12 @@ class MyYumRepository(yum.yumRepo.YumRepository):
 
         proxy = None
         if url:
-             proxy = get_proxy_for(url)
+            proxy = get_proxy_for(url)
         else:
-             proxy = get_proxy_for(self.urls[0])
+            proxy = get_proxy_for(self.urls[0])
 
         if proxy:
-             self.proxy = str(proxy)
+            self.proxy = str(proxy)
 
         size = int(size) if size else None
         rvalue = super(MyYumRepository, self)._getFile(url,
