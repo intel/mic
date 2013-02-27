@@ -1,4 +1,4 @@
-* Tue Feb 22 2013 Gui Chen <gui.chen@intel.com> - 0.17
+* Tue Feb 28 2013 Gui Chen <gui.chen@intel.com> - 0.17
   - support new distribution Fedora 18
   - enable to handle more than 3 partitions
   - support partitions without mount point
