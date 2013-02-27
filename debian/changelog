@@ -1,4 +1,4 @@
-mic (0.17-0.rc0) unstable; urgency=low
+mic (0.17-0.rc1) unstable; urgency=low
 
   * support new distribution Fedora 18
   * enable to handle more than 3 partitions

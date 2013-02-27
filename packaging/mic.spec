@@ -3,7 +3,7 @@
 Name:       mic
 Summary:    Image Creator for Linux Distributions
 Version:    0.17
-Release:    0.rc0
+Release:    0.rc1.<CI_CNT>.<B_CNT>
 Group:      System/Base
 License:    GPLv2
 BuildArch:  noarch
@@ -44,7 +44,7 @@ Requires:   squashfs-tools >= 4.0
 Requires:   syslinux-extlinux
 %endif
 
-%if "0%{?tizen_version}" != "0"
+%if 0%{?tizen_version:1}
 Requires:   qemu-linux-user
 %else
 Requires:   qemu-arm-static
@@ -53,7 +53,7 @@ Requires:   qemu-arm-static
 Requires:   python-zypp
 
 BuildRequires:  python-devel
-%if "0%{?tizen_version}" == "0"
+%if 0%{?tizen_version:1}
 BuildRequires:  python-docutils
 %endif
 
@@ -75,7 +75,7 @@ an image.
 
 %build
 CFLAGS="$RPM_OPT_FLAGS" %{__python} setup.py build
-%if "0%{?tizen_version}" == "0"
+%if 0%{?tizen_version:1}
 make man
 %endif
 
@@ -89,7 +89,7 @@ rm -rf $RPM_BUILD_ROOT
 
 # install man page
 mkdir -p %{buildroot}/%{_prefix}/share/man/man1
-%if "0%{?tizen_version}" == "0"
+%if 0%{?tizen_version:1}
 install -m644 doc/mic.1 %{buildroot}/%{_prefix}/share/man/man1
 %endif
 
@@ -97,7 +97,7 @@ install -m644 doc/mic.1 %{buildroot}/%{_prefix}/share/man/man1
 %defattr(-,root,root,-)
 %doc doc/*
 %doc README.rst AUTHORS COPYING ChangeLog
-%if "0%{?tizen_version}" == "0"
+%if 0%{?tizen_version:1}
 %{_mandir}/man1/*
 %endif
 %dir %{_sysconfdir}/%{name}
