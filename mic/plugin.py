@@ -74,9 +74,10 @@ class PluginMgr(object):
                             self.plugin_dirs[pdir] = True
                             msger.debug("Plugin module %s:%s imported"\
                                         % (mod, pymod.__file__))
-                        except ImportError, e:
-                            msger.warning('Loading failed, skip plugin %s/%s'\
-                                          % (os.path.basename(pdir), mod))
+                        except ImportError, err:
+                            msg = 'Failed to load plugin %s/%s: %s' \
+                                % (os.path.basename(pdir), mod, err)
+                            msger.warning(msg)
 
             del(sys.path[0])
 
