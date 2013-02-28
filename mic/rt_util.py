@@ -86,10 +86,11 @@ def bootstrap_mic(argv=None):
         msger.warning('\n%s' % err)
         if msger.ask("Switch to native mode and continue?"):
             return
-        else:
-            raise errors.BootstrapError("Failed to create bootstrap: %s" % err)
+        raise
     except RuntimeError, err:
-        raise errors.BootstrapError("Failed to run in bootstrap: %s" % err)
+        #change exception type but keep the trace back
+        value, tb = sys.exc_info()[1:]
+        raise errors.BootstrapError, value, tb
     else:
         sys.exit(ret)
     finally:

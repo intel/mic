@@ -264,8 +264,11 @@ class Bootstrap(object):
             sync_timesetting(rootdir)
             sync_passwdfile(rootdir)
             retcode = subprocess.call(cmd, preexec_fn=mychroot, env=env, shell=shell)
-        except (OSError, IOError), err:
-            raise RuntimeError(err)
+        except (OSError, IOError):
+            # add additional information to original exception
+            value, tb = sys.exc_info()[1:]
+            value = '%s: %s' % (value, ' '.join(cmd))
+            raise RuntimeError, value, tb
         finally:
             if self.logfile and os.path.isfile(self.logfile):
                 msger.log(file(self.logfile).read())
