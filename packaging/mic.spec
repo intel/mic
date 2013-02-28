@@ -3,7 +3,7 @@
 Name:       mic
 Summary:    Image Creator for Linux Distributions
 Version:    0.17
-Release:    0.rc1.<CI_CNT>.<B_CNT>
+Release:    1
 Group:      System/Base
 License:    GPLv2
 BuildArch:  noarch
@@ -61,14 +61,12 @@ Obsoletes:  mic2
 
 BuildRoot:  %{_tmppath}/%{name}_%{version}-build
 
-
 %description
 The tool mic is used to create and manipulate images for Linux distributions.
 It is composed of three subcommand\: create, convert, chroot. Subcommand create
 is used to create images with different types; subcommand convert is used to
 convert an image to a specified type; subcommand chroot is used to chroot into
 an image.
-
 
 %prep
 %setup -q -n %{name}-%{version}
