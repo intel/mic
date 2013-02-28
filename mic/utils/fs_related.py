@@ -25,9 +25,10 @@ import random
 import string
 import time
 
-from errors import *
 from mic import msger
-import runner
+from mic.utils import runner
+from mic.utils.errors import *
+
 
 def find_binary_inchroot(binary, chroot):
     paths = ["/usr/sbin",

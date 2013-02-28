@@ -19,10 +19,12 @@ import os
 import sys
 import re
 import rpm
+
 from mic import msger
-from .errors import CreatorError
-from .proxy import get_proxy_for
-import runner
+from mic.utils.errors import CreatorError
+from mic.utils.proxy import get_proxy_for
+from mic.utils import runner
+
 
 class RPMInstallCallback:
     """ Command line callback class for callbacks from the RPM library.
@@ -439,7 +441,7 @@ def checkRepositoryEULA(name, repo):
     import urlparse
     import urllib2 as u2
     import httplib
-    from errors import CreatorError
+    from mic.utils.errors import CreatorError
 
     def _check_and_download_url(u2opener, url, savepath):
         try:

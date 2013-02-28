@@ -20,8 +20,9 @@ from optparse import SUPPRESS_HELP
 
 from mic import msger, rt_util
 from mic.utils import cmdln, errors, rpmmisc
-from conf import configmgr
-from plugin import pluginmgr
+from mic.conf import configmgr
+from mic.plugin import pluginmgr
+
 
 class Creator(cmdln.Cmdln):
     """${name}: create an image

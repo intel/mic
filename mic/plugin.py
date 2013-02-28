@@ -16,14 +16,17 @@
 # Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 import os, sys
-import msger
-import pluginbase
+
+from mic import msger
+from mic import pluginbase
 from mic.conf import configmgr
 from mic.utils import errors
+
 
 __ALL__ = ['PluginMgr', 'pluginmgr']
 
 PLUGIN_TYPES = ["imager", "backend"] # TODO  "hook"
+
 
 class PluginMgr(object):
     plugin_dirs = {}

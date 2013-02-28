@@ -26,8 +26,9 @@ from mic import kickstart, msger
 from mic.utils import fs_related, runner, misc
 from mic.utils.partitionedfs import PartitionedMount
 from mic.utils.errors import CreatorError, MountError
+from mic.imager.baseimager import BaseImageCreator
 
-from baseimager import BaseImageCreator
+
 class RawImageCreator(BaseImageCreator):
     """Installs a system into a file containing a partitioned disk image.
 

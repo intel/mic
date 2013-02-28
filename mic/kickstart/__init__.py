@@ -21,9 +21,6 @@ import shutil
 import subprocess
 import string
 
-from mic import msger
-from mic.utils import errors, misc, runner, fs_related as fs
-
 import pykickstart.sections as kssections
 import pykickstart.commands as kscommands
 import pykickstart.constants as ksconstants
@@ -33,12 +30,13 @@ import pykickstart.version as ksversion
 from pykickstart.handlers.control import commandMap
 from pykickstart.handlers.control import dataMap
 
-import custom_commands.desktop as desktop
-import custom_commands.micrepo as micrepo
-import custom_commands.micboot as micboot
-import custom_commands.partition as partition
+from mic import msger
+from mic.utils import errors, misc, runner, fs_related as fs
+from custom_commands import desktop, micrepo, micboot, partition
+
 
 AUTH_URL_PTN = r"(?P<scheme>.*)://(?P<username>.*)(:?P<password>.*)?@(?P<url>.*)"
+
 
 class PrepackageSection(kssections.Section):
     sectionOpen = "%prepackages"

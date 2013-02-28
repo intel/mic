@@ -24,7 +24,6 @@ import glob
 import hashlib
 import subprocess
 import platform
-import rpmmisc
 
 try:
     import sqlite3 as sqlite
@@ -37,17 +36,19 @@ except ImportError:
     import cElementTree
 xmlparse = cElementTree.parse
 
-from errors import CreatorError, SquashfsError
-from fs_related import find_binary_path, makedirs
-from grabber import myurlgrab
-from proxy import get_proxy_for
-import runner
-
 from mic import msger
+from mic.utils.errors import CreatorError, SquashfsError
+from mic.utils.fs_related import find_binary_path, makedirs
+from mic.utils.grabber import myurlgrab
+from mic.utils.proxy import get_proxy_for
+from mic.utils import runner
+from mic.utils import rpmmisc
+
 
 RPM_RE  = re.compile("(.*)\.(.*) (.*)-(.*)")
 RPM_FMT = "%(name)s.%(arch)s %(version)s-%(release)s"
 SRPM_RE = re.compile("(.*)-(\d+.*)-(\d+\.\d+).src.rpm")
+
 
 def build_name(kscfg, release=None, prefix = None, suffix = None):
     """Construct and return an image name string.

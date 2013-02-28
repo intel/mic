@@ -18,11 +18,13 @@
 import os, sys, re
 import ConfigParser
 
-import msger
-import kickstart
-from .utils import misc, runner, proxy, errors
+from mic import msger
+from mic import kickstart
+from mic.utils import misc, runner, proxy, errors
+
 
 DEFAULT_GSITECONF = '/etc/mic/mic.conf'
+
 
 def get_siteconf():
     mic_path = os.path.dirname(__file__)

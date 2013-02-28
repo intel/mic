@@ -22,11 +22,12 @@ import shutil
 from mic import kickstart, msger
 from mic.utils.errors import CreatorError, MountError
 from mic.utils import misc, runner, fs_related as fs
+from mic.imager.baseimager import BaseImageCreator
 
-from baseimager import BaseImageCreator
 
 # The maximum string length supported for LoopImageCreator.fslabel
 FSLABEL_MAXLEN = 32
+
 
 def save_mountpoints(fpath, loops, arch = None):
     """Save mount points mapping to file

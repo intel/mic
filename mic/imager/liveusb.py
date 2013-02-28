@@ -23,8 +23,9 @@ from mic import msger
 from mic.utils import misc, fs_related, runner
 from mic.utils.errors import CreatorError, MountError
 from mic.utils.partitionedfs import PartitionedMount
+from mic.imager.livecd import LiveCDImageCreator
 
-from livecd import LiveCDImageCreator
+
 class LiveUSBImageCreator(LiveCDImageCreator):
     def __init__(self, *args):
         LiveCDImageCreator.__init__(self, *args)
