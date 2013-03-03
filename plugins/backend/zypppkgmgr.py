@@ -210,11 +210,11 @@ class Zypp(BackendPlugin):
             q.setMatchExact()
             q.addAttribute(zypp.SolvAttr.name,pkg)
 
-        for item in sorted(
+        for pitem in sorted(
                         q.queryResults(self.Z.pool()),
-                        cmp=lambda x,y: cmpEVR(x, y),
+                        cmp=lambda x,y: cmpEVR(zypp.asKindPackage(x), zypp.asKindPackage(y)),
                         reverse=True):
-
+            item = zypp.asKindPackage(pitem)
             if item.name() in self.excpkgs.keys() and \
                self.excpkgs[item.name()] == item.repoInfo().name():
                 continue
@@ -228,7 +228,7 @@ class Zypp(BackendPlugin):
                 if arch == str(item.arch()):
                     item.status().setToBeInstalled (zypp.ResStatus.USER)
             else:
-                markPoolItem(obspkg, item)
+                markPoolItem(obspkg, pitem)
             if not ispattern:
                 break
 
@@ -238,10 +238,11 @@ class Zypp(BackendPlugin):
             q.addAttribute(zypp.SolvAttr.provides, pkg)
             q.addAttribute(zypp.SolvAttr.name,'')
 
-            for item in sorted(
+            for pitem in sorted(
                             q.queryResults(self.Z.pool()),
-                            cmp=lambda x,y: cmpEVR(x.edition(), y.edition()),
+                            cmp=lambda x,y: cmpEVR(zypp.asKindPackage(x), zypp.asKindPackage(y)),
                             reverse=True):
+                item = zypp.asKindPackage(pitem)
                 if item.name() in self.excpkgs.keys() and \
                    self.excpkgs[item.name()] == item.repoInfo().name():
                     continue
@@ -251,7 +252,7 @@ class Zypp(BackendPlugin):
 
                 found = True
                 obspkg = self.whatObsolete(item.name())
-                markPoolItem(obspkg, item)
+                markPoolItem(obspkg, pitem)
                 break
 
         if found:
@@ -259,10 +260,10 @@ class Zypp(BackendPlugin):
         else:
             raise CreatorError("Unable to find package: %s" % (pkg,))
 
-    def inDeselectPackages(self, item):
+    def inDeselectPackages(self, pitem):
         """check if specified pacakges are in the list of inDeselectPackages
         """
-
+        item = zypp.asKindPackage(pitem)
         name = item.name()
         for pkg in self.to_deselect:
             startx = pkg.startswith("*")
@@ -294,12 +295,13 @@ class Zypp(BackendPlugin):
         found = False
         q=zypp.PoolQuery()
         q.addKind(zypp.ResKind.pattern)
-        for item in q.queryResults(self.Z.pool()):
+        for pitem in q.queryResults(self.Z.pool()):
+            item = zypp.asKindPattern(pitem)
             summary = "%s" % item.summary()
             name = "%s" % item.name()
             if name == grp or summary == grp:
                 found = True
-                item.status().setToBeInstalled (zypp.ResStatus.USER)
+                pitem.status().setToBeInstalled (zypp.ResStatus.USER)
                 break
 
         if found:
@@ -437,9 +439,10 @@ class Zypp(BackendPlugin):
         todo = zypp.GetResolvablesToInsDel(self.Z.pool())
         installed_pkgs = todo._toInstall
         dlpkgs = []
-        for item in installed_pkgs:
-            if not zypp.isKindPattern(item) and \
-              not self.inDeselectPackages(item):
+        for pitem in installed_pkgs:
+            if not zypp.isKindPattern(pitem) and \
+              not self.inDeselectPackages(pitem):
+                item = zypp.asKindPackage(pitem)
                 dlpkgs.append(item)
 
                 if not self.install_debuginfo or str(item.arch()) == "noarch":
@@ -474,8 +477,7 @@ class Zypp(BackendPlugin):
                                     'release': pkg.edition().release()
                                 }
 
-                package = zypp.asKindPackage(pkg)
-                license = package.license()
+                license = pkg.license()
 
             if license in self.__pkgs_license.keys():
                 self.__pkgs_license[license].append(pkg_long_name)
@@ -671,7 +673,7 @@ class Zypp(BackendPlugin):
     def getLocalPkgPath(self, po):
         repoinfo = po.repoInfo()
         cacheroot = repoinfo.packagesPath()
-        location= zypp.asKindPackage(po).location()
+        location= po.location()
         rpmpath = str(location.filename())
         pkgpath = "%s/%s" % (cacheroot, os.path.basename(rpmpath))
         return pkgpath
@@ -922,7 +924,7 @@ class Zypp(BackendPlugin):
         if index > -1:
             baseurl = baseurl[:index]
 
-        location = zypp.asKindPackage(pobj).location()
+        location = pobj.location()
         location = str(location.filename())
         if location.startswith("./"):
             location = location[2:]
@@ -931,7 +933,9 @@ class Zypp(BackendPlugin):
 
     def package_url(self, pkgname):
 
-        def cmpEVR(ed1, ed2):
+        def cmpEVR(p1, p2):
+            ed1 = p1.edition()
+            ed2 = p2.edition()
             (e1, v1, r1) = map(str, [ed1.epoch(), ed1.version(), ed1.release()])
             (e2, v2, r2) = map(str, [ed2.epoch(), ed2.version(), ed2.release()])
             return rpm.labelCompare((e1, v1, r1), (e2, v2, r2))
@@ -944,7 +948,7 @@ class Zypp(BackendPlugin):
         q.setMatchExact()
         q.addAttribute(zypp.SolvAttr.name, pkgname)
         items = sorted(q.queryResults(self.Z.pool()),
-                       cmp=lambda x,y: cmpEVR(x.edition(), y.edition()),
+                       cmp=lambda x,y: cmpEVR(zypp.asKindPackage(x), zypp.asKindPackage(y)),
                        reverse=True)
 
         if items:
