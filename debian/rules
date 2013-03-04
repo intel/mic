@@ -4,9 +4,9 @@
 #export DH_VERBOSE=1
 
 ifeq ($(shell cat /etc/issue | cut -d' ' -f2), 11.10)
-	SUBSTVARS = -Vdist:Depends="qemu-arm-static, syslinux (>= 2:4.05)"
+	SUBSTVARS = -Vdist:Depends="qemu-arm-static"
 else
-	SUBSTVARS = -Vdist:Depends="qemu-user-static, syslinux (>= 2:4.05), extlinux (>= 2:4.05)"
+	SUBSTVARS = -Vdist:Depends="qemu-user-static"
 endif
 
 

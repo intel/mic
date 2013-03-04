@@ -1,20 +1,20 @@
-mic (0.17-0.rc0) unstable; urgency=low
+mic (0.17-1) unstable; urgency=low
 
- * support new distribution Fedora 18
- * enable to handle more than 3 partitions
- * support partitions without mount point
- * move vcs infomation from .vcs to .packages
- * clean up some mess in utils/misc.py
- * bug fix:
-   - fix failure when symbolic link vmlinuz in single disk
-   - fix incorrect alignment handling
-   - fix requires squashfs in opensuse
-   - fix unicode error in myurlgrab
- * code cleanup:
-   - clean up some mess in utils/misc.py
-   - clean up pylint issue in creator.py
+  * support new distribution Fedora 18
+  * enable to handle more than 3 partitions
+  * support partitions without mount point
+  * move vcs infomation from .vcs to .packages
+  * clean up some mess in utils/misc.py
+  * bug fix:
+    - fix failure when symbolic link vmlinuz in single disk
+    - fix incorrect alignment handling
+    - fix requires squashfs in opensuse
+    - fix unicode error in myurlgrab
+  * code cleanup:
+    - clean up some mess in utils/misc.py
+    - clean up pylint issue in creator.py
 
- -- Gui Chen <gui.chen@intel.com>  Tue, 22 Feb 2013 17:25:35 +0800
+ -- Gui Chen <gui.chen@intel.com>  Tue, 28 Feb 2013 17:25:35 +0800
 
 mic (0.16-1) unstable; urgency=low
 
