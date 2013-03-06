@@ -187,12 +187,11 @@ def setup_chrootenv(chrootdir, bindmounts = None, mountparent = True):
 
     return globalmounts
 
-def cleanup_chrootenv(chrootdir, bindmounts = None, globalmounts = []):
+def cleanup_chrootenv(chrootdir, bindmounts=None, globalmounts=()):
     global chroot_lockfd, chroot_lock
 
     def bind_unmount(chrootmounts):
-        chrootmounts.reverse()
-        for b in chrootmounts:
+        for b in reversed(chrootmounts):
             msger.verbose("bind_unmount: %s -> %s" % (b.src, b.dest))
             b.unmount()
 

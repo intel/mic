@@ -45,7 +45,7 @@ class ImagerPlugin(_Plugin):
 
     @classmethod
     def check_image_exists(self, destdir, apacking=None,
-                                          images=[],
+                                          images=(),
                                           release=None):
 
         # if it's a packing file, reset images

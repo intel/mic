@@ -207,13 +207,13 @@ class Bootstrap(object):
         except:
             pass
 
-    def create(self, repomd, pkglist, optlist=[]):
+    def create(self, repomd, pkglist, optlist=()):
         try:
             pkgmgr = MiniBackend(self.get_rootdir())
             pkgmgr.arch = self.arch
             pkgmgr.repomd = repomd
-            pkgmgr.optionals = optlist
-            map(pkgmgr.selectPackage, pkglist + optlist)
+            pkgmgr.optionals = list(optlist)
+            map(pkgmgr.selectPackage, pkglist + list(optlist))
             pkgmgr.runInstall()
 
         except (OSError, IOError, errors.CreatorError), err:

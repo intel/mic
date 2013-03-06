@@ -106,7 +106,7 @@ def read_kickstart(path):
     superclass = ksversion.returnClassForVersion(version=using_version)
 
     class KSHandlers(superclass):
-        def __init__(self, mapping={}):
+        def __init__(self):
             superclass.__init__(self, mapping=commandMap[using_version])
             self.prepackages = ksparser.Packages()
             self.attachment = ksparser.Packages()
@@ -705,7 +705,7 @@ def get_default_kernel(ks, default = None):
         return default
     return ks.handler.bootloader.default
 
-def get_repos(ks, repo_urls = {}):
+def get_repos(ks, repo_urls=None):
     repos = {}
     for repo in ks.handler.repo.repoList:
         inc = []
@@ -719,7 +719,7 @@ def get_repos(ks, repo_urls = {}):
         baseurl = repo.baseurl
         mirrorlist = repo.mirrorlist
 
-        if repo.name in repo_urls:
+        if repo_urls and repo.name in repo_urls:
             baseurl = repo_urls[repo.name]
             mirrorlist = None
 
@@ -769,22 +769,22 @@ def convert_method_to_repo(ks):
     except (AttributeError, kserrors.KickstartError):
         pass
 
-def get_attachment(ks, required = []):
-    return ks.handler.attachment.packageList + required
+def get_attachment(ks, required=()):
+    return ks.handler.attachment.packageList + list(required)
 
-def get_pre_packages(ks, required = []):
-    return ks.handler.prepackages.packageList + required
+def get_pre_packages(ks, required=()):
+    return ks.handler.prepackages.packageList + list(required)
 
-def get_packages(ks, required = []):
-    return ks.handler.packages.packageList + required
+def get_packages(ks, required=()):
+    return ks.handler.packages.packageList + list(required)
 
-def get_groups(ks, required = []):
-    return ks.handler.packages.groupList + required
+def get_groups(ks, required=()):
+    return ks.handler.packages.groupList + list(required)
 
-def get_excluded(ks, required = []):
-    return ks.handler.packages.excludedList + required
+def get_excluded(ks, required=()):
+    return ks.handler.packages.excludedList + list(required)
 
-def get_partitions(ks, required = []):
+def get_partitions(ks):
     return ks.handler.partition.partitions
 
 def ignore_missing(ks):

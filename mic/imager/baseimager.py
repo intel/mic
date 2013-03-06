@@ -874,7 +874,7 @@ class BaseImageCreator(object):
                     fpath = os.path.join(root, fname)
                     self._attachment.append(fpath)
 
-    def install(self, repo_urls = {}):
+    def install(self, repo_urls=None):
         """Install packages into the install root.
 
         This function installs the packages listed in the supplied kickstart
