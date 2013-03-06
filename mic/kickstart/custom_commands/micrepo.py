@@ -23,14 +23,28 @@ from pykickstart.options import *
 from pykickstart.commands.repo import *
 
 class Mic_RepoData(F8_RepoData):
-    def __init__(self, baseurl="", mirrorlist="", name="", priority=None,
-                 includepkgs=[], excludepkgs=[], save=False, proxy=None,
+
+    def __init__(self, baseurl="", mirrorlist=None, name="", priority=None,
+                 includepkgs=(), excludepkgs=(), save=False, proxy=None,
                  proxy_username=None, proxy_password=None, debuginfo=False,
                  source=False, gpgkey=None, disable=False, ssl_verify="yes",
                  nocache=False):
-        F8_RepoData.__init__(self, baseurl=baseurl, mirrorlist=mirrorlist,
-                             name=name,  includepkgs=includepkgs,
-                             excludepkgs=excludepkgs)
+        kw = {}
+        # F8_RepoData keywords
+        if includepkgs:
+            kw['includepkgs'] = includepkgs
+        if excludepkgs:
+            kw['excludepkgs'] = excludepkgs
+
+        #FC6_RepoData keywords
+        if baseurl:
+            kw['baseurl'] = baseurl
+        if mirrorlist:
+            kw['mirrorlist'] = mirrorlist
+        if name:
+            kw['name'] = name
+
+        F8_RepoData.__init__(self, **kw)
         self.save = save
         self.proxy = proxy
         self.proxy_username = proxy_username
