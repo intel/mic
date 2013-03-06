@@ -197,7 +197,8 @@ def sync_mic(bootstrap, binpth = '/usr/bin/mic',
     with open(_path(binpth), 'w') as wf:
         wf.write(mic_cont)
 
-def safecopy(src, dst, symlinks=False, ignore_ptns=[]):
+
+def safecopy(src, dst, symlinks=False, ignore_ptns=()):
     if os.path.isdir(src):
         if os.path.isdir(dst):
             dst = os.path.join(dst, os.path.basename(src))
@@ -207,20 +208,16 @@ def safecopy(src, dst, symlinks=False, ignore_ptns=[]):
         src = src.rstrip('/')
         # check common prefix to ignore copying itself
         if dst.startswith(src + '/'):
-            ignore_ptns += os.path.basename(src)
+            ignore_ptns = list(ignore_ptns) + [ os.path.basename(src) ]
 
+        ignores = shutil.ignore_patterns(*ignore_ptns)
         try:
-            ignores = shutil.ignore_patterns(*ignore_ptns)
             shutil.copytree(src, dst, symlinks, ignores)
-        except OSError, IOError:
+        except (OSError, IOError):
             shutil.rmtree(dst, ignore_errors=True)
             raise
-
     else:
-        try:
-            if not os.path.isdir(dst):
-                makedirs(os.path.dirname(dst))
+        if not os.path.isdir(dst):
+            makedirs(os.path.dirname(dst))
 
-            shutil.copy2(src, dst)
-        except:
-            raise
+        shutil.copy2(src, dst)
