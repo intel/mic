@@ -78,19 +78,19 @@ class MicCmd(cmdln.Cmdln):
         self.print_version()
 
     def help_create(self):
-        cr = creator.Creator()
-        cr.optparser = cr.get_optparser()
-        doc = cr.__doc__
-        doc = cr._help_reindent(doc)
-        doc = cr._help_preprocess(doc, None)
-        doc = doc.replace(cr.name, "${cmd_name}", 1)
+        crobj = creator.Creator()
+        crobj.optparser = crobj.get_optparser()
+        doc = crobj.__doc__
+        doc = crobj._help_reindent(doc)
+        doc = crobj._help_preprocess(doc, None)
+        doc = doc.replace(crobj.name, "${cmd_name}", 1)
         doc = doc.rstrip() + '\n'
         return doc
 
     @cmdln.alias("cr")
     def do_create(self, argv):
-        cr = creator.Creator()
-        cr.main(argv[1:])
+        crobj = creator.Creator()
+        crobj.main(argv[1:])
 
     def _root_confirm(self):
         if os.geteuid() != 0:
@@ -216,15 +216,15 @@ class MicCmd(cmdln.Cmdln):
 
 if __name__ == "__main__":
     try:
-        mic = MicCmd()
-        sys.exit(mic.main())
+        MIC = MicCmd()
+        sys.exit(MIC.main())
 
     except KeyboardInterrupt:
         msger.error('\n^C catched, program aborted.')
 
     # catch 'no space left' exception, etc
-    except IOError, e:
-        if e.errno == errno.ENOSPC:
+    except IOError, ioerr:
+        if ioerr.errno == errno.ENOSPC:
             msger.error('\nNo space left on device')
         raise
 
