@@ -16,6 +16,7 @@
 # Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 import os
+import sys
 import time
 import tempfile
 import re
@@ -24,6 +25,8 @@ import glob
 import hashlib
 import subprocess
 import platform
+import traceback
+
 
 try:
     import sqlite3 as sqlite
@@ -314,15 +317,16 @@ def calc_hashes(file_path, hash_names, start = 0, end = None):
 def get_md5sum(fpath):
     return calc_hashes(fpath, ('md5', ))[0]
 
-def normalize_ksfile(ksconf, release, arch):
-    def _clrtempks():
-        try:
-            os.unlink(ksconf)
-        except:
-            pass
 
-    if not os.path.exists(ksconf):
-        return
+def normalize_ksfile(ksconf, release, arch):
+    '''
+    Return the name of a normalized ks file in which macro variables
+    @BUILD_ID@ and @ARCH@ are replace with real values.
+
+    The original ks file is returned if no special macro is used, otherwise
+    a temp file is created and returned, which will be deleted when program
+    exits normally.
+    '''
 
     if not release:
         release = "latest"
@@ -332,20 +336,30 @@ def normalize_ksfile(ksconf, release, arch):
     with open(ksconf) as f:
         ksc = f.read()
 
-    if "@ARCH@" in ksc or "@BUILD_ID@" in ksc:
-        msger.info("Substitute macro variable @BUILD_ID@/@ARCH@ in ks: %s" % ksconf)
-        ksc = ksc.replace("@ARCH@", arch)
-        ksc = ksc.replace("@BUILD_ID@", release)
-        fd, ksconf = tempfile.mkstemp(prefix=os.path.basename(ksconf), dir="/tmp/")
-        os.write(fd, ksc)
-        os.close(fd)
+    if "@ARCH@" not in ksc and "@BUILD_ID@" not in ksc:
+        return ksconf
 
-        msger.debug('new ks path %s' % ksconf)
+    msger.info("Substitute macro variable @BUILD_ID@/@ARCH@ in ks: %s" % ksconf)
+    ksc = ksc.replace("@ARCH@", arch)
+    ksc = ksc.replace("@BUILD_ID@", release)
 
-        import atexit
-        atexit.register(_clrtempks)
+    fd, ksconf = tempfile.mkstemp(prefix=os.path.basename(ksconf))
+    os.write(fd, ksc)
+    os.close(fd)
+
+    msger.debug('normalized ks file:%s' % ksconf)
+
+    def remove_temp_ks():
+        try:
+            os.unlink(ksconf)
+        except OSError, err:
+            msger.warning('Failed to remove temp ks file:%s:%s' % (ksconf, err))
+
+    import atexit
+    atexit.register(remove_temp_ks)
 
     return ksconf
+
 
 def _check_mic_chroot(rootdir):
     def _path(path):
