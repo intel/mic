@@ -53,7 +53,7 @@ Requires:   qemu-arm-static
 Requires:   python-zypp
 
 BuildRequires:  python-devel
-%if 0%{?tizen_version:1}
+%if ! 0%{?tizen_version:1}
 BuildRequires:  python-docutils
 %endif
 
@@ -73,7 +73,7 @@ an image.
 
 %build
 CFLAGS="$RPM_OPT_FLAGS" %{__python} setup.py build
-%if 0%{?tizen_version:1}
+%if ! 0%{?tizen_version:1}
 make man
 %endif
 
@@ -87,7 +87,7 @@ rm -rf $RPM_BUILD_ROOT
 
 # install man page
 mkdir -p %{buildroot}/%{_prefix}/share/man/man1
-%if 0%{?tizen_version:1}
+%if ! 0%{?tizen_version:1}
 install -m644 doc/mic.1 %{buildroot}/%{_prefix}/share/man/man1
 %endif
 
@@ -95,7 +95,7 @@ install -m644 doc/mic.1 %{buildroot}/%{_prefix}/share/man/man1
 %defattr(-,root,root,-)
 %doc doc/*
 %doc README.rst AUTHORS COPYING ChangeLog
-%if 0%{?tizen_version:1}
+%if ! 0%{?tizen_version:1}
 %{_mandir}/man1/*
 %endif
 %dir %{_sysconfdir}/%{name}
