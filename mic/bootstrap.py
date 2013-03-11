@@ -105,18 +105,15 @@ class MiniBackend(object):
     def downloadPkgs(self):
         nonexist = []
         for pkg in self.dlpkgs:
-            try:
-                localpth = misc.get_package(pkg, self.repomd, self.arch)
-                if localpth:
-                    self.localpkgs[pkg] = localpth
-                elif pkg in self.optionals:
-                    # skip optional rpm
-                    continue
-                else:
-                    # mark nonexist rpm
-                    nonexist.append(pkg)
-            except:
-                raise
+            localpth = misc.get_package(pkg, self.repomd, self.arch)
+            if localpth:
+                self.localpkgs[pkg] = localpth
+            elif pkg in self.optionals:
+                # skip optional rpm
+                continue
+            else:
+                # mark nonexist rpm
+                nonexist.append(pkg)
 
         if nonexist:
             raise errors.BootstrapError("Can't get rpm binary: %s" %
@@ -215,12 +212,8 @@ class Bootstrap(object):
             pkgmgr.optionals = list(optlist)
             map(pkgmgr.selectPackage, pkglist + list(optlist))
             pkgmgr.runInstall()
-
         except (OSError, IOError, errors.CreatorError), err:
             raise errors.BootstrapError("%s" % err)
-
-        except:
-            raise
 
     def run(self, cmd, chdir, rootdir=None, bindmounts=None):
         def mychroot():

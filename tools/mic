@@ -90,11 +90,8 @@ class MicCmd(cmdln.Cmdln):
 
     @cmdln.alias("cr")
     def do_create(self, argv):
-        try:
-            cr = creator.Creator()
-            cr.main(argv[1:])
-        except:
-            raise
+        cr = creator.Creator()
+        cr.main(argv[1:])
 
     def _root_confirm(self):
         if os.geteuid() != 0:

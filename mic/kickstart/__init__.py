@@ -315,10 +315,7 @@ class UserConfig(KickstartConfig):
     @apply_wrapper
     def apply(self, user):
         for userconfig in user.userList:
-            try:
-                self.addUser(userconfig)
-            except:
-                raise
+            self.addUser(userconfig)
 
 class ServicesConfig(KickstartConfig):
     """A class to apply a kickstart services configuration to a system."""
