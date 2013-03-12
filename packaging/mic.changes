@@ -1,0 +1,182 @@
+* Thu Aug 02 2012 Gui Chen <gui.chen@intel.com> - 0.14
+- Release 0.14, changes including:
+  - use cached metadata when checksum is not changed
+  - skip non-fatal error in ks file and prompt user to handle
+  - prompt user to handle when failed to apply img configure
+  - replace hard name with device uuid in etc/fstab 
+  - enhance extlinux cfg file for symbolic kernel like IVI
+  - support label assign for raw image
+  - bug fix:
+    - fix live image create failure when label assigned
+    - avoid traceback when converting unsupported type
+    - fix mic --version ugly output
+
+* Wed Jul 12 2012 Gui Chen <gui.chen@intel.com> - 0.13
+- Release 0.13, changes including:
+  - create logfile as default when --release specifid
+  - use 'gzip' and 'bzip2' to pack image instead of python
+  - automatically detect path of 'env' for chroot
+  - record version and os info in build log and logfile
+  - bug fix:
+    - fix popup message in ubuntus
+    - fix unicode issue for logfile
+    - better fix for 'chroot raw' issue 
+
+* Wed Jun 20 2012 Gui Chen <gui.chen@intel.com> - 0.12
+- Release 0.12, changes including:
+  - use default value when @BUILD_ID@ and @ARCH@ not specified
+  - enhance proxy support in attachment retrieve
+  - add new --shrink opt for loop image to control img shrinking
+  - avoid invalid literal for loop device generation
+  - relocate and refactor selinux_check func
+  - remove prefix for make install
+  - bug fix:
+    - fix compres image in raw image
+    - fix src pkgs download failed issue
+    - fix convert failed issue
+
+* Fri Jun 08 2012 Gui Chen <gui.chen@intel.com> - 0.11
+- Release 0.11, changes including:
+  - support new subcmd 'auto' to handle magic line in ks
+  - enhance the handle of authentication url and https proxy
+  - support packing images together and support compressed file format
+  - reset LD_PRELOAD for chroot env
+  - centralized interface to check existing images
+  - avoid live image creating when using multi-partitions
+  - resolve the depends of python-urlgrabber
+  - bug fix:
+    - fix logfile context lost issue
+    - fix attachment package url handling
+    - fix mic ch raw failed issue
+
+* Tue May 15 2012 Gui Chen <gui.chen@intel.com> - 0.10
+- Release 0.10.4, changes including:
+  - container support using '%attachment' section in ks
+  - add --compress-to option to support zip format in loop image
+  - auto-detect config and plugindir to meet virtualenv and customized install
+  - remove all hardcoded info in setup.py and use sys.prefix for installing
+  - tolerate some OS errors in the image configurations stage
+  - extra patch:
+    - fix zypp missing password when using username passwd 
+    - some fixes to enhance authentication url
+    - refine repostr structure to fix comma issue in baseurl
+ 
+* Fri Apr 13 2012 Gui Chen <gui.chen@intel.com> - 0.9
+- Release 0.9, changes including:
+  - support pre-install package with zypp backend
+  - sync /etc/mic/mic.conf to bootstrap
+  - enhance sorting for version comparsion in zypp
+  - rewrite chroot tar image using xml format mount point file
+  - fix the incorrect number showing in fs src pkgs download
+  - remove tests directory for dist in Makefile
+  - fix liveusb parted mkpart failure, revert mbr size expand in raw
+  - cleanup /tmp/repolic* dir in the EULA checking
+
+* Mon Mar 26 2012 Gui Chen <gui.chen@intel.com> - 0.8
+- Release 0.8, changes including:
+  - partition alignment support
+  - remove bootloader option 'quiet vga' for raw
+  - update dist files in git source
+  - update unittest, add cases for chroot, msger, runner
+  - add 40 system test case for help
+  - rewrite loop device allocation mechanism
+
+* Fri Mar 02 2012 Jian-feng Ding <jian-feng.ding@intel.com> - 0.7
+- Release 0.7, changes including:
+  - zypp backend: fixed a fatal issue of unreleasable loop devs
+  - zypp backend: more friendly output message
+  - backend: share cached rpm files between yum and zypp
+  - enhancement for multiple partition loop format
+  - make msger to accept Unicode string
+  - fixed a regression of compress option for FS format
+  - fixed issues in openSUSE12.1
+  - new written man page
+
+* Thu Feb 16 2012 Qiang Zhang <qiang.z.zhang@intel.com> - 0.6
+- Release 0.6, changes including:
+  - give hint when converted image existed
+  - conf.py: proxy scheme check
+  - space check before copy image
+  - zypp: abort with error msg for repo resolver issues
+  - runner.py refinement
+  - ks file syntax check for '%post' without '%end' 
+  - support more compression formats than only bzip2
+  - fix msg NoneType issue, causing exit after install
+  - bootstrap:
+    - catch creator error when retrieving bootstrap metadata
+    - correct matching .metadata file in bootstrap
+
+* Mon Feb 06 2012 Gui Chen <gui.chen@intel.com> - 0.5
+- Release 0.5, changes including:
+  - Rewrite the algorithm of checking free space for download and install
+  - Add --shell option for convert to recreate image modified by internal shell
+  - Add -s option for chroot to unpack image
+  - Introduce --copy-kernel option for creator
+  - Remove the hardcoded default args for bootloader
+  - Disable logstderr and flush message buffer in disable_logstderr
+  - Deal with yum.conf inside yum backend by itself
+  - Bug fix:
+    - Fix rpmdb error in yum and zypp to avoid bad file descriptor message
+    - Fix MANIFEST syntax to be compliant with md5sum
+    - Correct dependencies for mic in bootstrap
+
+* Fri Jan 06 2012 Gui Chen <gui.chen@intel.com> - 0.4
+- Release 0.4, changes including:
+  - Support bootstrap mode, run with '--runtime=bootstrap'
+  - Full support for taring-to output, use 'mic ch x.tar'
+  - Break dependency between backend and baseimage
+  - Check valid repos in ks file
+  - Space check update and catch no space exception
+  - Fix no prompt when cv and ch no existed image
+  - Fix NoneType 'createopts' when convert
+  - Fix no existed local_pkgs_path
+ 
+* Mon Dec 26 2011 Zhang Qiang<qiang.z.zhang@intel.com> - 0.3
+- Upgrade to version 0.3, changes including:
+  - Unit test support, run 'make test'
+  - Enable proxy support in config file
+  - Refine configmgr and pluginmgr
+  - Support multi instance with different cache dir
+  - Add 47 system test case
+  - Improve md5sum generation
+  - Add repo option --ssl_verify
+  - Add option --name_prefix
+  - Reformatted code according to PEP08
+  - Backport from mic2:
+    - Add priority and cost option for repos
+    - Reinstroduced compress-disk-image option 
+
+* Tue Nov 29 2011 Gui Chen <gui.chen@intel.com> - 0.2
+- Release 0.2, with the following changes:
+  - Support btrfs and ext4 fstype for creator, convertor, and chroot
+  - Append distfiles and Makefile
+  - Check arch type from repo data
+  - Set rpm dbpath to fix 'rpm -qa' issue
+  - Fix chroot issue caused by image size
+  - Improve setup.py and make it compatible with python 2.5
+  - Disable ca check for https
+  - Change default output dir name to ./mic-output
+  - untrack mic/__version__.py
+  - Fix some minor issues
+
+* Thu Oct 27 2011 Gui Chen <gui.chen@intel.com> - 0.1
+- Official release 0.1, with the following features:
+  - Support three subcommand: create, convert, chroot
+  - Support five image types: fs, loop, raw, livecd, liveusb
+  - Support two package manager backend: yum and zypp
+  - Support the following global command line options:
+    - --verbose
+    - --debug
+  - Creator subcommand support the following command line options:
+    - --logfile=LOGFILE
+    - -c CONFIG, --config=CONFIG
+    - -k CACHEDIR, --cachedir=CACHEDIR
+    - -o OUTDIR, --outdir=OUTDIR
+    - -A ARCH, --arch=ARCH
+    - --release=RID
+    - --record-pkgs=RECORD_PKGS
+    - --pkgmgr=PKGMGR
+    - --local-pkgs-path=LOCAL_PKGS_PATH
+
+  Please read README.rst for more details.
+

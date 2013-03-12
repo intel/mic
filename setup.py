@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 
 import os, sys
+import glob
 from distutils.core import setup
-#try:
-#    import setuptools
-#    # enable "setup.py develop", optional
-#except ImportError:
-#    pass
+try:
+    import setuptools
+    # enable "setup.py develop", optional
+except ImportError:
+    pass
 
-MOD_NAME = 'micng'
+MOD_NAME = 'mic'
 
 version_path = 'VERSION'
 if not os.path.isfile(version_path):
@@ -27,25 +28,82 @@ try:
     ver_file.close()
 except IOError:
     print 'WARNING: Cannot write version number file'
-    pass
+
+# --install-layout is recognized after 2.5
+if sys.version_info[:2] > (2, 5):
+    if len(sys.argv) > 1 and 'install' in sys.argv:
+        try:
+            import platform
+            (dist, ver, id) = platform.linux_distribution()
+
+            # for debian-like distros, mods will be installed to
+            # ${PYTHONLIB}/dist-packages
+            if dist in ('debian', 'Ubuntu'):
+                sys.argv.append('--install-layout=deb')
+        except:
+            pass
 
 PACKAGES = [MOD_NAME,
             MOD_NAME + '/utils',
-            MOD_NAME + '/utils/kscommands',
-            MOD_NAME + '/utils/pkgmanagers',
             MOD_NAME + '/imager',
-            MOD_NAME + '/pluginbase',
+            MOD_NAME + '/kickstart',
+            MOD_NAME + '/kickstart/custom_commands',
+            MOD_NAME + '/3rdparty/pykickstart',
+            MOD_NAME + '/3rdparty/pykickstart/commands',
+            MOD_NAME + '/3rdparty/pykickstart/handlers',
+            MOD_NAME + '/3rdparty/pykickstart/urlgrabber',
            ]
-setup(name=MOD_NAME,
-      version = version,
-      description = 'New MeeGo Image Creator',
-      author='Jian-feng Ding',
-      author_email='jian-feng.ding@intel.com',
-      url='https://meego.gitorious.org/meego-developer-tools/image-creator',
-      scripts=[
-          'tools/micng',
-          'tools/mic-image-create',
-          ],
-      packages = PACKAGES,
-)
+
+IMAGER_PLUGINS = glob.glob(os.path.join("plugins", "imager", "*.py"))
+BACKEND_PLUGINS = glob.glob(os.path.join("plugins", "backend", "*.py"))
+
+# the following code to do a simple parse for '--prefix' opts
+prefix = sys.prefix
+is_next = False
+for arg in sys.argv:
+    if is_next:
+        prefix = arg
+        break
+    if '--prefix=' in arg:
+        prefix = arg[9:]
+        break
+    elif '--prefix' == arg:
+        is_next = True
+
+# get the installation path of mic.conf
+prefix = os.path.abspath(os.path.expanduser(prefix)).rstrip('/')
+if prefix.lstrip('/') == 'usr':
+    etc_prefix = '/etc'
+else:
+    etc_prefix = os.path.join(prefix, 'etc')
+
+conffile = 'distfiles/mic.conf'
+if os.path.isfile('%s/mic/mic.conf' % etc_prefix):
+    conffile += '.new'
+
+# apply prefix to mic.conf.in to generate actual mic.conf
+conf_str = file('distfiles/mic.conf.in').read()
+conf_str = conf_str.replace('@PREFIX@', prefix)
+with file(conffile, 'w') as wf:
+    wf.write(conf_str)
+
+try:
+    os.environ['PREFIX'] = prefix
+    setup(name=MOD_NAME,
+          version = version,
+          description = 'Image Creator for Linux Distributions',
+          author='Jian-feng Ding, Qiang Zhang, Gui Chen',
+          author_email='jian-feng.ding@intel.com, qiang.z.zhang@intel.com, gui.chen@intel.com',
+          url='https://github.com/jfding/mic',
+          scripts=[
+              'tools/mic',
+              ],
+          packages = PACKAGES,
+          data_files = [("%s/lib/mic/plugins/imager" % prefix, IMAGER_PLUGINS),
+                        ("%s/lib/mic/plugins/backend" % prefix, BACKEND_PLUGINS),
+                        ("%s/mic" % etc_prefix, [conffile])]
+    )
+finally:
+    # remove dynamic file distfiles/mic.conf
+    os.unlink(conffile)
 

@@ -2,7 +2,7 @@ PYTHON ?= python
 VERSION = $(shell cat VERSION)
 TAGVER = $(shell cat VERSION | sed -e "s/\([0-9\.]*\).*/\1/")
 
-PKGNAME = micng
+PKGNAME = mic
 
 ifeq ($(VERSION), $(TAGVER))
 	TAG = $(TAGVER)
@@ -11,25 +11,43 @@ else
 endif
 
 
-all:
+all: build
+
+build:
 	$(PYTHON) setup.py build
 
-dist-bz2:
-	git archive --format=tar --prefix=$(PKGNAME)-$(VERSION)/ $(TAG) | \
-		bzip2  > $(PKGNAME)-$(VERSION).tar.bz2
+dist-common: man
+	git archive --format=tar --prefix=$(PKGNAME)-$(TAGVER)/ $(TAG) | tar xpf -
+	git show $(TAG) --oneline | head -1 > $(PKGNAME)-$(TAGVER)/commit-id
+	mkdir $(PKGNAME)-$(TAGVER)/doc; mv mic.1 $(PKGNAME)-$(TAGVER)/doc
+	rm -rf $(PKGNAME)-$(TAGVER)/tests
 
-dist-gz:
-	git archive --format=tar --prefix=$(PKGNAME)-$(VERSION)/ $(TAG) | \
-		gzip  > $(PKGNAME)-$(VERSION).tar.gz
+dist-bz2: dist-common
+	tar jcpf $(PKGNAME)-$(TAGVER).tar.bz2 $(PKGNAME)-$(TAGVER)
+	rm -rf $(PKGNAME)-$(TAGVER)
 
-install: all
-	$(PYTHON) setup.py install --root=${DESTDIR}
+dist-gz: dist-common
+	tar zcpf $(PKGNAME)-$(TAGVER).tar.gz $(PKGNAME)-$(TAGVER)
+	rm -rf $(PKGNAME)-$(TAGVER)
 
-develop: all
+man: USAGE.rst
+	rst2man $< >mic.1
+
+install: build
+	$(PYTHON) setup.py install
+
+develop: build
 	$(PYTHON) setup.py develop
 
+test:
+	cd tests/unittest/ && $(PYTHON) suite.py 
+
 clean:
+	rm -f *.tar.gz
+	rm -f *.tar.bz2
+	rm -f mic/__version__.*
 	rm -f tools/*.py[co]
+	rm -f mic.1
 	rm -rf *.egg-info
 	rm -rf build/
 	rm -rf dist/
