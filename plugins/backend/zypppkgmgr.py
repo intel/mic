@@ -450,7 +450,8 @@ class Zypp(BackendPlugin):
 
                 dipkg = self._zyppQueryPackage("%s-debuginfo" % item.name())
                 if dipkg:
-                    dlpkgs.append(dipkg)
+                    ditem = zypp.asKindPackage(dipkg)
+                    dlpkgs.append(ditem)
                 else:
                     msger.warning("No debuginfo rpm found for: %s" \
                                   % item.name())
