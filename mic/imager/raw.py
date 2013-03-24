@@ -563,7 +563,7 @@ class RawImageCreator(BaseImageCreator):
 
         for name in self.__disks.keys():
             image = self._full_path(self.__imgdir, name, self.__disk_format)
-            bmap_file = self._full_path(self.__imgdir, name, "bmap")
+            bmap_file = self._full_path(self._outdir, name, "bmap")
 
             msger.debug("Generating block map file '%s'" % bmap_file)
 
