@@ -71,6 +71,7 @@ class BaseImageCreator(object):
         self.name = "target"
         self.tmpdir = "/var/tmp/mic"
         self.cachedir = "/var/tmp/mic/cache"
+        self.workdir = "/var/tmp/mic/build"
         self.destdir = "."
         self.target_arch = "noarch"
         self._local_pkgs_path = None
@@ -79,6 +80,8 @@ class BaseImageCreator(object):
 
         # If the kernel is save to the destdir when copy_kernel cmd is called.
         self._need_copy_kernel = False
+        # setup tmpfs tmpdir when enabletmpfs is True
+        self.enabletmpfs = False
 
         if createopts:
             # Mapping table for variables that have different names.
@@ -585,7 +588,10 @@ class BaseImageCreator(object):
             return
 
         try:
-            self.__builddir = tempfile.mkdtemp(dir = self.tmpdir,
+            self.workdir = os.path.join(self.tmpdir, "build")
+            if not os.path.exists(self.workdir):
+                os.makedirs(self.workdir)
+            self.__builddir = tempfile.mkdtemp(dir = self.workdir,
                                                prefix = "imgcreate-")
         except OSError, (err, msg):
             raise CreatorError("Failed create build directory in %s: %s" %
@@ -647,6 +653,18 @@ class BaseImageCreator(object):
 
         os.umask(origumask)
 
+    def __setup_tmpdir(self):
+        if not self.enabletmpfs:
+            return
+
+        runner.show('mount -t tmpfs -o size=4G tmpfs %s' % self.workdir)
+
+    def __clean_tmpdir(self):
+        if not self.enabletmpfs:
+            return
+
+        runner.show('umount -l %s' % self.workdir)
+
     def mount(self, base_on = None, cachedir = None):
         """Setup the target filesystem in preparation for an install.
 
@@ -665,6 +683,7 @@ class BaseImageCreator(object):
                     multiple installs.
 
         """
+        self.__setup_tmpdir()
         self.__ensure_builddir()
 
         # prevent popup dialog in Ubuntu(s)
@@ -687,6 +706,7 @@ class BaseImageCreator(object):
         if self.target_arch and self.target_arch.startswith("arm"):
             self.qemu_emulator = misc.setup_qemu_emulator(self._instroot,
                                                           self.target_arch)
+
 
         self.get_cachedir(cachedir)
 
@@ -748,6 +768,7 @@ class BaseImageCreator(object):
         # reset settings of popup dialog in Ubuntu(s)
         misc.unhide_loopdev_presentation()
 
+
     def cleanup(self):
         """Unmounts the target filesystem and deletes temporary files.
 
@@ -772,6 +793,8 @@ class BaseImageCreator(object):
 
         shutil.rmtree(self.__builddir, ignore_errors = True)
         self.__builddir = None
+
+        self.__clean_tmpdir()
 
     def __is_excluded_pkg(self, pkg):
         if pkg in self._excluded_pkgs:
