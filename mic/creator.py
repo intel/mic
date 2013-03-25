@@ -197,7 +197,7 @@ class Creator(cmdln.Cmdln):
             configmgr.create['local_pkgs_path'] = self.options.local_pkgs_path
 
         if self.options.release:
-            configmgr.create['release'] = self.options.release
+            configmgr.create['release'] = self.options.release.rstrip('/')
 
         if self.options.record_pkgs:
             configmgr.create['record_pkgs'] = []
