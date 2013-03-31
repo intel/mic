@@ -1,3 +1,19 @@
+* Mon Apr 01 2013 Gui Chen <gui.chen@intel.com> - 0.18
+ - put build_id before image name for release option
+ - mount build directory as tmpfs to speed up
+ - upgrade qemu (mic's depends) to 1.4.0
+ - bug fix:
+   - fix debuginfo rpm swig attribute lost
+   - fix release option failure with slash
+   - fix man page lost in some distros
+   - fix bmap file packed to tarball
+ - code cleanup:
+   - unify import statements to absolute import
+   - clean up many undefined in partitionfs.py/loop.py/livecd.py
+   - clean up some useless try and raise blocks
+   - clean up some bad indentations
+   - improve some error messages
+
 * Tue Feb 28 2013 Gui Chen <gui.chen@intel.com> - 0.17
   - support new distribution Fedora 18
   - enable to handle more than 3 partitions
