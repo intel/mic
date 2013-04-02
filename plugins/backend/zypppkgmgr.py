@@ -965,8 +965,9 @@ class Zypp(BackendPlugin):
                        reverse=True)
 
         if items:
-            url = self.get_url(items[0])
-            proxies = self.get_proxies(items[0])
+            item = zypp.asKindPackage(items[0])
+            url = self.get_url(item)
+            proxies = self.get_proxies(item)
             return (url, proxies)
 
         return (None, None)
