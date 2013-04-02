@@ -1,7 +1,8 @@
-Release 0.18 - Mon Apr 01 2013
+Release 0.18 - Mon Apr 03 2013
 ===========================================================
  * put build_id before image name for release option
  * mount build directory as tmpfs to speed up
+ * enable --priority in ks to set priority
  * upgrade qemu (mic's depends) to 1.4.0
  * bug fix:
    - fix debuginfo rpm swig attribute lost

@@ -1,28 +1,31 @@
- MIC Image Creator 0.17 Release Notes
+ MIC Image Creator 0.18 Release Notes
 ===========================================================
-Released Feb 28 2013
+Released Apr 03 2013
 
-This release note documents the changes included in the MIC 0.17 release. And
+This release note documents the changes included in the MIC 0.18 release. And
 the release contains new features, enhancements and bug fixes.
 
 New Features & Ehancements
 --------------------------
- * support new distribution Fedora 18
- * enable to handle more than 3 partitions
- * support partition without mount point
- * move vcs infomation from .vcs to .packages
+ * put build_id before image name for release option
+ * mount build directory as tmpfs to speed up
+ * enable --priority in ks to set priority
+ * upgrade qemu (mic's depends) to 1.4.0
 
 Bug Fixes
 ---------
- * fix failure when symbolic link vmlinuz in single disk
- * fix incorrect alignment handling
- * fix requires squashfs in opensuse
- * fix unicode error in myurlgrab
+ * fix debuginfo rpm swig attribute lost
+ * fix release option failure with slash
+ * fix man page lost in some distros
+ * fix bmap file packed to tarball
 
 Code Cleanup
 ------------
- * clean up some mess in utils/misc.py
- * clean up pylint issue in creator.py
+ * unify import statements to absolute import
+ * clean up many undefined in partitionfs.py/loop.py/livecd.py
+ * clean up some useless try and raise blocks
+ * clean up some bad indentations
+ * improve some error messages
 
 Resource
 --------

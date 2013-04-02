@@ -1,7 +1,8 @@
-mic (0.18-0.rc0) unstable; urgency=low
+mic (0.18-1) unstable; urgency=low
 
   * put build_id before image name for release option
   * mount build directory as tmpfs to speed up
+  * enable --priority in ks to set priority
   * upgrade qemu (mic's depends) to 1.4.0
   * bug fix:
     - fix debuginfo rpm swig attribute lost
@@ -15,7 +16,7 @@ mic (0.18-0.rc0) unstable; urgency=low
     - clean up some bad indentations
     - improve some error messages
 
- -- Gui Chen <gui.chen@intel.com>  Mon, 01 Apr 2013 17:25:35 +0800
+ -- Gui Chen <gui.chen@intel.com>  Mon, 03 Apr 2013 17:25:35 +0800
 
 mic (0.17-1) unstable; urgency=low
 
