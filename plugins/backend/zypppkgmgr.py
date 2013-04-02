@@ -170,6 +170,8 @@ class Zypp(BackendPlugin):
                 obs.status().setToBeInstalled (zypp.ResStatus.USER)
 
         def cmpEVR(p1, p2):
+            # compare criterion: arch compatibility first, then repo
+            # priority, and version last
             a1 = p1.arch()
             a2 = p2.arch()
             if str(a1) != str(a2):
@@ -177,6 +179,15 @@ class Zypp(BackendPlugin):
                     return -1
                 else:
                     return 1
+            # Priority of a repository is an integer value between 0 (the
+            # highest priority) and 99 (the lowest priority)
+            p1 = int(p1.repoInfo().priority())
+            p2 = int(p2.repoInfo().priority())
+            if p1 > p2:
+                return -1
+            elif p1 < p2:
+                return 1
+
             ed1 = p1.edition()
             ed2 = p2.edition()
             (e1, v1, r1) = map(str, [ed1.epoch(), ed1.version(), ed1.release()])
