@@ -181,11 +181,11 @@ class Zypp(BackendPlugin):
                     return 1
             # Priority of a repository is an integer value between 0 (the
             # highest priority) and 99 (the lowest priority)
-            p1 = int(p1.repoInfo().priority())
-            p2 = int(p2.repoInfo().priority())
-            if p1 > p2:
+            pr1 = int(p1.repoInfo().priority())
+            pr2 = int(p2.repoInfo().priority())
+            if pr1 > pr2:
                 return -1
-            elif p1 < p2:
+            elif pr1 < pr2:
                 return 1
 
             ed1 = p1.edition()
@@ -371,8 +371,9 @@ class Zypp(BackendPlugin):
 
         # Enable gpg check for verifying corrupt packages
         repo.gpgcheck = 1
-        if priority:
-            repo.priority = priority
+        if priority is not None:
+            # priority 0 has issue in RepoInfo.setPriority
+            repo.priority = priority + 1
 
         try:
             repo_info = zypp.RepoInfo()
@@ -406,7 +407,7 @@ class Zypp(BackendPlugin):
 
             repo_info.addBaseUrl(baseurl)
 
-            if repo.priority:
+            if repo.priority is not None:
                 repo_info.setPriority(repo.priority)
 
             # this hack is used to change zypp credential file location
