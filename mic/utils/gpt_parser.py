@@ -23,7 +23,7 @@ import uuid
 import binascii
 from mic.utils.errors import MountError
 
-_GPT_HEADER_FORMAT = "<8s4sIIIQQQQ16sQIII420x"
+_GPT_HEADER_FORMAT = "<8s4sIIIQQQQ16sQIII"
 _GPT_ENTRY_FORMAT = "<16s16sQQQ72s"
 _SUPPORTED_GPT_REVISION = '\x00\x00\x01\x00'
 
@@ -93,6 +93,11 @@ class GptParser:
                               "revision is '%s'" % \
                               (binascii.hexlify(header[1]),
                                binascii.hexlify(_SUPPORTED_GPT_REVISION)))
+
+        # Validate header size
+        if header[2] != struct.calcsize(_GPT_HEADER_FORMAT):
+            raise MountError("Bad GPT header size: %d bytes, expected %d" % \
+                             (header[2], struct.calcsize(_GPT_HEADER_FORMAT)))
 
         return (header[0], # 0. Signature
                 header[1], # 1. Revision
