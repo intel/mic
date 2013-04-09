@@ -20,10 +20,12 @@ GPT header and the GPT partition table. """
 
 import struct
 import uuid
+import binascii
 from mic.utils.errors import MountError
 
-_GPT_HEADER_FORMAT = "<8sIIIIQQQQ16sQIII420x"
+_GPT_HEADER_FORMAT = "<8s4sIIIQQQQ16sQIII420x"
 _GPT_ENTRY_FORMAT = "<16s16sQQQ72s"
+_SUPPORTED_GPT_REVISION = '\x00\x00\x01\x00'
 
 def _stringify_uuid(binary_uuid):
     """ A small helper function to transform a binary UUID into a string
@@ -80,10 +82,17 @@ class GptParser:
 
         header = struct.unpack(_GPT_HEADER_FORMAT, header)
 
-        # Perform a simple validation
+        # Validate the signature
         if header[0] != 'EFI PART':
             raise MountError("GPT paritition table on disk '%s' not found" % \
                              self.disk_path)
+
+        # Validate the revision
+        if header[1] != _SUPPORTED_GPT_REVISION:
+            raise MountError("Unsupported GPT revision '%s', supported " \
+                              "revision is '%s'" % \
+                              (binascii.hexlify(header[1]),
+                               binascii.hexlify(_SUPPORTED_GPT_REVISION)))
 
         return (header[0], # 0. Signature
                 header[1], # 1. Revision
