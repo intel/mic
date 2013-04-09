@@ -22,8 +22,8 @@ import struct
 import uuid
 from mic.utils.errors import MountError
 
-GPT_HEADER_FORMAT = "<8sIIIIQQQQ16sQIII420x"
-GPT_ENTRY_FORMAT = "<16s16sQQQ72s"
+_GPT_HEADER_FORMAT = "<8sIIIIQQQQ16sQIII420x"
+_GPT_ENTRY_FORMAT = "<16s16sQQQ72s"
 
 def _stringify_uuid(binary_uuid):
     """ A small helper function to transform a binary UUID into a string
@@ -73,12 +73,12 @@ class GptParser:
         # The header sits at LBA 1 - read it
         self.disk_obj.seek(self.sector_size)
         try:
-            header = self.disk_obj.read(struct.calcsize(GPT_HEADER_FORMAT))
+            header = self.disk_obj.read(struct.calcsize(_GPT_HEADER_FORMAT))
         except IOError as err:
             raise MountError("cannot read from file '%s': %s" % \
                              (self.disk_path, err))
 
-        header = struct.unpack(GPT_HEADER_FORMAT, header)
+        header = struct.unpack(_GPT_HEADER_FORMAT, header)
 
         # Perform a simple validation
         if header[0] != 'EFI PART':
@@ -116,8 +116,8 @@ class GptParser:
         self.disk_obj.seek(entries_start)
 
         for _ in xrange(0, entries_count):
-            entry = self.disk_obj.read(struct.calcsize(GPT_ENTRY_FORMAT))
-            entry = struct.unpack(GPT_ENTRY_FORMAT, entry)
+            entry = self.disk_obj.read(struct.calcsize(_GPT_ENTRY_FORMAT))
+            entry = struct.unpack(_GPT_ENTRY_FORMAT, entry)
 
             if entry[2] == 0 or entry[3] == 0:
                 continue
