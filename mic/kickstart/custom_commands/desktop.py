@@ -25,7 +25,7 @@ class Mic_Desktop(KickstartCommand):
     def __init__(self, writePriority=0,
                        defaultdesktop=None,
                        defaultdm=None,
-                       autologinuser="meego",
+                       autologinuser=None,
                        session=None):
 
         KickstartCommand.__init__(self, writePriority)
