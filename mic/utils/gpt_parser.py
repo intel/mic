@@ -150,7 +150,7 @@ class GptParser:
                 raw_hdr[12], # 11. Size of a single partition entry
                 raw_hdr[13]) # 12. CRC32 of partition array
 
-    def get_partitions(self):
+    def get_partitions(self, primary = True):
         """ This is a generator which parses teh GPT partition table and
         generates the following tupes for each partition:
 
@@ -158,9 +158,13 @@ class GptParser:
         Attribute flags, Partition name)
 
         This tuple corresponds to the GPT partition record format. Please, see the
-        UEFI standard for the description of these fields. """
+        UEFI standard for the description of these fields.
 
-        header = self.read_header()
+        If the 'primary' parameter is 'True', partitions from the primary GPT
+        partition table are generated, otherwise partitions from the backup GPT
+        partition table are generated. """
+
+        header = self.read_header(primary)
         entries_start = header[9] * self.sector_size
         entries_count = header[10]
 
