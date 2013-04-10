@@ -98,6 +98,24 @@ class GptParser:
 
         self._disk_obj.close()
 
+    def _read_disk(self, offset, size):
+        """ A helper function which reads 'size' bytes from offset 'offset' of
+        the disk and checks all the error conditions. """
+
+        self._disk_obj.seek(offset)
+        try:
+            data = self._disk_obj.read(size)
+        except IOError as err:
+            raise MountError("cannot read from '%s': %s" % \
+                             (self.disk_path, err))
+
+        if len(data) != size:
+            raise MountError("cannot read %d bytes from offset '%d' of '%s', " \
+                             "read only %d bytes" % \
+                             (size, offset, self.disk_path, len(data)))
+
+        return data
+
     def read_header(self, primary = True):
         """ Read and verify the GPT header and return a tuple containing the
         following elements:
@@ -113,26 +131,15 @@ class GptParser:
         If the 'primary' parameter is 'True', the primary GPT header is read,
         otherwise the backup GPT header is read instead. """
 
-        # Read and validate the primary GPT header
-        self._disk_obj.seek(self.sector_size)
-        try:
-            raw_hdr = self._disk_obj.read(struct.calcsize(_GPT_HEADER_FORMAT))
-        except IOError as err:
-            raise MountError("cannot read from file '%s': %s" % \
-                             (self.disk_path, err))
+        header_size = struct.calcsize(_GPT_HEADER_FORMAT)
 
+        # Read and validate the primary GPT header
+        raw_hdr = self._read_disk(self.sector_size, header_size)
         raw_hdr = struct.unpack(_GPT_HEADER_FORMAT, raw_hdr)
         _validate_header(raw_hdr)
 
         if not primary:
-            # Read and validate the backup GPT header
-            self._disk_obj.seek(raw_hdr[6] * self.sector_size)
-            try:
-                raw_hdr = self._disk_obj.read(struct.calcsize(_GPT_HEADER_FORMAT))
-            except IOError as err:
-                raise MountError("cannot read from file '%s': %s" % \
-                                 (self.disk_path, err))
-
+            raw_hdr = self._read_disk(raw_hdr[6] * self.sector_size, header_size)
             raw_hdr = struct.unpack(_GPT_HEADER_FORMAT, raw_hdr)
             _validate_header(raw_hdr)
 
