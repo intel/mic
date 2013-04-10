@@ -35,6 +35,18 @@ def _stringify_uuid(binary_uuid):
 
     return uuid_str.upper()
 
+def _calc_header_crc(raw_hdr):
+    """ Calculate GPT header CRC32 checksum. The 'raw_hdr' parameter has to
+    be a list or a tuple containing all the elements of the GPT header in a
+    "raw" form, meaning that it should simply contain "unpacked" disk data.
+    """
+
+    raw_hdr = list(raw_hdr)
+    raw_hdr[3] = 0
+    raw_hdr = struct.pack(_GPT_HEADER_FORMAT, *raw_hdr)
+
+    return binascii.crc32(raw_hdr) & 0xFFFFFFFF
+
 class GptParser:
     """ GPT partition table parser. The current implementation is simplified
     and it assumes that the partition table is correct, so it does not check
@@ -98,6 +110,11 @@ class GptParser:
         if header[2] != struct.calcsize(_GPT_HEADER_FORMAT):
             raise MountError("Bad GPT header size: %d bytes, expected %d" % \
                              (header[2], struct.calcsize(_GPT_HEADER_FORMAT)))
+
+        crc = _calc_header_crc(header)
+        if header[3] != crc:
+            raise MountError("GPT header crc mismatch: %#x, should be %#x" % \
+                             (crc, header[3]))
 
         return (header[0], # 0. Signature
                 header[1], # 1. Revision
