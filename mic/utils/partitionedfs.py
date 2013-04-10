@@ -354,7 +354,7 @@ class PartitionedMount(Mount):
                     p = self.partitions[n]
                     if p['num'] == pnum:
                         # Found, assign PARTUUID
-                        p['partuuid'] = entry[1]
+                        p['partuuid'] = entry[2]
                         msger.debug("PARTUUID for partition %d of disk '%s' " \
                                     "(mount point '%s') is '%s'" % (pnum, \
                                     disk_name, p['mountpoint'], p['partuuid']))

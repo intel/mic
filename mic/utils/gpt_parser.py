@@ -154,11 +154,13 @@ class GptParser:
         """ This is a generator which parses teh GPT partition table and
         generates the following tupes for each partition:
 
-        (Partition type GUID, Partition GUID, First LBA, Last LBA,
+        (Index, Partition type GUID, Partition GUID, First LBA, Last LBA,
         Attribute flags, Partition name)
 
-        This tuple corresponds to the GPT partition record format. Please, see the
-        UEFI standard for the description of these fields.
+        All the elements in the tuple except 'Index' correspond to the GPT
+        partition record format. Please, see the UEFI standard for the
+        description of these fields. The 'Index' element is simply the index
+        number of this entry in the partition table.
 
         If the 'primary' parameter is 'True', partitions from the primary GPT
         partition table are generated, otherwise partitions from the backup GPT
@@ -169,19 +171,22 @@ class GptParser:
         entries_count = header[10]
 
         self._disk_obj.seek(entries_start)
+        index = -1
 
         for _ in xrange(0, entries_count):
             entry = self._disk_obj.read(struct.calcsize(_GPT_ENTRY_FORMAT))
             entry = struct.unpack(_GPT_ENTRY_FORMAT, entry)
+            index += 1
 
             if entry[2] == 0 or entry[3] == 0:
                 continue
 
             part_name = str(entry[5].decode('UTF-16').split('\0', 1)[0])
 
-            yield (_stringify_uuid(entry[0]), # 0. Partition type GUID
-                   _stringify_uuid(entry[1]), # 1. Partition GUID
-                   entry[2],                  # 2. First LBA
-                   entry[3],                  # 3. Last LBA
-                   entry[4],                  # 4. Attribute flags
-                   part_name)                 # 5. Partition name
+            yield (index,                     # 0. Partition table entry number
+                   _stringify_uuid(entry[0]), # 1. Partition type GUID
+                   _stringify_uuid(entry[1]), # 2. Partition GUID
+                   entry[2],                  # 3. First LBA
+                   entry[3],                  # 4. Last LBA
+                   entry[4],                  # 5. Attribute flags
+                   part_name)                 # 6. Partition name
