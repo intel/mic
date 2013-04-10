@@ -88,7 +88,7 @@ class GptParser:
         self.disk_path = disk_path
 
         try:
-            self.disk_obj = open(disk_path, 'rb')
+            self._disk_obj = open(disk_path, 'rb')
         except IOError as err:
             raise MountError("Cannot open file '%s' for reading GPT " \
                              "partitions: %s" % (disk_path, err))
@@ -96,7 +96,7 @@ class GptParser:
     def __del__(self):
         """ The class destructor. """
 
-        self.disk_obj.close()
+        self._disk_obj.close()
 
     def read_header(self, primary = True):
         """ Read and verify the GPT header and return a tuple containing the
@@ -114,9 +114,9 @@ class GptParser:
         otherwise the backup GPT header is read instead. """
 
         # Read and validate the primary GPT header
-        self.disk_obj.seek(self.sector_size)
+        self._disk_obj.seek(self.sector_size)
         try:
-            raw_hdr = self.disk_obj.read(struct.calcsize(_GPT_HEADER_FORMAT))
+            raw_hdr = self._disk_obj.read(struct.calcsize(_GPT_HEADER_FORMAT))
         except IOError as err:
             raise MountError("cannot read from file '%s': %s" % \
                              (self.disk_path, err))
@@ -126,9 +126,9 @@ class GptParser:
 
         if not primary:
             # Read and validate the backup GPT header
-            self.disk_obj.seek(raw_hdr[6] * self.sector_size)
+            self._disk_obj.seek(raw_hdr[6] * self.sector_size)
             try:
-                raw_hdr = self.disk_obj.read(struct.calcsize(_GPT_HEADER_FORMAT))
+                raw_hdr = self._disk_obj.read(struct.calcsize(_GPT_HEADER_FORMAT))
             except IOError as err:
                 raise MountError("cannot read from file '%s': %s" % \
                                  (self.disk_path, err))
@@ -168,10 +168,10 @@ class GptParser:
         entries_start = header[9] * self.sector_size
         entries_count = header[10]
 
-        self.disk_obj.seek(entries_start)
+        self._disk_obj.seek(entries_start)
 
         for _ in xrange(0, entries_count):
-            entry = self.disk_obj.read(struct.calcsize(_GPT_ENTRY_FORMAT))
+            entry = self._disk_obj.read(struct.calcsize(_GPT_ENTRY_FORMAT))
             entry = struct.unpack(_GPT_ENTRY_FORMAT, entry)
 
             if entry[2] == 0 or entry[3] == 0:
