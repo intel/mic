@@ -98,7 +98,7 @@ class GptParser:
 
         self.disk_obj.close()
 
-    def read_header(self):
+    def read_header(self, primary = True):
         """ Read and verify the GPT header and return a tuple containing the
         following elements:
 
@@ -108,9 +108,12 @@ class GptParser:
         Size of a single partition entry, CRC32 of partition array)
 
         This tuple corresponds to the GPT header format. Please, see the UEFI
-        standard for the description of these fields. """
+        standard for the description of these fields.
 
-        # The header sits at LBA 1 - read it
+        If the 'primary' parameter is 'True', the primary GPT header is read,
+        otherwise the backup GPT header is read instead. """
+
+        # Read and validate the primary GPT header
         self.disk_obj.seek(self.sector_size)
         try:
             header = self.disk_obj.read(struct.calcsize(_GPT_HEADER_FORMAT))
@@ -120,6 +123,18 @@ class GptParser:
 
         header = struct.unpack(_GPT_HEADER_FORMAT, header)
         _validate_header(header)
+
+        if not primary:
+            # Read and validate the backup GPT header
+            self.disk_obj.seek(header[6] * self.sector_size)
+            try:
+                header = self.disk_obj.read(struct.calcsize(_GPT_HEADER_FORMAT))
+            except IOError as err:
+                raise MountError("cannot read from file '%s': %s" % \
+                                 (self.disk_path, err))
+
+            header = struct.unpack(_GPT_HEADER_FORMAT, header)
+            _validate_header(header)
 
         return (header[0], # 0. Signature
                 header[1], # 1. Revision
