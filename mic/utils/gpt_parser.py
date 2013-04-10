@@ -56,7 +56,7 @@ def _validate_header(raw_hdr):
 
     # Validate the signature
     if raw_hdr[0] != 'EFI PART':
-        raise MountError("GPT paritition table not found")
+        raise MountError("GPT partition table not found")
 
     # Validate the revision
     if raw_hdr[1] != _SUPPORTED_GPT_REVISION:
@@ -82,7 +82,7 @@ class GptParser:
     But this implementation can be extended in the future, if needed. """
 
     def __init__(self, disk_path, sector_size = 512):
-        """ The class construcor which accepts the following parameters:
+        """ The class constructor which accepts the following parameters:
             * disk_path - full path to the disk image or device node
             * sector_size - size of a disk sector in bytes """
 
@@ -158,8 +158,8 @@ class GptParser:
                 raw_hdr[13]) # 12. CRC32 of partition array
 
     def get_partitions(self, primary = True):
-        """ This is a generator which parses teh GPT partition table and
-        generates the following tupes for each partition:
+        """ This is a generator which parses the GPT partition table and
+        generates the following tuples for each partition:
 
         (Index, Partition type GUID, Partition GUID, First LBA, Last LBA,
         Attribute flags, Partition name)
