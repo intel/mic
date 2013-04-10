@@ -47,6 +47,32 @@ def _calc_header_crc(raw_hdr):
 
     return binascii.crc32(raw_hdr) & 0xFFFFFFFF
 
+def _validate_header(raw_hdr):
+    """ Validate the GPT header. The 'raw_hdr' parameter has to be a list or a
+    tuple containing all the elements of the GPT header in a "raw" form,
+    meaning that it should simply contain "unpacked" disk data. """
+
+    # Validate the signature
+    if raw_hdr[0] != 'EFI PART':
+        raise MountError("GPT paritition table not found")
+
+    # Validate the revision
+    if raw_hdr[1] != _SUPPORTED_GPT_REVISION:
+        raise MountError("Unsupported GPT revision '%s', supported revision " \
+                         "is '%s'" % \
+                          (binascii.hexlify(raw_hdr[1]),
+                           binascii.hexlify(_SUPPORTED_GPT_REVISION)))
+
+    # Validate header size
+    if raw_hdr[2] != struct.calcsize(_GPT_HEADER_FORMAT):
+        raise MountError("Bad GPT header size: %d bytes, expected %d" % \
+                         (raw_hdr[2], struct.calcsize(_GPT_HEADER_FORMAT)))
+
+    crc = _calc_header_crc(raw_hdr)
+    if raw_hdr[3] != crc:
+        raise MountError("GPT header crc mismatch: %#x, should be %#x" % \
+                         (crc, raw_hdr[3]))
+
 class GptParser:
     """ GPT partition table parser. The current implementation is simplified
     and it assumes that the partition table is correct, so it does not check
@@ -93,28 +119,7 @@ class GptParser:
                              (self.disk_path, err))
 
         header = struct.unpack(_GPT_HEADER_FORMAT, header)
-
-        # Validate the signature
-        if header[0] != 'EFI PART':
-            raise MountError("GPT paritition table on disk '%s' not found" % \
-                             self.disk_path)
-
-        # Validate the revision
-        if header[1] != _SUPPORTED_GPT_REVISION:
-            raise MountError("Unsupported GPT revision '%s', supported " \
-                              "revision is '%s'" % \
-                              (binascii.hexlify(header[1]),
-                               binascii.hexlify(_SUPPORTED_GPT_REVISION)))
-
-        # Validate header size
-        if header[2] != struct.calcsize(_GPT_HEADER_FORMAT):
-            raise MountError("Bad GPT header size: %d bytes, expected %d" % \
-                             (header[2], struct.calcsize(_GPT_HEADER_FORMAT)))
-
-        crc = _calc_header_crc(header)
-        if header[3] != crc:
-            raise MountError("GPT header crc mismatch: %#x, should be %#x" % \
-                             (crc, header[3]))
+        _validate_header(header)
 
         return (header[0], # 0. Signature
                 header[1], # 1. Revision
