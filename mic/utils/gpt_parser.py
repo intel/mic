@@ -26,6 +26,7 @@ from mic.utils.errors import MountError
 _GPT_HEADER_FORMAT = "<8s4sIIIQQQQ16sQIII"
 _GPT_HEADER_SIZE = struct.calcsize(_GPT_HEADER_FORMAT)
 _GPT_ENTRY_FORMAT = "<16s16sQQQ72s"
+_GPT_ENTRY_SIZE = struct.calcsize(_GPT_ENTRY_FORMAT)
 _SUPPORTED_GPT_REVISION = '\x00\x00\x01\x00'
 
 def _stringify_uuid(binary_uuid):
@@ -173,15 +174,15 @@ class GptParser:
         partition table are generated. """
 
         header = self.read_header(primary)
-        entries_start = header[9] * self.sector_size
-        entries_count = header[10]
 
-        self._disk_obj.seek(entries_start)
+        start = header[9] * self.sector_size
         index = -1
 
-        for _ in xrange(0, entries_count):
-            entry = self._disk_obj.read(struct.calcsize(_GPT_ENTRY_FORMAT))
+        for _ in xrange(0, header[10]):
+            entry = self._read_disk(start, _GPT_ENTRY_SIZE)
             entry = struct.unpack(_GPT_ENTRY_FORMAT, entry)
+
+            start += header[11]
             index += 1
 
             if entry[2] == 0 or entry[3] == 0:
