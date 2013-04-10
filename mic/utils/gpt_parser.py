@@ -24,6 +24,7 @@ import binascii
 from mic.utils.errors import MountError
 
 _GPT_HEADER_FORMAT = "<8s4sIIIQQQQ16sQIII"
+_GPT_HEADER_SIZE = struct.calcsize(_GPT_HEADER_FORMAT)
 _GPT_ENTRY_FORMAT = "<16s16sQQQ72s"
 _SUPPORTED_GPT_REVISION = '\x00\x00\x01\x00'
 
@@ -64,9 +65,9 @@ def _validate_header(raw_hdr):
                            binascii.hexlify(_SUPPORTED_GPT_REVISION)))
 
     # Validate header size
-    if raw_hdr[2] != struct.calcsize(_GPT_HEADER_FORMAT):
+    if raw_hdr[2] != _GPT_HEADER_SIZE:
         raise MountError("Bad GPT header size: %d bytes, expected %d" % \
-                         (raw_hdr[2], struct.calcsize(_GPT_HEADER_FORMAT)))
+                         (raw_hdr[2], _GPT_HEADER_SIZE))
 
     crc = _calc_header_crc(raw_hdr)
     if raw_hdr[3] != crc:
@@ -131,15 +132,13 @@ class GptParser:
         If the 'primary' parameter is 'True', the primary GPT header is read,
         otherwise the backup GPT header is read instead. """
 
-        header_size = struct.calcsize(_GPT_HEADER_FORMAT)
-
         # Read and validate the primary GPT header
-        raw_hdr = self._read_disk(self.sector_size, header_size)
+        raw_hdr = self._read_disk(self.sector_size, _GPT_HEADER_SIZE)
         raw_hdr = struct.unpack(_GPT_HEADER_FORMAT, raw_hdr)
         _validate_header(raw_hdr)
 
         if not primary:
-            raw_hdr = self._read_disk(raw_hdr[6] * self.sector_size, header_size)
+            raw_hdr = self._read_disk(raw_hdr[6] * self.sector_size, _GPT_HEADER_SIZE)
             raw_hdr = struct.unpack(_GPT_HEADER_FORMAT, raw_hdr)
             _validate_header(raw_hdr)
 
