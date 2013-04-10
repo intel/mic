@@ -168,15 +168,18 @@ class GptParser:
 
     def get_partitions(self, primary = True):
         """ This is a generator which parses the GPT partition table and
-        generates the following tuples for each partition:
+        generates the following dictionary for each partition:
 
-        (Index, Partition type GUID, Partition GUID, First LBA, Last LBA,
-        Attribute flags, Partition name)
+        'index'     : the index of the partition in the partition table
+        'type_uuid' : partition type UUID
+        'part_uuid' : partition UUID
+        'first_lba' : the first LBA
+        'last_lba'  : the last LBA
+        'flags'     : attribute flags
+        'name'      : partition name
 
-        All the elements in the tuple except 'Index' correspond to the GPT
-        partition record format. Please, see the UEFI standard for the
-        description of these fields. The 'Index' element is simply the index
-        number of this entry in the partition table.
+        This dictionary corresponds to the GPT header format. Please, see the
+        UEFI standard for the description of these fields.
 
         If the 'primary' parameter is 'True', partitions from the primary GPT
         partition table are generated, otherwise partitions from the backup GPT
@@ -199,10 +202,10 @@ class GptParser:
 
             part_name = str(entry[5].decode('UTF-16').split('\0', 1)[0])
 
-            yield (index,                     # 0. Partition table entry number
-                   _stringify_uuid(entry[0]), # 1. Partition type GUID
-                   _stringify_uuid(entry[1]), # 2. Partition GUID
-                   entry[2],                  # 3. First LBA
-                   entry[3],                  # 4. Last LBA
-                   entry[4],                  # 5. Attribute flags
-                   part_name)                 # 6. Partition name
+            yield { 'index'     : index,
+                    'type_uuid' : _stringify_uuid(entry[0]),
+                    'part_uuid' : _stringify_uuid(entry[1]),
+                    'first_lba' : entry[2],
+                    'last_lba'  : entry[3],
+                    'flags'     : entry[4],
+                    'name'      : part_name }
