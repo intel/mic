@@ -169,6 +169,23 @@ class GptParser:
                  'ptable_crc' : raw_hdr[13],
                  'primary'    : primary }
 
+    def _read_raw_ptable(self, header):
+        """ Read and validate primary or backup partition table. The 'header'
+        argument is the GPT header. If it is the primary GPT header, then the
+        primary partition table is read and validated, otherwise - the backup
+        one. The 'header' argument is a dictionary which is returned by the
+        'read_header()' method. """
+
+        raw_ptable = self._read_disk(header['ptable_lba'] * self.sector_size,
+                                     header['entry_size'] * header['parts_cnt'])
+
+        crc = binascii.crc32(raw_ptable) & 0xFFFFFFFF
+        if crc != header['ptable_crc']:
+            raise MountError("partition table at LBA %d is corrupted" % \
+                             header['ptable_lba'])
+
+        return raw_ptable
+
     def get_partitions(self, primary = True):
         """ This is a generator which parses the GPT partition table and
         generates the following dictionary for each partition:
@@ -191,16 +208,12 @@ class GptParser:
         partition table are generated. """
 
         header = self.read_header(primary)
+        raw_ptable = self._read_raw_ptable(header)
 
-        start = header['ptable_lba'] * self.sector_size
-        index = -1
-
-        for _ in xrange(0, header['parts_cnt']):
-            raw_entry = self._read_disk(start, _GPT_ENTRY_SIZE)
-            raw_entry = struct.unpack(_GPT_ENTRY_FORMAT, raw_entry)
-
-            start += header['entry_size']
-            index += 1
+        for index in xrange(0, header['parts_cnt']):
+            start = header['entry_size'] * index
+            end = start + header['entry_size']
+            raw_entry = struct.unpack(_GPT_ENTRY_FORMAT, raw_ptable[start:end])
 
             if raw_entry[2] == 0 or raw_entry[3] == 0:
                 continue
