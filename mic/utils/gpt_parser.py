@@ -135,6 +135,8 @@ class GptParser:
         'parts_cnt'  : number of partition entries
         'entry_size' : size of a single partition entry
         'ptable_crc' : CRC32 of the partition table
+        'primary'    : a boolean, if 'True', this is the primary GPT header,
+                       if 'False' - the secondary
 
         This dictionary corresponds to the GPT header format. Please, see the
         UEFI standard for the description of these fields.
@@ -164,7 +166,8 @@ class GptParser:
                  'ptable_lba' : raw_hdr[10],
                  'parts_cnt'  : raw_hdr[11],
                  'entry_size' : raw_hdr[12],
-                 'ptable_crc' : raw_hdr[13] }
+                 'ptable_crc' : raw_hdr[13],
+                 'primary'    : primary }
 
     def get_partitions(self, primary = True):
         """ This is a generator which parses the GPT partition table and
@@ -177,6 +180,8 @@ class GptParser:
         'last_lba'  : the last LBA
         'flags'     : attribute flags
         'name'      : partition name
+        'primary'   : a boolean, if 'True', this is the primary partition
+                      table, if 'False' - the secondary
 
         This dictionary corresponds to the GPT header format. Please, see the
         UEFI standard for the description of these fields.
@@ -208,4 +213,5 @@ class GptParser:
                     'first_lba' : entry[2],
                     'last_lba'  : entry[3],
                     'flags'     : entry[4],
-                    'name'      : part_name }
+                    'name'      : part_name,
+                    'primary'   : primary }
