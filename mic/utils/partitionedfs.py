@@ -94,7 +94,8 @@ class PartitionedMount(Mount):
         self.__add_disk(part['disk_name'])
 
     def add_partition(self, size, disk_name, mountpoint, fstype = None,
-                      label=None, fsopts = None, boot = False, align = None):
+                      label=None, fsopts = None, boot = False, align = None,
+                      part_type = None):
         """ Add the next partition. Prtitions have to be added in the
         first-to-last order. """
 
@@ -146,6 +147,7 @@ class PartitionedMount(Mount):
                      'num': None, # Partition number
                      'boot': boot, # Bootable flag
                      'align': align, # Partition alignment
+                     'part_type' : part_type, # Partition type
                      'partuuid': None } # Partition UUID (GPT-only)
 
             self.__add_partition(part)
@@ -173,6 +175,13 @@ class PartitionedMount(Mount):
             if not self.disks.has_key(p['disk_name']):
                 raise MountError("No disk %s for partition %s" \
                                  % (p['disk_name'], p['mountpoint']))
+
+            if p['part_type'] and ptable_format != 'gpt':
+                # The --part-type can also be implemented for MBR partitions,
+                # in which case it would map to the 1-byte "partition type"
+                # filed at offset 3 of the partition entry.
+                raise MountError("setting custom partition type is only " \
+                                 "imlemented for GPT partitions")
 
             # Get the disk where the partition is located
             d = self.disks[p['disk_name']]
@@ -339,7 +348,8 @@ class PartitionedMount(Mount):
                                    "%d" % p['num'], flag_name, "on"])
 
         # If the partition table format is "gpt", find out PARTUUIDs for all
-        # the partitions
+        # the partitions. And if users specified custom parition type UUIDs,
+        # set them.
         for disk_name, disk in self.disks.items():
             if disk['ptable_format'] != 'gpt':
                 continue
@@ -353,11 +363,18 @@ class PartitionedMount(Mount):
                 for n in d['partitions']:
                     p = self.partitions[n]
                     if p['num'] == pnum:
-                        # Found, assign PARTUUID
+                        # Found, fetch PARTUUID (partition's unique ID)
                         p['partuuid'] = entry['part_uuid']
-                        msger.debug("PARTUUID for partition %d of disk '%s' " \
+                        msger.debug("PARTUUID for partition %d on disk '%s' " \
                                     "(mount point '%s') is '%s'" % (pnum, \
                                     disk_name, p['mountpoint'], p['partuuid']))
+                        if p['part_type']:
+                            entry['type_uuid'] = p['part_type']
+                            msger.debug("Change type of partition %d on disk " \
+                                        "'%s' (mount point '%s') to '%s'" % \
+                                        (pnum, disk_name, p['mountpoint'],
+                                         p['part_type']))
+                            gpt_parser.change_partition(entry)
 
             del gpt_parser
 

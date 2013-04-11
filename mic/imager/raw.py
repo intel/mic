@@ -193,7 +193,8 @@ class RawImageCreator(BaseImageCreator):
                                           p.label,
                                           fsopts = p.fsopts,
                                           boot = p.active,
-                                          align = p.align)
+                                          align = p.align,
+                                          part_type = p.part_type)
 
         self.__instloop.layout_partitions(self._ptable_format)
 
