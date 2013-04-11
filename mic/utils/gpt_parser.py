@@ -127,16 +127,24 @@ class GptParser:
         'hdr_size'    : header size in bytes
         'hdr_crc'     : header CRC32
         'hdr_lba'     : LBA of this header
-        'backup_lba'  : backup hader LBA
+        'hdr_offs'    : byte disk offset of this header
+        'backup_lba'  : backup header LBA
+        'backup_offs' : byte disk offset of backup header
         'first_lba'   : first usable LBA for partitions
+        'first_offs'  : first usable byte disk offset for partitions
         'last_lba'    : last usable LBA for partitions
+        'last_offs'   : last usable byte disk offset for partitions
         'disk_uuid'   : UUID of the disk
         'ptable_lba'  : starting LBA of array of partition entries
+        'ptable_offs' : disk byte offset of the start of the partition table
+        'ptable_size' : partition table size in bytes
         'entries_cnt' : number of available partition table entries
         'entry_size'  : size of a single partition entry
         'ptable_crc'  : CRC32 of the partition table
         'primary'     : a boolean, if 'True', this is the primary GPT header,
                         if 'False' - the secondary
+        'primary_str' : contains string "primary" if this is the primary GPT
+                        header, and "backup" otherwise
 
         This dictionary corresponds to the GPT header format. Please, see the
         UEFI standard for the description of these fields.
@@ -148,26 +156,36 @@ class GptParser:
         raw_hdr = self._read_disk(self.sector_size, _GPT_HEADER_SIZE)
         raw_hdr = struct.unpack(_GPT_HEADER_FORMAT, raw_hdr)
         _validate_header(raw_hdr)
+        primary_str = "primary"
 
         if not primary:
+            # Read and validate the backup GPT header
             raw_hdr = self._read_disk(raw_hdr[6] * self.sector_size, _GPT_HEADER_SIZE)
             raw_hdr = struct.unpack(_GPT_HEADER_FORMAT, raw_hdr)
             _validate_header(raw_hdr)
+            primary_str = "backup"
 
         return { 'signature'   : raw_hdr[0],
                  'revision'    : raw_hdr[1],
                  'hdr_size'    : raw_hdr[2],
                  'hdr_crc'     : raw_hdr[3],
                  'hdr_lba'     : raw_hdr[5],
+                 'hdr_offs'    : raw_hdr[5] * self.sector_size,
                  'backup_lba'  : raw_hdr[6],
+                 'backup_offs' : raw_hdr[6] * self.sector_size,
                  'first_lba'   : raw_hdr[7],
+                 'first_offs'  : raw_hdr[7] * self.sector_size,
                  'last_lba'    : raw_hdr[8],
+                 'last_offs'   : raw_hdr[8] * self.sector_size,
                  'disk_uuid'   :_stringify_uuid(raw_hdr[9]),
                  'ptable_lba'  : raw_hdr[10],
+                 'ptable_offs' : raw_hdr[10] * self.sector_size,
+                 'ptable_size' : raw_hdr[11] * raw_hdr[12],
                  'entries_cnt' : raw_hdr[11],
                  'entry_size'  : raw_hdr[12],
                  'ptable_crc'  : raw_hdr[13],
-                 'primary'     : primary }
+                 'primary'     : primary,
+                 'primary_str' : primary_str }
 
     def _read_raw_ptable(self, header):
         """ Read and validate primary or backup partition table. The 'header'
@@ -176,13 +194,13 @@ class GptParser:
         one. The 'header' argument is a dictionary which is returned by the
         'read_header()' method. """
 
-        raw_ptable = self._read_disk(header['ptable_lba'] * self.sector_size,
-                                 header['entry_size'] * header['entries_cnt'])
+        raw_ptable = self._read_disk(header['ptable_offs'],
+                                     header['ptable_size'])
 
         crc = binascii.crc32(raw_ptable) & 0xFFFFFFFF
         if crc != header['ptable_crc']:
-            raise MountError("partition table at LBA %d is corrupted" % \
-                             header['ptable_lba'])
+            raise MountError("Partition table at LBA %d (%s) is corrupted" % \
+                             (header['ptable_lba'], header['primary_str']))
 
         return raw_ptable
 
@@ -190,15 +208,18 @@ class GptParser:
         """ This is a generator which parses the GPT partition table and
         generates the following dictionary for each partition:
 
-        'index'     : the index of the partition in the partition table
-        'type_uuid' : partition type UUID
-        'part_uuid' : partition UUID
-        'first_lba' : the first LBA
-        'last_lba'  : the last LBA
-        'flags'     : attribute flags
-        'name'      : partition name
-        'primary'   : a boolean, if 'True', this is the primary partition
-                      table, if 'False' - the secondary
+        'index'       : the index of the partition table endry
+        'offs'        : byte disk offset of the partition table entry
+        'type_uuid'   : partition type UUID
+        'part_uuid'   : partition UUID
+        'first_lba'   : the first LBA
+        'last_lba'    : the last LBA
+        'flags'       : attribute flags
+        'name'        : partition name
+        'primary'     : a boolean, if 'True', this is the primary partition
+                        table, if 'False' - the secondary
+        'primary_str' : contains string "primary" if this is the primary GPT
+                        header, and "backup" otherwise
 
         This dictionary corresponds to the GPT header format. Please, see the
         UEFI standard for the description of these fields.
@@ -206,6 +227,11 @@ class GptParser:
         If the 'primary' parameter is 'True', partitions from the primary GPT
         partition table are generated, otherwise partitions from the backup GPT
         partition table are generated. """
+
+        if primary:
+            primary_str = "primary"
+        else:
+            primary_str = "backup"
 
         header = self.read_header(primary)
         raw_ptable = self._read_raw_ptable(header)
@@ -220,11 +246,13 @@ class GptParser:
 
             part_name = str(raw_entry[5].decode('UTF-16').split('\0', 1)[0])
 
-            yield { 'index'     : index,
-                    'type_uuid' : _stringify_uuid(raw_entry[0]),
-                    'part_uuid' : _stringify_uuid(raw_entry[1]),
-                    'first_lba' : raw_entry[2],
-                    'last_lba'  : raw_entry[3],
-                    'flags'     : raw_entry[4],
-                    'name'      : part_name,
-                    'primary'   : primary }
+            yield { 'index'       : index,
+                    'offs'        : header['ptable_offs'] + start,
+                    'type_uuid'   : _stringify_uuid(raw_entry[0]),
+                    'part_uuid'   : _stringify_uuid(raw_entry[1]),
+                    'first_lba'   : raw_entry[2],
+                    'last_lba'    : raw_entry[3],
+                    'flags'       : raw_entry[4],
+                    'name'        : part_name,
+                    'primary'     : primary,
+                    'primary_str' : primary_str }
