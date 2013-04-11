@@ -196,22 +196,22 @@ class GptParser:
         index = -1
 
         for _ in xrange(0, header['parts_cnt']):
-            entry = self._read_disk(start, _GPT_ENTRY_SIZE)
-            entry = struct.unpack(_GPT_ENTRY_FORMAT, entry)
+            raw_entry = self._read_disk(start, _GPT_ENTRY_SIZE)
+            raw_entry = struct.unpack(_GPT_ENTRY_FORMAT, raw_entry)
 
             start += header['entry_size']
             index += 1
 
-            if entry[2] == 0 or entry[3] == 0:
+            if raw_entry[2] == 0 or raw_entry[3] == 0:
                 continue
 
-            part_name = str(entry[5].decode('UTF-16').split('\0', 1)[0])
+            part_name = str(raw_entry[5].decode('UTF-16').split('\0', 1)[0])
 
             yield { 'index'     : index,
-                    'type_uuid' : _stringify_uuid(entry[0]),
-                    'part_uuid' : _stringify_uuid(entry[1]),
-                    'first_lba' : entry[2],
-                    'last_lba'  : entry[3],
-                    'flags'     : entry[4],
+                    'type_uuid' : _stringify_uuid(raw_entry[0]),
+                    'part_uuid' : _stringify_uuid(raw_entry[1]),
+                    'first_lba' : raw_entry[2],
+                    'last_lba'  : raw_entry[3],
+                    'flags'     : raw_entry[4],
                     'name'      : part_name,
                     'primary'   : primary }
