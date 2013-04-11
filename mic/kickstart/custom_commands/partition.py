@@ -26,15 +26,18 @@ class Mic_PartData(FC4_PartData):
         self.deleteRemovedAttrs()
         self.align = kwargs.get("align", None)
         self.extopts = kwargs.get("extopts", None)
+        self.part_type = kwargs.get("part_type", None)
 
     def _getArgsAsStr(self):
         retval = FC4_PartData._getArgsAsStr(self)
 
         if self.align:
             retval += " --align"
-
         if self.extopts:
             retval += " --extoptions=%s" % self.extopts
+        if self.part_type:
+            retval += " --part-type=%s" % self.part_type
+
         return retval
 
 class Mic_Partition(FC4_Partition):
@@ -48,5 +51,7 @@ class Mic_Partition(FC4_Partition):
         op.add_option("--align", type="int", action="store", dest="align",
                       default=None)
         op.add_option("--extoptions", type="string", action="store", dest="extopts",
+                      default=None)
+        op.add_option("--part-type", type="string", action="store", dest="part_type",
                       default=None)
         return op
