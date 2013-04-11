@@ -122,21 +122,21 @@ class GptParser:
         """ Read and verify the GPT header and return a dictionary containing
         the following elements:
 
-        'signature'  : header signature
-        'revision'   : header revision
-        'hdr_size'   : header size in bytes
-        'hdr_crc'    : header CRC32
-        'hdr_lba'    : LBA of this header
-        'backup_lba' : backup hader LBA
-        'first_lba'  : first usable LBA for partitions
-        'last_lba'   : last usable LBA for partitions
-        'disk_uuid'  : UUID of the disk
-        'ptable_lba' : starting LBA of array of partition entries
-        'parts_cnt'  : number of partition entries
-        'entry_size' : size of a single partition entry
-        'ptable_crc' : CRC32 of the partition table
-        'primary'    : a boolean, if 'True', this is the primary GPT header,
-                       if 'False' - the secondary
+        'signature'   : header signature
+        'revision'    : header revision
+        'hdr_size'    : header size in bytes
+        'hdr_crc'     : header CRC32
+        'hdr_lba'     : LBA of this header
+        'backup_lba'  : backup hader LBA
+        'first_lba'   : first usable LBA for partitions
+        'last_lba'    : last usable LBA for partitions
+        'disk_uuid'   : UUID of the disk
+        'ptable_lba'  : starting LBA of array of partition entries
+        'entries_cnt' : number of available partition table entries
+        'entry_size'  : size of a single partition entry
+        'ptable_crc'  : CRC32 of the partition table
+        'primary'     : a boolean, if 'True', this is the primary GPT header,
+                        if 'False' - the secondary
 
         This dictionary corresponds to the GPT header format. Please, see the
         UEFI standard for the description of these fields.
@@ -154,20 +154,20 @@ class GptParser:
             raw_hdr = struct.unpack(_GPT_HEADER_FORMAT, raw_hdr)
             _validate_header(raw_hdr)
 
-        return { 'signature'  : raw_hdr[0],
-                 'revision'   : raw_hdr[1],
-                 'hdr_size'   : raw_hdr[2],
-                 'hdr_crc'    : raw_hdr[3],
-                 'hdr_lba'    : raw_hdr[5],
-                 'backup_lba' : raw_hdr[6],
-                 'first_lba'  : raw_hdr[7],
-                 'last_lba'   : raw_hdr[8],
-                 'disk_uuid'  :_stringify_uuid(raw_hdr[9]),
-                 'ptable_lba' : raw_hdr[10],
-                 'parts_cnt'  : raw_hdr[11],
-                 'entry_size' : raw_hdr[12],
-                 'ptable_crc' : raw_hdr[13],
-                 'primary'    : primary }
+        return { 'signature'   : raw_hdr[0],
+                 'revision'    : raw_hdr[1],
+                 'hdr_size'    : raw_hdr[2],
+                 'hdr_crc'     : raw_hdr[3],
+                 'hdr_lba'     : raw_hdr[5],
+                 'backup_lba'  : raw_hdr[6],
+                 'first_lba'   : raw_hdr[7],
+                 'last_lba'    : raw_hdr[8],
+                 'disk_uuid'   :_stringify_uuid(raw_hdr[9]),
+                 'ptable_lba'  : raw_hdr[10],
+                 'entries_cnt' : raw_hdr[11],
+                 'entry_size'  : raw_hdr[12],
+                 'ptable_crc'  : raw_hdr[13],
+                 'primary'     : primary }
 
     def _read_raw_ptable(self, header):
         """ Read and validate primary or backup partition table. The 'header'
@@ -177,7 +177,7 @@ class GptParser:
         'read_header()' method. """
 
         raw_ptable = self._read_disk(header['ptable_lba'] * self.sector_size,
-                                     header['entry_size'] * header['parts_cnt'])
+                                 header['entry_size'] * header['entries_cnt'])
 
         crc = binascii.crc32(raw_ptable) & 0xFFFFFFFF
         if crc != header['ptable_crc']:
@@ -210,7 +210,7 @@ class GptParser:
         header = self.read_header(primary)
         raw_ptable = self._read_raw_ptable(header)
 
-        for index in xrange(0, header['parts_cnt']):
+        for index in xrange(0, header['entries_cnt']):
             start = header['entry_size'] * index
             end = start + header['entry_size']
             raw_entry = struct.unpack(_GPT_ENTRY_FORMAT, raw_ptable[start:end])
