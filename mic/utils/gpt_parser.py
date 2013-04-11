@@ -116,39 +116,39 @@ class GptParser:
         # Read and validate the primary GPT header
         self.disk_obj.seek(self.sector_size)
         try:
-            header = self.disk_obj.read(struct.calcsize(_GPT_HEADER_FORMAT))
+            raw_hdr = self.disk_obj.read(struct.calcsize(_GPT_HEADER_FORMAT))
         except IOError as err:
             raise MountError("cannot read from file '%s': %s" % \
                              (self.disk_path, err))
 
-        header = struct.unpack(_GPT_HEADER_FORMAT, header)
-        _validate_header(header)
+        raw_hdr = struct.unpack(_GPT_HEADER_FORMAT, raw_hdr)
+        _validate_header(raw_hdr)
 
         if not primary:
             # Read and validate the backup GPT header
-            self.disk_obj.seek(header[6] * self.sector_size)
+            self.disk_obj.seek(raw_hdr[6] * self.sector_size)
             try:
-                header = self.disk_obj.read(struct.calcsize(_GPT_HEADER_FORMAT))
+                raw_hdr = self.disk_obj.read(struct.calcsize(_GPT_HEADER_FORMAT))
             except IOError as err:
                 raise MountError("cannot read from file '%s': %s" % \
                                  (self.disk_path, err))
 
-            header = struct.unpack(_GPT_HEADER_FORMAT, header)
-            _validate_header(header)
+            raw_hdr = struct.unpack(_GPT_HEADER_FORMAT, raw_hdr)
+            _validate_header(raw_hdr)
 
-        return (header[0], # 0. Signature
-                header[1], # 1. Revision
-                header[2], # 2. Header size in bytes
-                header[3], # 3. Header CRC32
-                header[5], # 4. Current LBA
-                header[6], # 5. Backup LBA
-                header[7], # 6. First usable LBA for partitions
-                header[8], # 7. Last usable LBA
-                _stringify_uuid(header[9]), # 8. Disk GUID
-                header[10], # 9. Starting LBA of array of partition entries
-                header[11], # 10. Number of partition entries
-                header[12], # 11. Size of a single partition entry
-                header[13]) # 12. CRC32 of partition array
+        return (raw_hdr[0], # 0. Signature
+                raw_hdr[1], # 1. Revision
+                raw_hdr[2], # 2. Header size in bytes
+                raw_hdr[3], # 3. Header CRC32
+                raw_hdr[5], # 4. Current LBA
+                raw_hdr[6], # 5. Backup LBA
+                raw_hdr[7], # 6. First usable LBA for partitions
+                raw_hdr[8], # 7. Last usable LBA
+                _stringify_uuid(raw_hdr[9]), # 8. Disk GUID
+                raw_hdr[10], # 9. Starting LBA of array of partition entries
+                raw_hdr[11], # 10. Number of partition entries
+                raw_hdr[12], # 11. Size of a single partition entry
+                raw_hdr[13]) # 12. CRC32 of partition array
 
     def get_partitions(self):
         """ This is a generator which parses teh GPT partition table and
@@ -160,9 +160,9 @@ class GptParser:
         This tuple corresponds to the GPT partition record format. Please, see the
         UEFI standard for the description of these fields. """
 
-        gpt_header = self.read_header()
-        entries_start = gpt_header[9] * self.sector_size
-        entries_count = gpt_header[10]
+        header = self.read_header()
+        entries_start = header[9] * self.sector_size
+        entries_count = header[10]
 
         self.disk_obj.seek(entries_start)
 
