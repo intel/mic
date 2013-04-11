@@ -90,7 +90,7 @@ class GptParser:
         self.disk_path = disk_path
 
         try:
-            self._disk_obj = open(disk_path, 'rb')
+            self._disk_obj = open(disk_path, 'r+b')
         except IOError as err:
             raise MountError("Cannot open file '%s' for reading GPT " \
                              "partitions: %s" % (disk_path, err))
@@ -117,6 +117,27 @@ class GptParser:
                              (size, offset, self.disk_path, len(data)))
 
         return data
+
+    def _write_disk(self, offset, buf):
+        """ A helper function which writes buffer 'buf' to offset 'offset' of
+        the disk. This function takes care of unaligned writes and checks all
+        the error conditions. """
+
+        # Since we may be dealing with a block device, we only can write in
+        # 'self.sector_size' chunks. Find the aligned starting and ending
+        # disk offsets to read.
+        start =  (offset / self.sector_size) * self.sector_size
+        end = ((start + len(buf)) / self.sector_size + 1) * self.sector_size
+
+        data = self._read_disk(start, end - start)
+        off = offset - start
+        data = data[:off] + buf + data[off + len(buf):]
+
+        self._disk_obj.seek(start)
+        try:
+            self._disk_obj.write(data)
+        except IOError as err:
+            raise MountError("cannot write to '%s': %s" % (self.disk_path, err))
 
     def read_header(self, primary = True):
         """ Read and verify the GPT header and return a dictionary containing
@@ -256,3 +277,55 @@ class GptParser:
                     'name'        : part_name,
                     'primary'     : primary,
                     'primary_str' : primary_str }
+
+    def _change_partition(self, header, entry):
+        """ A helper function for 'change_partitions()' which changes a
+        a paricular instance of the partition table (primary or backup). """
+
+        if entry['index'] >= header['entries_cnt']:
+            raise MountError("Partition table at LBA %d has only %d "   \
+                             "records cannot change record number %d" % \
+                             (header['entries_cnt'], entry['index']))
+        # Read raw GPT header
+        raw_hdr = self._read_disk(header['hdr_offs'], _GPT_HEADER_SIZE)
+        raw_hdr = list(struct.unpack(_GPT_HEADER_FORMAT, raw_hdr))
+        _validate_header(raw_hdr)
+
+        # Prepare the new partition table entry
+        raw_entry = struct.pack(_GPT_ENTRY_FORMAT,
+                                uuid.UUID(entry['type_uuid']).bytes_le,
+                                uuid.UUID(entry['part_uuid']).bytes_le,
+                                entry['first_lba'],
+                                entry['last_lba'],
+                                entry['flags'],
+                                entry['name'].encode('UTF-16'))
+
+        # Write the updated entry to the disk
+        self._write_disk(entry['offs'], raw_entry)
+
+        # Calculate and update partition table CRC32
+        raw_ptable = self._read_disk(header['ptable_offs'],
+                                     header['ptable_size'])
+        raw_hdr[13] = binascii.crc32(raw_ptable) & 0xFFFFFFFF
+
+        # Calculate and update the GPT header CRC
+        raw_hdr[3] = _calc_header_crc(raw_hdr)
+
+        # Write the updated header to the disk
+        raw_hdr = struct.pack(_GPT_HEADER_FORMAT, *raw_hdr)
+        self._write_disk(header['hdr_offs'], raw_hdr)
+
+    def change_partition(self, entry):
+        """ Change a GPT partition. The 'entry' argument has the same format as
+        'get_partitions()' returns. This function simply changes the partition
+        table record corresponding to 'entry' in both, the primary and the
+        backup GPT partition tables. The parition table CRC is re-calculated
+        and the GPT headers are modified accordingly. """
+
+        # Change the primary partition table
+        header = self.read_header(True)
+        self._change_partition(header, entry)
+
+        # Change the backup partition table
+        header = self.read_header(False)
+        self._change_partition(header, entry)
