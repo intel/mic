@@ -84,7 +84,7 @@ def bootstrap_mic(argv=None):
 
     except errors.BootstrapError, err:
         msger.warning('\n%s' % err)
-        if msger.ask("Switch to native mode and continue?"):
+        if msger.ask("Switch to native mode and continue?", False):
             return
         raise
     except RuntimeError, err:
