@@ -174,6 +174,7 @@ def extract_rpm(rpmfile, targetdir):
     p1 = subprocess.Popen([rpm2cpio, rpmfile], stdout=subprocess.PIPE)
     p2 = subprocess.Popen([cpio, "-idv"], stdin=p1.stdout,
                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p1.stdout.close()
     (sout, serr) = p2.communicate()
     msger.verbose(sout or serr)
 
