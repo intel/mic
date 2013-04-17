@@ -74,10 +74,10 @@ class RPMInstallCallback:
         fmt_bar = "%-" + width + "s"
         if progress:
             bar = fmt_bar % (self.mark * int(marks * (percent / 100.0)), )
-            fmt = "  %-10.10s: %-20.20s " + bar + " " + done
+            fmt = "%-10.10s: %-20.20s " + bar + " " + done
         else:
             bar = fmt_bar % (self.mark * marks, )
-            fmt = "  %-10.10s: %-20.20s "  + bar + " " + done
+            fmt = "%-10.10s: %-20.20s "  + bar + " " + done
         return fmt
 
     def _logPkgString(self, hdr):
