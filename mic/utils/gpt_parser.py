@@ -76,10 +76,8 @@ def _validate_header(raw_hdr):
                          (crc, raw_hdr[3]))
 
 class GptParser:
-    """ GPT partition table parser. The current implementation is simplified
-    and it assumes that the partition table is correct, so it does not check
-    the CRC-32 checksums and does not handle the backup GPT partition table.
-    But this implementation can be extended in the future, if needed. """
+    """ GPT partition table parser. Allows reading the GPT header and the
+    partition table, as well as modifying the partition table records. """
 
     def __init__(self, disk_path, sector_size = 512):
         """ The class constructor which accepts the following parameters:
