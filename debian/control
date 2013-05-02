@@ -24,7 +24,7 @@ Depends: ${misc:Depends}, ${python:Depends}, ${dist:Depends},
  syslinux (>= 2:4.05),
  extlinux (>= 2:4.05),
  libzypp,
- python-zypp,
+ tizen-python-zypp-0.5.14,
  python-m2crypto,
  python-urlgrabber,
 Recommends:
