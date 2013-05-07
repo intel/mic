@@ -267,6 +267,18 @@ def human_size(size):
     mant = float(size/math.pow(1024, expo))
     return "{0:.1f}{1:s}".format(mant, measure[expo])
 
+def get_block_size(file_obj):
+    """ Returns block size for file object 'file_obj'. Errors are indicated by
+    the 'IOError' exception. """
+
+    from fcntl import ioctl
+    import struct
+
+    # Get the block size of the host file-system for the image file by calling
+    # the FIGETBSZ ioctl (number 2).
+    binary_data = ioctl(file_obj, 2, struct.pack('I', 0))
+    return struct.unpack('I', binary_data)[0]
+
 def check_space_pre_cp(src, dst):
     """Check whether disk space is enough before 'cp' like
     operations, else exception will be raised.
