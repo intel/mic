@@ -18,9 +18,6 @@
 import os
 import stat
 import shutil
-from fcntl import ioctl
-from struct import pack, unpack
-from itertools import groupby
 
 from mic import kickstart, msger
 from mic.utils import fs_related, runner, misc
@@ -451,98 +448,8 @@ class RawImageCreator(BaseImageCreator):
         cfg.write(xml)
         cfg.close()
 
-    def _bmap_file_start(self, block_size, image_size, blocks_cnt):
-        """ A helper function which generates the starting contents of the
-        block map file: the header comment, image size, block size, etc. """
-
-        xml = "<?xml version=\"1.0\" ?>\n\n"
-        xml += "<!-- This file contains block map for an image file. The block map\n"
-        xml += "     is basically a list of block numbers in the image file. It lists\n"
-        xml += "     only those blocks which contain data (boot sector, partition\n"
-        xml += "     table, file-system metadata, files, directories, extents, etc).\n"
-        xml += "     These blocks have to be copied to the target device. The other\n"
-        xml += "     blocks do not contain any useful data and do not have to be\n"
-        xml += "     copied to the target device. Thus, using the block map users can\n"
-        xml += "     flash the image fast. So the block map is just an optimization.\n"
-        xml += "     It is OK to ignore this file and just flash the entire image to\n"
-        xml += "     the target device if the flashing speed is not important.\n\n"
-
-        xml += "     Note, this file contains commentaries with useful information\n"
-        xml += "     like image size in gigabytes, percentage of mapped data, etc.\n"
-        xml += "     This data is there merely to make the XML file human-readable.\n\n"
-
-        xml += "     The 'version' attribute is the block map file format version in\n"
-        xml += "     the 'major.minor' format. The version major number is increased\n"
-        xml += "     whenever we make incompatible changes to the block map format,\n"
-        xml += "     meaning that the bmap-aware flasher would have to be modified in\n"
-        xml += "     order to support the new format. The minor version is increased\n"
-        xml += "     in case of compatible changes. For example, if we add an attribute\n"
-        xml += "     which is optional for the bmap-aware flasher. -->\n"
-        xml += "<bmap version=\"1.1\">\n"
-        xml += "\t<!-- Image size in bytes (%s) -->\n" \
-                % misc.human_size(image_size)
-        xml += "\t<ImageSize> %u </ImageSize>\n\n" % image_size
-
-        xml += "\t<!-- Size of a block in bytes -->\n"
-        xml += "\t<BlockSize> %u </BlockSize>\n\n" % block_size
-
-        xml += "\t<!-- Count of blocks in the image file -->\n"
-        xml += "\t<BlocksCount> %u </BlocksCount>\n\n" % blocks_cnt
-
-        xml += "\t<!-- The block map which consists of elements which may either\n"
-        xml += "\t     be a range of blocks or a single block. The 'sha1' attribute\n"
-        xml += "\t     is the SHA1 checksum of the this range of blocks. -->\n"
-        xml += "\t<BlockMap>\n"
-
-        return xml
-
-    def _bmap_file_end(self, mapped_cnt, block_size, blocks_cnt):
-        """ A helper funstion which generates the final parts of the block map
-        file: the ending tags and the information about the amount of mapped
-        blocks. """
-
-        xml = "\t</BlockMap>\n\n"
-
-        size = misc.human_size(mapped_cnt * block_size)
-        percent = (mapped_cnt * 100.0) / blocks_cnt
-        xml += "\t<!-- Count of mapped blocks (%s or %.1f%% mapped) -->\n" \
-                % (size, percent)
-        xml += "\t<MappedBlocksCount> %u </MappedBlocksCount>\n" % mapped_cnt
-        xml += "</bmap>"
-
-        return xml
-
-    def _get_ranges(self, f_image, blocks_cnt):
-        """ A helper for 'generate_bmap()' which generates ranges of mapped
-        blocks. It uses the FIBMAP ioctl to check which blocks are mapped. Of
-        course, the image file must have been created as a sparse file
-        originally, otherwise all blocks will be mapped. And it is also
-        essential to generate the block map before the file had been copied
-        anywhere or compressed, because othewise we lose the information about
-        unmapped blocks. """
-
-        def is_mapped(block):
-            """ Returns True if block 'block' of the image file is mapped and
-            False otherwise.
-
-            Implementation details: this function uses the FIBMAP ioctl (number
-            1) to get detect whether 'block' is mapped to a disk block. The ioctl
-            returns zero if 'block' is not mapped and non-zero disk block number
-            if it is mapped. """
-
-            return unpack('I', ioctl(f_image, 1, pack('I', block)))[0] != 0
-
-        for key, group in groupby(xrange(blocks_cnt), is_mapped):
-            if key:
-                # Find the first and the last elements of the group
-                first = group.next()
-                last = first
-                for last in group:
-                    pass
-                yield first, last
-
     def generate_bmap(self):
-        """ Generate block map file for an image. The idea is that while disk
+        """ Generate block map file for the image. The idea is that while disk
         images we generate may be large (e.g., 4GiB), they may actually contain
         only little real data, e.g., 512MiB. This data are files, directories,
         file-system meta-data, partition table, etc. In other words, when
@@ -552,14 +459,12 @@ class RawImageCreator(BaseImageCreator):
         This function generates the block map file for an arbitrary image that
         mic has generated. The block map file is basically an XML file which
         contains a list of blocks which have to be copied to the target device.
-        The other blocks are not used and there is no need to copy them.
-
-        This function assumes the image file was originally created as a sparse
-        file. To generate the block map we use the FIBMAP ioctl. """
+        The other blocks are not used and there is no need to copy them. """
 
         if self.bmap_needed is None:
             return
 
+        from mic.utils import BmapCreate
         msger.info("Generating the map file(s)")
 
         for name in self.__disks.keys():
@@ -568,33 +473,9 @@ class RawImageCreator(BaseImageCreator):
 
             msger.debug("Generating block map file '%s'" % bmap_file)
 
-            image_size = os.path.getsize(image)
-
-            with open(bmap_file, "w") as f_bmap:
-                with open(image, "rb") as f_image:
-                    # Get the block size of the host file-system for the image
-                    # file by calling the FIGETBSZ ioctl (number 2).
-                    block_size = unpack('I', ioctl(f_image, 2, pack('I', 0)))[0]
-                    blocks_cnt = (image_size + block_size - 1) / block_size
-
-                    # Write general information to the block map file, without
-                    # block map itself, which will be written next.
-                    xml = self._bmap_file_start(block_size, image_size,
-                                                blocks_cnt)
-                    f_bmap.write(xml)
-
-                    # Generate the block map and write it to the XML block map
-                    # file as we go.
-                    mapped_cnt = 0
-                    for first, last in self._get_ranges(f_image, blocks_cnt):
-                        mapped_cnt += last - first + 1
-                        sha1 = misc.calc_hashes(image, ('sha1', ),
-                                                first * block_size,
-                                                (last + 1) * block_size)
-                        f_bmap.write("\t\t<Range sha1=\"%s\"> %s-%s " \
-                                     "</Range>\n" % (sha1[0], first, last))
-
-                    # Finish the block map file
-                    xml = self._bmap_file_end(mapped_cnt, block_size,
-                                              blocks_cnt)
-                    f_bmap.write(xml)
+            try:
+                creator = BmapCreate.BmapCreate(image, bmap_file)
+                creator.generate()
+                del creator
+            except BmapCreate.Error as err:
+                raise CreatorError("Failed to create bmap file: %s" % str(err))
