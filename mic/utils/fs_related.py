@@ -949,10 +949,15 @@ class LoopDevice(object):
             os.unlink(self.device)
 
 DEVICE_PIDFILE_DIR = "/var/tmp/mic/device"
+DEVICE_LOCKFILE = "/var/lock/__mic_loopdev.lock"
 
 def get_loop_device(losetupcmd, lofile):
+    global DEVICE_PIDFILE_DIR
+    global DEVICE_LOCKFILE
+
     import fcntl
-    fp = open("/var/lock/__mic_loopdev.lock", 'w')
+    makedirs(os.path.dirname(DEVICE_LOCKFILE))
+    fp = open(DEVICE_LOCKFILE, 'w')
     fcntl.flock(fp, fcntl.LOCK_EX)
     try:
         loopdev = None
@@ -993,7 +998,7 @@ def get_loop_device(losetupcmd, lofile):
         try:
             fcntl.flock(fp, fcntl.LOCK_UN)
             fp.close()
-            os.unlink('/var/lock/__mic_loopdev.lock')
+            os.unlink(DEVICE_LOCKFILE)
         except:
             pass
 

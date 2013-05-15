@@ -142,6 +142,8 @@ def setup_chrootenv(chrootdir, bindmounts = None, mountparent = True):
 
         """Default bind mounts"""
         for pt in BIND_MOUNTS:
+            if not os.path.exists(pt):
+                continue
             chrootmounts.append(fs_related.BindChrootMount(pt,
                                                            chrootdir,
                                                            None))
