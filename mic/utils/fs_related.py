@@ -107,13 +107,16 @@ def my_fuser(fp):
 class BindChrootMount:
     """Represents a bind mount of a directory into a chroot."""
     def __init__(self, src, chroot, dest = None, option = None):
-        self.src = src
         self.root = os.path.abspath(os.path.expanduser(chroot))
         self.option = option
 
+        self.origsrc = self.src = src
+        if os.path.islink(src):
+            self.src = os.readlink(src)
+
         if not dest:
-            dest = src
-        self.dest = self.root + "/" + dest
+            dest = self.src
+        self.dest = os.path.join(self.root, dest.lstrip('/'))
 
         self.mounted = False
         self.mountcmd = find_binary_path("mount")
@@ -144,7 +147,13 @@ class BindChrootMount:
             rc = runner.show([self.mountcmd, "--bind", "-o", "remount,%s" % self.option, self.dest])
             if rc != 0:
                 raise MountError("Bind-remounting '%s' failed" % self.dest)
+
         self.mounted = True
+        if os.path.islink(self.orig_src):
+            dest = os.path.join(self.root, self.orig_src.lstrip('/'))
+            if os.path.exists(dest):
+                os.unlink(dest)
+            os.symlink(self.src, dest)
 
     def unmount(self):
         if self.has_chroot_instance():
