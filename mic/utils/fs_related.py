@@ -110,7 +110,7 @@ class BindChrootMount:
         self.root = os.path.abspath(os.path.expanduser(chroot))
         self.option = option
 
-        self.origsrc = self.src = src
+        self.orig_src = self.src = src
         if os.path.islink(src):
             self.src = os.readlink(src)
 
