@@ -114,7 +114,8 @@ class BindChrootMount:
         if os.path.islink(src):
             self.src = os.readlink(src)
             if not self.src.startswith('/'):
-                self.src = os.path.abspath(os.path.join(src, self.src))
+                self.src = os.path.abspath(os.path.join(os.path.dirname(src),
+                                                        self.src))
 
         if not dest:
             dest = self.src
