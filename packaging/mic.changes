@@ -1,3 +1,13 @@
+* Thu May 03 2013 Gui Chen <gui.chen@intel.com> - 0.19
+ - new distribution support: Ubuntu 13.04 and openSUSE 12.3
+ - introduce '--part-type' to handle GPT partition
+ - copy bmap creation from bmap-tools
+ - update some depends and fix depends issue
+ - bug fix:
+   - fix bug autologinuser always set
+   - fix symlink bind mount left issue
+   - fix '/var/lock' non-existent throw traceback
+ 
 * Mon Apr 03 2013 Gui Chen <gui.chen@intel.com> - 0.18
  - put build_id before image name for release option
  - mount build directory as tmpfs to speed up

@@ -1,5 +1,16 @@
-Release 0.18 - Mon Apr 03 2013
-===========================================================
+Release 0.19 - Thu May 03 2013 - Gui Chen <gui.chen@intel.com>
+=====================================================================
+ - new distribution support: Ubuntu 13.04 and openSUSE 12.3
+ - introduce '--part-type' to handle GPT partition
+ - copy bmap creation from bmap-tools
+ - update some depends and fix depends issue
+ - bug fix:
+   - fix bug autologinuser always set
+   - fix symlink bind mount left issue
+   - fix '/var/lock' non-existent throw traceback
+
+Release 0.18 - Mon Apr 03 2013 - Gui Chen <gui.chen@intel.com>
+=====================================================================
  * put build_id before image name for release option
  * mount build directory as tmpfs to speed up
  * enable --priority in ks to set priority
@@ -16,8 +27,8 @@ Release 0.18 - Mon Apr 03 2013
    - clean up some bad indentations
    - improve some error messages
 
-Release 0.17 - Tue Feb 28 2013
-===========================================================
+Release 0.17 - Tue Feb 28 2013 - Gui Chen <gui.chen@intel.com>
+=====================================================================
  * support new distribution Fedora 18
  * enable to handle more than 3 partitions
  * support partitions without mount point
@@ -32,14 +43,14 @@ Release 0.17 - Tue Feb 28 2013
    - clean up some mess in utils/misc.py
    - clean up pylint issue in creator.py
 
-Release 0.16.3 - Wed Feb 06 2013
-===========================================================
+Release 0.16.3 - Wed Feb 06 2013 - Gui Chen <gui.chen@intel.com>
+=====================================================================
  * fix no key 'HOME' in environ variable failure
  * remove suffix when release specified
  * roll back to original naming for release
 
-Release 0.16 - Wed Jan 30 2013
-===========================================================
+Release 0.16 - Wed Jan 30 2013 - Gui Chen <gui.chen@intel.com>
+=====================================================================
  * add GPT support for UEFI format
    - add --ptable=gpt option in kickstart to enable GPT
    - add simple GPT parser to parse PARTUUID
@@ -69,8 +80,8 @@ Release 0.16 - Wed Jan 30 2013
    - refactor try except statement in baseimager
    - fix existing loop images overwritten
 
-Release 0.15.3 - Wed Jan 23 2013
-===========================================================
+Release 0.15.3 - Wed Jan 23 2013 - Gui Chen <gui.chen@intel.com>
+=====================================================================
  * urgent bug fix:
    - fix loop device not cleaned issue
    - fix bootstrap dirs not unmounted issue
@@ -85,8 +96,8 @@ Release 0.15.3 - Wed Jan 23 2013
    - clean up the mess 'directory not empty'
    - fix type error when calling mknod
 
-Release 0.15 - Tue Dec 13 2012
-===========================================================
+Release 0.15 - Tue Dec 13 2012 - Gui Chen <gui.chen@intel.com>
+=====================================================================
  * adapt new mechanism for bootstrap mode
    - create 'mic-bootstrap-x86-arm' by obs build
    - publish 'mic-bootstrap-x86-arm' into server repo
@@ -108,13 +119,13 @@ Release 0.15 - Tue Dec 13 2012
    - fix traceback when failed to unmap kpartx device
    - fix timestamp incorrect issue in logfile
 
-Release 0.14.2 - Wed Nov 14 2012
-===========================================================
+Release 0.14.2 - Wed Nov 14 2012 - Gui Chen <gui.chen@intel.com>
+=====================================================================
  * support dracut for live image
  * update bmap version to 1.1
 
-Release 0.14.1 - Fri Oct 15 2012
-===========================================================
+Release 0.14.1 - Fri Oct 15 2012 - Gui Chen <gui.chen@intel.com>
+=====================================================================
  * support bmap file for ivi flashing tool
  * just warning in chroot when not Tizen/MeeGo chroot dir
  * fix logfile lost in bootstrap mode
@@ -123,8 +134,8 @@ Release 0.14.1 - Fri Oct 15 2012
    - fix https proxy issue in yum backend
    - avoid traceback when loop instance is NoneType
 
-Release 0.14 - Thu Aug 02 2012
-===========================================================
+Release 0.14 - Thu Aug 02 2012 - Gui Chen <gui.chen@intel.com>
+=====================================================================
  * use cached metadata when checksum is not changed
  * skip non-fatal error in ks file and prompt user to handle
  * prompt user to handle when failed to apply img configure
@@ -136,8 +147,8 @@ Release 0.14 - Thu Aug 02 2012
    - avoid traceback when converting unsupported type
    - fix mic --version ugly output
 
-Release 0.13 - Wed Jul 12 2012
-===========================================================
+Release 0.13 - Wed Jul 12 2012 - Gui Chen <gui.chen@intel.com>
+=====================================================================
  * create logfile as default when --release specifid
  * use 'gzip' and 'bzip2' to pack image instead of python
  * automatically detect path of 'env' for chroot
@@ -147,8 +158,8 @@ Release 0.13 - Wed Jul 12 2012
    - fix unicode issue for logfile
    - better fix for 'chroot raw' issue
 
-Release 0.12 - Wed Jun 20 2012
-===========================================================
+Release 0.12 - Wed Jun 20 2012 - Gui Chen <gui.chen@intel.com>
+=====================================================================
  * use default value when @BUILD_ID@ and @ARCH@ not specified
  * enhance proxy support in attachment retrieve
  * add new --shrink opt for loop image to control img shrinking
@@ -160,8 +171,8 @@ Release 0.12 - Wed Jun 20 2012
    - fix src pkgs download failed issue
    - fix convert failed issue
 
-Release 0.11 - Fri Jun 08 2012
-===========================================================
+Release 0.11 - Fri Jun 08 2012 - Gui Chen <gui.chen@intel.com>
+=====================================================================
  * support new subcmd 'auto' to handle magic line in ks
  * enhance the handle of authentication url and https proxy
  * support packing images together and support compressed file format
@@ -174,8 +185,8 @@ Release 0.11 - Fri Jun 08 2012
    - fix attachment package url handling
    - fix mic ch raw failed issue
 
-Release 0.10 - Tue May 15 2012
-===========================================================
+Release 0.10 - Tue May 15 2012 - Gui Chen <gui.chen@intel.com>
+=====================================================================
  * container support using '%attachment' section in ks
  * add --compress-to option to support zip format in loop image
  * auto-detect config and plugindir to meet virtualenv and customized install
@@ -186,8 +197,8 @@ Release 0.10 - Tue May 15 2012
    - some fixes to enhance authentication url
    - refine repostr structure to fix comma issue in baseurl
 
-Release 0.9 - Fri Apr 13 2012
-===========================================================
+Release 0.9 - Fri Apr 13 2012 - Gui Chen <gui.chen@intel.com>
+=====================================================================
  * support pre-install package with zypp backend
  * sync /etc/mic/mic.conf to bootstrap
  * enhance sorting for version comparsion in zypp
@@ -197,8 +208,8 @@ Release 0.9 - Fri Apr 13 2012
  * fix liveusb parted mkpart failure, revert mbr size expand in raw
  * cleanup /tmp/repolic* dir in the EULA checking
 
-Release 0.8 - Mon Mar 26 2012
-===========================================================
+Release 0.8 - Mon Mar 26 2012 - Gui Chen <gui.chen@intel.com>
+=====================================================================
  * partition alignment support
  * remove bootloader option 'quiet vga' for raw
  * update dist files in git source
@@ -206,8 +217,8 @@ Release 0.8 - Mon Mar 26 2012
  * add 40 system test case for help
  * rewrite loop device allocation mechanism
 
-Release 0.7 - Fri Mar 02 2012
-===========================================================
+Release 0.7 - Fri Mar 02 2012 - Gui Chen <gui.chen@intel.com>
+=====================================================================
  * zypp backend: fixed a fatal issue of unreleasable loop devs
  * zypp backend: more friendly output message
  * backend: share cached rpm files between yum and zypp
@@ -217,8 +228,8 @@ Release 0.7 - Fri Mar 02 2012
  * fixed issues in openSUSE12.1
  * new written man page
 
-Release 0.6 - Thu Feb 16 2012
-===========================================================
+Release 0.6 - Thu Feb 16 2012 - Gui Chen <gui.chen@intel.com>
+=====================================================================
  * give hint when converted image existed
  * conf.py: proxy scheme check
  * space check before copy image
@@ -231,8 +242,8 @@ Release 0.6 - Thu Feb 16 2012
    - catch creator error when retrieving bootstrap metadata
    - correct matching .metadata file in bootstrap
 
-Release 0.5 - Mon Feb 06 2012
-===========================================================
+Release 0.5 - Mon Feb 06 2012 - Gui Chen <gui.chen@intel.com>
+=====================================================================
  * Rewrite the algorithm of checking free space for download and install
  * Add --shell option for convert to recreate image modified by internal shell
  * Add -s option for chroot to unpack image
@@ -245,8 +256,8 @@ Release 0.5 - Mon Feb 06 2012
    - Fix MANIFEST syntax to be compliant with md5sum
    - Correct dependencies for mic in bootstrap
 
-Release 0.4 - Fri Jan 06 2012
-===========================================================
+Release 0.4 - Fri Jan 06 2012 - Gui Chen <gui.chen@intel.com>
+=====================================================================
  * Support bootstrap mode, run with '--runtime=bootstrap'
  * Full support for taring-to output, use 'mic ch x.tar'
  * Break dependency between backend and baseimage
@@ -256,8 +267,8 @@ Release 0.4 - Fri Jan 06 2012
  * Fix NoneType 'createopts' when convert
  * Fix no existed local_pkgs_path
 
-Release 0.3 - Mon Dec 26 2011
-===========================================================
+Release 0.3 - Mon Dec 26 2011 - Gui Chen <gui.chen@intel.com>
+=====================================================================
  * Unit test support, run 'make test'
  * Enable proxy support in config file
  * Refine configmgr and pluginmgr
@@ -271,8 +282,8 @@ Release 0.3 - Mon Dec 26 2011
    - Add priority and cost option for repos
    - Reinstroduced compress-disk-image option
 
-Release 0.2 - Tue Nov 29 2011
-===========================================================
+Release 0.2 - Tue Nov 29 2011 - Gui Chen <gui.chen@intel.com>
+=====================================================================
  * Support btrfs and ext4 fstype for creator, convertor, and chroot
  * Append distfiles and Makefile
  * Check arch type from repo data
@@ -284,8 +295,8 @@ Release 0.2 - Tue Nov 29 2011
  * untrack mic/__version__.py
  * Fix some minor issues
 
-Release 0.1 - Thu Oct 27 2011
-===========================================================
+Release 0.1 - Thu Oct 27 2011 - Gui Chen <gui.chen@intel.com>
+=====================================================================
  * Support three subcommand: create, convert, chroot
  * Support five image types: fs, loop, raw, livecd, liveusb
  * Support two package manager backend: yum and zypp
