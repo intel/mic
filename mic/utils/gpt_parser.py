@@ -299,7 +299,9 @@ class GptParser:
                                 entry['name'].encode('UTF-16'))
 
         # Write the updated entry to the disk
-        self._write_disk(entry['offs'], raw_entry)
+        entry_offs = header['ptable_offs'] + \
+                     header['entry_size'] * entry['index']
+        self._write_disk(entry_offs, raw_entry)
 
         # Calculate and update partition table CRC32
         raw_ptable = self._read_disk(header['ptable_offs'],
