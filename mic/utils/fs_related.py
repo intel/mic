@@ -154,9 +154,8 @@ class BindChrootMount:
         self.mounted = True
         if os.path.islink(self.orig_src):
             dest = os.path.join(self.root, self.orig_src.lstrip('/'))
-            if os.path.exists(dest):
-                os.unlink(dest)
-            os.symlink(self.src, dest)
+            if not os.path.exists(dest):
+                os.symlink(self.src, dest)
 
     def unmount(self):
         if self.has_chroot_instance():
