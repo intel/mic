@@ -1,35 +1,25 @@
- MIC Image Creator 0.18 Release Notes
+ MIC Image Creator 0.19 Release Notes
 ===========================================================
-Released Apr 03 2013
+Released May 16 2013
 
 This release note documents the changes included in the MIC 0.18 release. And
 the release contains new features, enhancements and bug fixes.
 
 New Features & Ehancements
 --------------------------
- * put build_id before image name for release option
- * mount build directory as tmpfs to speed up
- * enable --priority in ks to set priority
- * upgrade qemu (mic's depends) to 1.4.0
+ * new distribution support: Ubuntu 13.04 and openSUSE 12.3
+ * introduce '--part-type' to handle GPT partition
+ * copy bmap creation from bmap-tools
+ * update some depends and fix depends issue
 
 Bug Fixes
 ---------
- * fix debuginfo rpm swig attribute lost
- * fix release option failure with slash
- * fix man page lost in some distros
- * fix bmap file packed to tarball
-
-Code Cleanup
-------------
- * unify import statements to absolute import
- * clean up many undefined in partitionfs.py/loop.py/livecd.py
- * clean up some useless try and raise blocks
- * clean up some bad indentations
- * improve some error messages
+ * fix bug autologinuser always set
+ * fix symlink bind mount left issue
+ * fix '/var/lock' non-existent throw traceback
 
 Resource
 --------
-
  * SITE: https://www.tizen.org/
  * REPO: https://download.tizen.org/tools/
  * DOCS: https://source.tizen.org/documentation/reference/mic-image-creator
