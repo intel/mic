@@ -874,6 +874,9 @@ class LoopDevice(object):
 
     def _genloopid(self):
         import glob
+        if not glob.glob("/dev/loop[0-9]*"):
+            return 10
+
         fint = lambda x: x[9:].isdigit() and int(x[9:]) or 0
         maxid = 1 + max(filter(lambda x: x<100,
                                map(fint, glob.glob("/dev/loop[0-9]*"))))
