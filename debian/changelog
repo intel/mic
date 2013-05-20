@@ -1,4 +1,4 @@
-mic (0.19-0.rc) unstable; urgency=low
+mic (0.19-1) unstable; urgency=low
   * new distribution support: Ubuntu 13.04 and openSUSE 12.3
   * introduce '--part-type' to handle GPT partition
   * copy bmap creation from bmap-tools
@@ -8,7 +8,7 @@ mic (0.19-0.rc) unstable; urgency=low
     - fix symlink bind mount left issue
     - fix '/var/lock' non-existent throw traceback 
 
- -- Gui Chen <gui.chen@intel.com>  Mon, 03 Apr 2013 17:25:35 +0800
+ -- Gui Chen <gui.chen@intel.com>  Thu, 16 May 2013 17:25:35 +0800
 
 mic (0.18-1) unstable; urgency=low
 

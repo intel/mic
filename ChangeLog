@@ -1,4 +1,4 @@
-Release 0.19 - Thu May 03 2013 - Gui Chen <gui.chen@intel.com>
+Release 0.19 - Thu May 16 2013 - Gui Chen <gui.chen@intel.com>
 =====================================================================
  - new distribution support: Ubuntu 13.04 and openSUSE 12.3
  - introduce '--part-type' to handle GPT partition
