@@ -713,35 +713,8 @@ def get_rpmver_in_repo(repometadata):
     return None
 
 def get_arch(repometadata):
-    def uniqarch(archlist=[]):
-        uniq_arch = []
-        for i in range(len(archlist)):
-            if archlist[i] not in rpmmisc.archPolicies.keys():
-                continue
-            need_append = True
-            j = 0
-            while j < len(uniq_arch):
-                if archlist[i] in rpmmisc.archPolicies[uniq_arch[j]].split(':'):
-                    need_append = False
-                    break
-                if uniq_arch[j] in rpmmisc.archPolicies[archlist[i]].split(':'):
-                    if need_append:
-                        uniq_arch[j] = archlist[i]
-                        need_append = False
-                    else:
-                        uniq_arch.remove(uniq_arch[j])
-                        continue
-                j += 1
-            if need_append:
-                uniq_arch.append(archlist[i])
-
-        return uniq_arch
-
-
-    ret_uniq_arch = []
-    ret_arch_list = []
+    archlist = []
     for repo in repometadata:
-        archlist = []
         if repo["primary"].endswith(".xml"):
             root = xmlparse(repo["primary"])
             ns = root.getroot().tag
@@ -759,13 +732,28 @@ def get_arch(repometadata):
 
             con.close()
 
-        uniq_arch = uniqarch(archlist)
-        if not ret_uniq_arch and len(uniq_arch) == 1:
-            ret_uniq_arch = uniq_arch
-        ret_arch_list += uniq_arch
+    uniq_arch = []
+    for i in range(len(archlist)):
+        if archlist[i] not in rpmmisc.archPolicies.keys():
+            continue
+        need_append = True
+        j = 0
+        while j < len(uniq_arch):
+            if archlist[i] in rpmmisc.archPolicies[uniq_arch[j]].split(':'):
+                need_append = False
+                break
+            if uniq_arch[j] in rpmmisc.archPolicies[archlist[i]].split(':'):
+                if need_append:
+                    uniq_arch[j] = archlist[i]
+                    need_append = False
+                else:
+                    uniq_arch.remove(uniq_arch[j])
+                    continue
+            j += 1
+        if need_append:
+             uniq_arch.append(archlist[i])
 
-    ret_arch_list = uniqarch(ret_arch_list)
-    return ret_uniq_arch, ret_arch_list
+    return uniq_arch, archlist
 
 def get_package(pkg, repometadata, arch = None):
     ver = ""
