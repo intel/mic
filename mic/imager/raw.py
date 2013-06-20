@@ -56,10 +56,13 @@ class RawImageCreator(BaseImageCreator):
         self.appliance_release = None
         self.compress_image = compress_image
         self.bmap_needed = generate_bmap
+        self._need_extlinux = not kickstart.use_installerfw(self.ks, "extlinux")
         #self.getsource = False
         #self.listpkg = False
 
-        self._dep_checks.extend(["sync", "kpartx", "parted", "extlinux"])
+        self._dep_checks.extend(["sync", "kpartx", "parted"])
+        if self._need_extlinux:
+            self._dep_checks.extend(["extlinux"])
 
     def configure(self, repodata = None):
         import subprocess
@@ -212,8 +215,9 @@ class RawImageCreator(BaseImageCreator):
 
     def _get_required_packages(self):
         required_packages = BaseImageCreator._get_required_packages(self)
-        if not self.target_arch or not self.target_arch.startswith("arm"):
-            required_packages += ["syslinux", "syslinux-extlinux"]
+        if self._need_extlinux:
+            if not self.target_arch or not self.target_arch.startswith("arm"):
+                required_packages += ["syslinux", "syslinux-extlinux"]
         return required_packages
 
     def _get_excluded_packages(self):
@@ -335,7 +339,8 @@ class RawImageCreator(BaseImageCreator):
 
     def _create_bootconfig(self):
         #If syslinux is available do the required configurations.
-        if os.path.exists("%s/usr/share/syslinux/" % (self._instroot)) \
+        if self._need_extlinux \
+           and os.path.exists("%s/usr/share/syslinux/" % (self._instroot)) \
            and os.path.exists("%s/boot/extlinux/" % (self._instroot)):
             self._create_syslinux_config()
             self._install_syslinux()
