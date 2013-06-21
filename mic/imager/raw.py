@@ -355,6 +355,14 @@ class RawImageCreator(BaseImageCreator):
     def _resparse(self, size = None):
         return self.__instloop.resparse(size)
 
+    def _get_post_scripts_env(self, in_chroot):
+        env = BaseImageCreator._get_post_scripts_env(self, in_chroot)
+
+        for p in self.__instloop.partitions:
+            env.update(self._set_part_env(p['ks_pnum'], "PARTUUID", p['partuuid']))
+
+        return env
+
     def _stage_final_image(self):
         """Stage the final system image in _outdir.
            write meta data

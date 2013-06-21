@@ -73,6 +73,7 @@ class BaseImageCreator(object):
         self.cachedir = "/var/tmp/mic/cache"
         self.workdir = "/var/tmp/mic/build"
         self.destdir = "."
+        self.installerfw_prefix = "INSTALLERFW_"
         self.target_arch = "noarch"
         self._local_pkgs_path = None
         self.pack_to = None
@@ -401,6 +402,25 @@ class BaseImageCreator(object):
         s += "sysfs      /sys      sysfs   defaults         0 0\n"
         return s
 
+    def _set_part_env(self, pnum, prop, value):
+        """ This is a helper function which generates an environment variable
+        for a property "prop" with value "value" of a partition number "pnum".
+
+        The naming convention is:
+           * Variables start with INSTALLERFW_PART
+           * Then goes the partition number, the order is the same as
+             specified in the KS file
+           * Then goes the property name
+        """
+
+        if value == None:
+            value = ""
+        else:
+            value = str(value)
+
+        name = self.installerfw_prefix + ("PART%d_" % pnum) + prop
+        return { name : value }
+
     def _get_post_scripts_env(self, in_chroot):
         """Return an environment dict for %post scripts.
 
@@ -408,13 +428,42 @@ class BaseImageCreator(object):
         variables for %post scripts by return a dict containing the desired
         environment.
 
-        By default, this returns an empty dict.
-
         in_chroot -- whether this %post script is to be executed chroot()ed
                      into _instroot.
-
         """
-        return {}
+
+        env = {}
+        pnum = 0
+
+        for p in kickstart.get_partitions(self.ks):
+            env.update(self._set_part_env(pnum, "SIZE", p.size))
+            env.update(self._set_part_env(pnum, "MOUNTPOINT", p.mountpoint))
+            env.update(self._set_part_env(pnum, "FSTYPE", p.fstype))
+            env.update(self._set_part_env(pnum, "LABEL", p.label))
+            env.update(self._set_part_env(pnum, "FSOPTS", p.fsopts))
+            env.update(self._set_part_env(pnum, "BOOTFLAG", p.active))
+            env.update(self._set_part_env(pnum, "ALIGN", p.align))
+            env.update(self._set_part_env(pnum, "TYPE_ID", p.part_type))
+            pnum += 1
+
+        # Count of paritions
+        env[self.installerfw_prefix + "PART_COUNT"] = str(pnum)
+
+        # Partition table format
+        ptable_format = self.ks.handler.bootloader.ptable
+        env[self.installerfw_prefix + "PTABLE_FORMAT"] = ptable_format
+
+        # The kerned boot parameters
+        kernel_opts = self.ks.handler.bootloader.appendLine
+        env[self.installerfw_prefix + "KERNEL_OPTS"] = kernel_opts
+
+        # Name of the distribution
+        env[self.installerfw_prefix + "DISTRO_NAME"] = self.distro_name
+
+        # Name of the image creation tool
+        env[self.installerfw_prefix + "INSTALLER_NAME"] = "mic"
+
+        return env
 
     def __get_imgname(self):
         return self.name
