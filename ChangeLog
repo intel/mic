@@ -1,3 +1,7 @@
+Release 0.19.1 - Fri Jun 21 2013 - Gui Chen <gui.chen@intel.com>
+=====================================================================
+ - fall back to old arch detecting
+
 Release 0.19 - Thu May 16 2013 - Gui Chen <gui.chen@intel.com>
 =====================================================================
  - new distribution support: Ubuntu 13.04 and openSUSE 12.3

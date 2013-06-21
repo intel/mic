@@ -1,8 +1,8 @@
- MIC Image Creator 0.19 Release Notes
+ MIC Image Creator 0.19.1 Release Notes
 ===========================================================
-Released May 16 2013
+Released June 21 2013
 
-This release note documents the changes included in the MIC 0.18 release. And
+This release note documents the changes included in the MIC 0.19.1 release. And
 the release contains new features, enhancements and bug fixes.
 
 New Features & Ehancements
@@ -17,6 +17,7 @@ Bug Fixes
  * fix bug autologinuser always set
  * fix symlink bind mount left issue
  * fix '/var/lock' non-existent throw traceback
+ * fall back to old arch detecting
 
 Resource
 --------
