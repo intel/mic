@@ -99,6 +99,8 @@ class PartitionedMount(Mount):
         """ Add the next partition. Prtitions have to be added in the
         first-to-last order. """
 
+        ks_pnum = len(self.partitions)
+
         # Converting MB to sectors for parted
         size = size * 1024 * 1024 / self.sector_size
 
@@ -136,7 +138,8 @@ class PartitionedMount(Mount):
                         break
                 fsopts = ",".join(opts)
 
-            part = { 'size': size, # In sectors
+            part = { 'ks_pnum' : ks_pnum, # Partition number in the KS file
+                     'size': size, # In sectors
                      'mountpoint': mountpoint, # Mount relative to chroot
                      'fstype': fstype, # Filesystem type
                      'fsopts': fsopts, # Filesystem mount options
