@@ -7,16 +7,9 @@ the release contains new features, enhancements and bug fixes.
 
 New Features & Ehancements
 --------------------------
- * new distribution support: Ubuntu 13.04 and openSUSE 12.3
- * introduce '--part-type' to handle GPT partition
- * copy bmap creation from bmap-tools
- * update some depends and fix depends issue
 
 Bug Fixes
 ---------
- * fix bug autologinuser always set
- * fix symlink bind mount left issue
- * fix '/var/lock' non-existent throw traceback
  * fall back to old arch detecting
 
 Resource
