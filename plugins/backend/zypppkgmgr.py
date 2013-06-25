@@ -567,7 +567,11 @@ class Zypp(BackendPlugin):
                         'version': hdr['version'],
                         'release': hdr['release']
                     }
-            self.__pkgs_vcsinfo[lname] = hdr['VCS']
+            try:
+                self.__pkgs_vcsinfo[lname] = hdr['VCS']
+            except ValueError:
+                # if rpm not support VCS, set to None
+                self.__pkgs_vcsinfo[lname] = None
 
         return self.__pkgs_vcsinfo
 
