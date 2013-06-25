@@ -32,7 +32,7 @@ from pykickstart.handlers.control import dataMap
 
 from mic import msger
 from mic.utils import errors, misc, runner, fs_related as fs
-from custom_commands import desktop, micrepo, micboot, partition
+from custom_commands import desktop, micrepo, micboot, partition, installerfw
 
 
 AUTH_URL_PTN = r"(?P<scheme>.*)://(?P<username>.*)(:?P<password>.*)?@(?P<url>.*)"
@@ -101,6 +101,7 @@ def read_kickstart(path):
     commandMap[using_version]["bootloader"] = micboot.Mic_Bootloader
     commandMap[using_version]["part"] = partition.Mic_Partition
     commandMap[using_version]["partition"] = partition.Mic_Partition
+    commandMap[using_version]["installerfw"] = installerfw.Mic_installerfw
     dataMap[using_version]["RepoData"] = micrepo.Mic_RepoData
     dataMap[using_version]["PartData"] = partition.Mic_PartData
     superclass = ksversion.returnClassForVersion(version=using_version)
@@ -636,6 +637,15 @@ class NetworkConfig(KickstartConfig):
         self.write_hosts(hostname)
         self.write_resolv(nodns, nameservers)
 
+def use_installerfw(ks, feature):
+    """ Check if the installer framework has to be used for a feature
+    "feature". """
+
+    features = ks.handler.installerfw.features
+    if features:
+        if feature in features or "all" in features:
+            return True
+    return False
 
 def get_image_size(ks, default = None):
     __size = 0
