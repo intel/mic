@@ -434,6 +434,8 @@ class BaseImageCreator(object):
 
         env = {}
         pnum = 0
+        root_pnum = ""
+        boot_pnum = ""
 
         for p in kickstart.get_partitions(self.ks):
             env.update(self._set_part_env(pnum, "SIZE", p.size))
@@ -444,7 +446,23 @@ class BaseImageCreator(object):
             env.update(self._set_part_env(pnum, "BOOTFLAG", p.active))
             env.update(self._set_part_env(pnum, "ALIGN", p.align))
             env.update(self._set_part_env(pnum, "TYPE_ID", p.part_type))
+
+            if p.mountpoint == "/":
+                assert root_pnum == ""
+                root_pnum = pnum
+            elif p.mountpoint == "/boot":
+                assert boot_pnum == ""
+                boot_pnum = pnum
+
             pnum += 1
+
+        # Root and boot parition numbers
+        assert root_pnum != ""
+        if boot_pnum == "":
+            # The boot parition is the root partition
+            boot_pnum = root_pnum
+        env[self.installerfw_prefix + "ROOT_PART_NUM"] = str(root_pnum)
+        env[self.installerfw_prefix + "BOOT_PART_NUM"] = str(boot_pnum)
 
         # Count of paritions
         env[self.installerfw_prefix + "PART_COUNT"] = str(pnum)
