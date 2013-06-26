@@ -463,6 +463,11 @@ class BaseImageCreator(object):
         # Name of the image creation tool
         env[self.installerfw_prefix + "INSTALLER_NAME"] = "mic"
 
+        # These are historical variables which lack the common name prefix
+        if not in_chroot:
+            env["INSTALL_ROOT"] = self._instroot
+            env["IMG_NAME"] = self._name
+
         return env
 
     def __get_imgname(self):
@@ -1055,8 +1060,6 @@ class BaseImageCreator(object):
             env = self._get_post_scripts_env(s.inChroot)
 
             if not s.inChroot:
-                env["INSTALL_ROOT"] = self._instroot
-                env["IMG_NAME"] = self._name
                 preexec = None
                 script = path
             else:
