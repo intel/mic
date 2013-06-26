@@ -463,6 +463,13 @@ class BaseImageCreator(object):
         # Name of the image creation tool
         env[self.installerfw_prefix + "INSTALLER_NAME"] = "mic"
 
+        # The real current location of the mounted file-systems
+        if in_chroot:
+            mount_prefix = "/"
+        else:
+            mount_prefix = self._instroot
+        env[self.installerfw_prefix + "MOUNT_PREFIX"] = mount_prefix
+
         # These are historical variables which lack the common name prefix
         if not in_chroot:
             env["INSTALL_ROOT"] = self._instroot
