@@ -550,7 +550,9 @@ class VfatDiskMount(DiskMount):
         DiskMount.__init__(self, disk, mountdir, fstype, rmmountdir)
         self.blocksize = blocksize
         self.fslabel = fslabel.replace("/", "")
-        self.uuid = "%08X" % int(time.time())
+        rand1 = random.randint(0, 2**16 - 1)
+        rand2 = random.randint(0, 2**16 - 1)
+        self.uuid = "%04X-%04X" % (rand1, rand2)
         self.skipformat = skipformat
         self.fsopts = fsopts
         self.fsckcmd = find_binary_path("fsck." + self.fstype)
@@ -561,7 +563,8 @@ class VfatDiskMount(DiskMount):
             return
 
         msger.verbose("Formating %s filesystem on %s" % (self.fstype, self.disk.device))
-        rc = runner.show([self.mkfscmd, "-n", self.fslabel, "-i", self.uuid, self.disk.device])
+        rc = runner.show([self.mkfscmd, "-n", self.fslabel,
+                          "-i", self.uuid.replace("-", ""), self.disk.device])
         if rc != 0:
             raise MountError("Error creating %s filesystem on disk %s" % (self.fstype,self.disk.device))
 
