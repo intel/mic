@@ -684,9 +684,11 @@ class BaseImageCreator(object):
             raise CreatorError("No repositories specified")
 
     def __write_fstab(self):
-        fstab = open(self._instroot + "/etc/fstab", "w")
-        fstab.write(self._get_fstab())
-        fstab.close()
+        fstab_contents = self._get_fstab()
+        if fstab_contents:
+            fstab = open(self._instroot + "/etc/fstab", "w")
+            fstab.write(fstab_contents)
+            fstab.close()
 
     def __create_minimal_dev(self):
         """Create a minimal /dev so that we don't corrupt the host /dev"""
