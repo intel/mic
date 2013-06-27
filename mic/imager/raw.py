@@ -358,7 +358,9 @@ class RawImageCreator(BaseImageCreator):
     def _get_post_scripts_env(self, in_chroot):
         env = BaseImageCreator._get_post_scripts_env(self, in_chroot)
 
+        # Export the file-system UUIDs and partition UUIDs (AKA PARTUUIDs)
         for p in self.__instloop.partitions:
+            env.update(self._set_part_env(p['ks_pnum'], "UUID", p['uuid']))
             env.update(self._set_part_env(p['ks_pnum'], "PARTUUID", p['partuuid']))
 
         return env
