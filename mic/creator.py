@@ -112,6 +112,10 @@ class Creator(cmdln.Cmdln):
                              dest='install_pkgs', default=None,
                              help='Specify what type of packages to be installed,'
                                   ' valid: source, debuginfo, debugsource')
+        optparser.add_option('', '--check-pkgs', type='string', action='store',
+                             dest='check_pkgs', default=[],
+                             help='Check if given packages would be installed, '
+                                  'packages should be separated by comma')
         optparser.add_option('', '--tmpfs', action='store_true', dest='enabletmpfs',
                              help='Setup tmpdir as tmpfs to accelerate, experimental'
                                   ' feature, use it if you have more than 4G memory')
@@ -243,6 +247,10 @@ class Creator(cmdln.Cmdln):
                                        'debusource' % pkgtype)
 
                 configmgr.create['install_pkgs'].append(pkgtype)
+
+        if self.options.check_pkgs:
+            for pkg in self.options.check_pkgs.split(','):
+                configmgr.create['check_pkgs'].append(pkg)
 
         if self.options.enabletmpfs:
             configmgr.create['enabletmpfs'] = self.options.enabletmpfs
