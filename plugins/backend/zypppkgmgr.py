@@ -73,6 +73,7 @@ class Zypp(BackendPlugin):
         self.incpkgs = {}
         self.excpkgs = {}
         self.pre_pkgs = []
+        self.check_pkgs = []
         self.probFilterFlags = [ rpm.RPMPROB_FILTER_OLDPACKAGE,
                                  rpm.RPMPROB_FILTER_REPLACEPKG ]
 
@@ -443,6 +444,9 @@ class Zypp(BackendPlugin):
     def preInstall(self, pkg):
         self.pre_pkgs.append(pkg)
 
+    def checkPackage(self, pkg):
+        self.check_pkgs.append(pkg)
+
     def runInstall(self, checksize = 0):
         os.environ["HOME"] = "/"
         os.environ["LD_PRELOAD"] = ""
@@ -451,11 +455,15 @@ class Zypp(BackendPlugin):
         todo = zypp.GetResolvablesToInsDel(self.Z.pool())
         installed_pkgs = todo._toInstall
         dlpkgs = []
+
         for pitem in installed_pkgs:
             if not zypp.isKindPattern(pitem) and \
               not self.inDeselectPackages(pitem):
                 item = zypp.asKindPackage(pitem)
                 dlpkgs.append(item)
+
+                if item.name() in self.check_pkgs:
+                    self.check_pkgs.remove(item.name())
 
                 if not self.install_debuginfo or str(item.arch()) == "noarch":
                     continue
@@ -467,6 +475,9 @@ class Zypp(BackendPlugin):
                 else:
                     msger.warning("No debuginfo rpm found for: %s" \
                                   % item.name())
+
+        if self.check_pkgs:
+            raise CreatorError('Packages absent in image: %s' % ','.join(self.check_pkgs))
 
         # record all pkg and the content
         localpkgs = self.localpkgs.keys()

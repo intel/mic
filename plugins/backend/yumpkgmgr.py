@@ -127,6 +127,7 @@ class Yum(BackendPlugin, yum.YumBase):
         self.__pkgs_license = {}
         self.__pkgs_content = {}
         self.__pkgs_vcsinfo = {}
+        self.check_pkgs = []
 
         self.install_debuginfo = False
 
@@ -193,6 +194,9 @@ class Yum(BackendPlugin, yum.YumBase):
     def preInstall(self, pkg):
         # FIXME: handle pre-install package
         return None
+
+    def checkPackage(self, pkg):
+        self.check_pkgs.append(pkg)
 
     def selectPackage(self, pkg):
         """Select a given package.
@@ -368,6 +372,12 @@ class Yum(BackendPlugin, yum.YumBase):
                 self.__pkgs_license[license].append(pkg_long_name)
             else:
                 self.__pkgs_license[license] = [pkg_long_name]
+
+            if pkg.name in self.check_pkgs:
+                self.check_pkgs.remove(pkg.name)
+
+        if self.check_pkgs:
+            raise CreatorError('Packages absent in image: %s' % ','.join(self.check_pkgs))
 
         total_count = len(dlpkgs)
         cached_count = 0
