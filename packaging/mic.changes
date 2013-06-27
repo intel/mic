@@ -1,3 +1,10 @@
+* Thu Jul 01 2013 Gui Chen <gui.chen@intel.com> - 0.19.2
+ - introduce 'installerfw' command in kickstart
+ - export several environment to keep image information
+
+* Thu Jun 21 2013 Gui Chen <gui.chen@intel.com> - 0.19.1
+ - fall back to old arch detecting
+
 * Thu May 16 2013 Gui Chen <gui.chen@intel.com> - 0.19
  - new distribution support: Ubuntu 13.04 and openSUSE 12.3
  - introduce '--part-type' to handle GPT partition

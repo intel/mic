@@ -1,4 +1,15 @@
+mic (0.19.2-0.rc1) unstable; urgency=low
+  * introduce 'installerfw' command in kickstart
+  * export several environment to keep image information
+
+ -- Gui Chen <gui.chen@intel.com>  Thu, 27 Jun 2013 17:25:35 +0800
+
 mic (0.19.1-1) unstable; urgency=low
+  * fall back to old arch detecting
+
+ -- Gui Chen <gui.chen@intel.com>  Thu, 21 Jun 2013 17:25:35 +0800
+
+mic (0.19-1) unstable; urgency=low
   * new distribution support: Ubuntu 13.04 and openSUSE 12.3
   * introduce '--part-type' to handle GPT partition
   * copy bmap creation from bmap-tools

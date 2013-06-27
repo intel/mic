@@ -1,16 +1,17 @@
- MIC Image Creator 0.19.1 Release Notes
+ MIC Image Creator 0.19.2 Release Notes
 ===========================================================
-Released June 21 2013
+Released July 01 2013
 
-This release note documents the changes included in the MIC 0.19.1 release. And
+This release note documents the changes included in the MIC 0.19.2 release. And
 the release contains new features, enhancements and bug fixes.
 
 New Features & Ehancements
 --------------------------
+ * introduce 'installerfw' command in kickstart
+ * export several environment to keep image information
 
 Bug Fixes
 ---------
- * fall back to old arch detecting
 
 Resource
 --------
