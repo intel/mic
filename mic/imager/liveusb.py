@@ -99,8 +99,8 @@ class LiveUSBImageCreator(LiveCDImageCreator):
             if fstype == "vfat" or fstype == "msdos":
                 uuid = usbloop.partitions[0]['mount'].uuid
                 label = usbloop.partitions[0]['mount'].fslabel
-                usblabel = "UUID=%s-%s" % (uuid[0:4], uuid[4:8])
-                overlaysuffix = "-%s-%s-%s" % (label, uuid[0:4], uuid[4:8])
+                usblabel = "UUID=%s" % (uuid)
+                overlaysuffix = "-%s-%s" % (label, uuid)
             else:
                 diskmount = usbloop.partitions[0]['mount']
                 usblabel = "UUID=%s" % diskmount.uuid
