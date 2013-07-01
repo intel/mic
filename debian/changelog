@@ -1,4 +1,4 @@
-mic (0.19.2-0.rc2) unstable; urgency=low
+mic (0.19.2-1) unstable; urgency=low
   * introduce 'installerfw' command in kickstart
   * export several environment to keep image information
 
