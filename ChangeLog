@@ -1,10 +1,19 @@
+Release 0.20 - Mon Jul 01 2013 - Gui Chen <gui.chen@intel.com>
+=====================================================================
+  * new distribution support: CentOS 6
+  * drop image creation if checked packages not present in image
+  * introduce 'installerfw' command in kickstart to customize configuration
+  * improve output message of post scripts
+  * bug fix:
+    - fix rpm not support 'VCS' tag traceback
+
 Release 0.19 - Thu May 16 2013 - Gui Chen <gui.chen@intel.com>
 =====================================================================
- - new distribution support: Ubuntu 13.04 and openSUSE 12.3
- - introduce '--part-type' to handle GPT partition
- - copy bmap creation from bmap-tools
- - update some depends and fix depends issue
- - bug fix:
+ * new distribution support: Ubuntu 13.04 and openSUSE 12.3
+ * introduce '--part-type' to handle GPT partition
+ * copy bmap creation from bmap-tools
+ * update some depends and fix depends issue
+ * bug fix:
    - fix bug autologinuser always set
    - fix symlink bind mount left issue
    - fix '/var/lock' non-existent throw traceback
