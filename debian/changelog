@@ -1,8 +1,13 @@
+mic (0.19.3-1) unstable; urgency=low
+  * fix vfat UUID issue in liveusb
+
+ -- Gui Chen <gui.chen@intel.com>  Tue, 02 Jul 2013 17:25:35 +0800
+
 mic (0.19.2-1) unstable; urgency=low
   * introduce 'installerfw' command in kickstart
   * export several environment to keep image information
 
- -- Gui Chen <gui.chen@intel.com>  Thu, 27 Jun 2013 17:25:35 +0800
+ -- Gui Chen <gui.chen@intel.com>  Mon, 27 Jul 2013 17:25:35 +0800
 
 mic (0.19.1-1) unstable; urgency=low
   * fall back to old arch detecting

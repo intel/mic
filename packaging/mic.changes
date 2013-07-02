@@ -1,4 +1,7 @@
-* Thu Jul 01 2013 Gui Chen <gui.chen@intel.com> - 0.19.2
+* Tue Jul 02 2013 Gui Chen <gui.chen@intel.com> - 0.19.3
+ - fix vfat UUID issue in liveusb
+
+* Mon Jul 01 2013 Gui Chen <gui.chen@intel.com> - 0.19.2
  - introduce 'installerfw' command in kickstart
  - export several environment to keep image information
 

@@ -1,17 +1,16 @@
- MIC Image Creator 0.19.2 Release Notes
+ MIC Image Creator 0.19.3 Release Notes
 ===========================================================
 Released July 01 2013
 
-This release note documents the changes included in the MIC 0.19.2 release. And
+This release note documents the changes included in the MIC 0.19.3 release. And
 the release contains new features, enhancements and bug fixes.
 
 New Features & Ehancements
 --------------------------
- * introduce 'installerfw' command in kickstart
- * export several environment to keep image information
 
 Bug Fixes
 ---------
+ * fix vfat UUID issue in liveusb
 
 Resource
 --------

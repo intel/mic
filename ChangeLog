@@ -1,4 +1,7 @@
-Release 0.19.2 - Thu Jul 01 2013 - Gui Chen <gui.chen@intel.com>
+Release 0.19.3 - Tue Jul 01 2013 - Gui Chen <gui.chen@intel.com>
+ * fix vfat UUID issue in liveusb
+
+Release 0.19.2 - Mon Jul 01 2013 - Gui Chen <gui.chen@intel.com>
 =====================================================================
  * introduce 'installerfw' command in kickstart
  * export several environment to keep image information
