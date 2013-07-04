@@ -1,4 +1,4 @@
-mic (0.20-0.rc0) unstable; urgency=low
+mic (0.20-0.rc1) unstable; urgency=low
   * new distribution support: CentOS 6
   * drop image creation if checked packages not present in image
   * introduce 'installerfw' command in kickstart to customize configuration
