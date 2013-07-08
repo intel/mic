@@ -1,22 +1,20 @@
- MIC Image Creator 0.19 Release Notes
+ MIC Image Creator 0.20 Release Notes
 ===========================================================
-Released May 16 2013
+Released Jule 08 2013
 
-This release note documents the changes included in the MIC 0.18 release. And
+This release note documents the changes included in the MIC 0.20 release. And
 the release contains new features, enhancements and bug fixes.
 
 New Features & Ehancements
 --------------------------
- * new distribution support: Ubuntu 13.04 and openSUSE 12.3
- * introduce '--part-type' to handle GPT partition
- * copy bmap creation from bmap-tools
- * update some depends and fix depends issue
+ * new distribution support: CentOS 6
+ * drop image creation if checked packages not present in image
+ * introduce 'installerfw' command in kickstart to customize configuration
+ * improve output message of post scripts
 
 Bug Fixes
 ---------
- * fix bug autologinuser always set
- * fix symlink bind mount left issue
- * fix '/var/lock' non-existent throw traceback
+ * fix rpm not support 'VCS' tag traceback
 
 Resource
 --------
