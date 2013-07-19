@@ -26,6 +26,7 @@ Requires:   gzip
 Requires:   bzip2
 Requires:   python-urlgrabber
 Requires:   yum >= 3.2.24
+Requires:   psmisc
 %if ! 0%{?centos_version}
 %if 0%{?suse_version}
 Requires:   btrfsprogs

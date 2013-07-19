@@ -27,6 +27,7 @@ Depends: ${misc:Depends}, ${python:Depends}, ${dist:Depends},
  tizen-python-zypp-0.5.14,
  python-m2crypto,
  python-urlgrabber,
+ psmisc
 Recommends:
  binfmt-support,
  btrfs-tools,
