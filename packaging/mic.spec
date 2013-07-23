@@ -9,7 +9,11 @@ License:    GPLv2
 BuildArch:  noarch
 URL:        http://www.tizen.org
 Source0:    %{name}_%{version}.tar.gz
+%if 0%{?tizen_version:1}
+Requires:   python-rpm
+%else
 Requires:   rpm-python
+%endif
 Requires:   util-linux
 Requires:   coreutils
 Requires:   python >= 2.5
@@ -21,7 +25,9 @@ Requires:   parted
 Requires:   device-mapper
 Requires:   /usr/bin/genisoimage
 Requires:   cpio
+%if ! 0%{?tizen_version:1}
 Requires:   isomd5sum
+%endif
 Requires:   gzip
 Requires:   bzip2
 Requires:   python-urlgrabber
@@ -35,7 +41,7 @@ Requires:   btrfs-progs
 %endif
 %endif
 
-%if 0%{?suse_version}
+%if 0%{?suse_version} || 0%{?tizen_version:1}
 Requires:   squashfs >= 4.0
 Requires:   python-m2crypto
 %else
@@ -47,8 +53,8 @@ Requires:   m2crypto
 Requires:   syslinux-extlinux
 %endif
 
-%if 0%{?tizen_version:1}
-Requires:   qemu-linux-user
+%if 0%{?suse_version} || 0%{?tizen_version:1}
+Requires:   /usr/bin/qemu-arm
 %else
 Requires:   qemu-arm-static
 %endif
