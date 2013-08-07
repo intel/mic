@@ -253,7 +253,7 @@ class Bootstrap(object):
         gloablmounts = None
         try:
             proxy.set_proxy_environ()
-            gloablmounts = setup_chrootenv(rootdir, bindmounts, False)
+            gloablmounts = setup_chrootenv(rootdir, bindmounts)
             sync_timesetting(rootdir)
             sync_passwdfile(rootdir)
             retcode = subprocess.call(cmd, preexec_fn=mychroot, env=env, shell=shell)
