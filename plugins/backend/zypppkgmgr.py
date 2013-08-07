@@ -389,7 +389,7 @@ class Zypp(BackendPlugin):
             if proxy:
                 scheme, host, path, parm, query, frag = urlparse.urlparse(proxy)
 
-                proxyinfo = host.split(":")
+                proxyinfo = host.rsplit(":", 1)
                 host = proxyinfo[0]
 
                 port = "80"
@@ -400,8 +400,25 @@ class Zypp(BackendPlugin):
                     host = proxy.rsplit(':', 1)[0]
                     port = proxy.rsplit(':', 1)[1]
 
+                # parse user/pass from proxy host
+                proxyinfo = host.rsplit("@", 1)
+                if len(proxyinfo) == 2:
+                    host = proxyinfo[1]
+                    # Known Issue: If password contains ":", which should be
+                    # quoted, for example, use '123%3Aabc' instead of 123:abc
+                    userpassinfo = proxyinfo[0].rsplit(":", 1)
+                    if len(userpassinfo) == 2:
+                        proxy_username = userpassinfo[0]
+                        proxy_password = userpassinfo[1]
+                    elif len(userpassinfo) == 1:
+                        proxy_username = userpassinfo[0]
+
                 baseurl.setQueryParam ("proxy", host)
                 baseurl.setQueryParam ("proxyport", port)
+                if proxy_username:
+                    baseurl.setQueryParam ("proxyuser", proxy_username)
+                if proxy_password:
+                    baseurl.setQueryParam ("proxypass", proxy_password)
 
             repo.baseurl[0] = baseurl.asCompleteString()
             self.repos.append(repo)
