@@ -40,70 +40,60 @@ BIND_MOUNTS = (
                 "/var/lib/dbus",
                 "/var/run/dbus",
                 "/var/lock",
+                "/lib/modules",
               )
 
 #####################################################################
 ### GLOBAL ROUTINE
 #####################################################################
 
-def get_bindmounts(chrootdir, bindmounts):
+def get_bindmounts(chrootdir, bindmounts = None):
+    # bindmounts should be a string like '/dev:/dev'
+    # FIXME: refine the bindmounts from string to dict
     global chroot_bindmounts
+
+    def totuple(string):
+        if ':' in string:
+            src, dst = string.split(':', 1)
+        else:
+            src = string
+            dst = None
+
+        return (src or None, dst or None)
 
     if chroot_bindmounts:
         return chroot_bindmounts
 
-    chrootmounts = []
+    chroot_bindmounts = []
     bindmounts = bindmounts or ""
+    mountlist = []
 
     for mount in bindmounts.split(";"):
         if not mount:
             continue
 
-        srcdst = mount.split(":")
-        srcdst[0] = os.path.abspath(os.path.expanduser(srcdst[0]))
-        if len(srcdst) == 1:
-            srcdst.append("none")
+        (src, dst) = totuple(mount)
 
-        # if some bindmount is not existed, but it's created inside
-        # chroot, this is not expected
-        if not os.path.exists(srcdst[0]):
-            os.makedirs(srcdst[0])
-
-        if not os.path.isdir(srcdst[0]):
+        if src in BIND_MOUNTS or src == '/':
             continue
 
-        if srcdst[0] in BIND_MOUNTS or srcdst[0] == '/':
-            msger.verbose("%s will be mounted by default." % srcdst[0])
+        if not os.path.exists(src):
+            os.makedirs(src)
+
+        if dst and os.path.isdir("%s/%s" % (chrootdir, dst)):
+            msger.warning("%s existed in %s , skip it." % (dst, chrootdir))
             continue
 
-        if srcdst[1] == "" or srcdst[1] == "none":
-            srcdst[1] = None
-        else:
-            srcdst[1] = os.path.abspath(os.path.expanduser(srcdst[1]))
-            if os.path.isdir(chrootdir + "/" + srcdst[1]):
-                msger.warning("%s has existed in %s , skip it."\
-                              % (srcdst[1], chrootdir))
-                continue
+        mountlist.append(totuple(mount))
 
-        chrootmounts.append(fs_related.BindChrootMount(srcdst[0],
-                                                       chrootdir,
-                                                       srcdst[1]))
+    for mntpoint in BIND_MOUNTS:
+        if os.path.isdir(mntpoint):
+            mountlist.append(tuple((mntpoint, None)))
 
-    """Default bind mounts"""
-    for pt in BIND_MOUNTS:
-        if not os.path.exists(pt):
-            continue
-        chrootmounts.append(fs_related.BindChrootMount(pt,
-                                                       chrootdir,
-                                                       None))
+    for pair in mountlist:
+        bmount = fs_related.BindChrootMount(pair[0], chrootdir, pair[1])
+        chroot_bindmounts.append(bmount)
 
-    for kernel in os.listdir("/lib/modules"):
-        chrootmounts.append(fs_related.BindChrootMount(
-                                            "/lib/modules/"+kernel,
-                                            chrootdir,
-                                            None,
-                                            "ro"))
-    chroot_bindmounts = chrootmounts
     return chroot_bindmounts
 
 #####################################################################
