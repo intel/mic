@@ -17,6 +17,7 @@
 
 from __future__ import with_statement
 import os
+import re
 import shutil
 import subprocess
 
@@ -46,6 +47,29 @@ BIND_MOUNTS = (
 #####################################################################
 ### GLOBAL ROUTINE
 #####################################################################
+
+def ELF_arch(chrootdir):
+    #FIXME: if chkfiles are symlink, it will be complex
+    chkfiles = ('/bin/bash', '/sbin/init')
+    # regular expression to arch mapping
+    mapping = {
+                r"Intel 80[0-9]86": "i686",
+                r"x86-64": "x86_64",
+                r"ARM": "arm",
+              }
+
+    for path in chkfiles:
+        cpath = os.path.join(chrootdir, path.lstrip('/'))
+        if not os.path.exists(cpath):
+            continue
+
+        outs = runner.outs(['file', cpath])
+        for ptn in mapping.keys():
+            if re.search(ptn, outs):
+                return mapping[ptn]
+
+    raise errors.CreatorError("Failed to detect architecture of chroot: %s" %
+                              chrootdir)
 
 def get_bindmounts(chrootdir, bindmounts = None):
     # bindmounts should be a string like '/dev:/dev'
@@ -246,38 +270,11 @@ def chroot(chrootdir, bindmounts = None, execute = "/bin/bash"):
         else:
             msger.warning(wrnmsg)
 
-    files_to_check = ["/bin/bash", "/sbin/init"]
-
-    architecture_found = False
-
-    """ Register statically-linked qemu-arm if it is an ARM fs """
-    qemu_emulator = None
-
-    for ftc in files_to_check:
-        ftc = "%s/%s" % (chrootdir,ftc)
-
-        # Return code of 'file' is "almost always" 0 based on some man pages
-        # so we need to check the file existance first.
-        if not os.path.exists(ftc):
-            continue
-
-        for line in runner.outs(['file', ftc]).splitlines():
-            if 'ARM' in line:
-                qemu_emulator = misc.setup_qemu_emulator(chrootdir, "arm")
-                architecture_found = True
-                break
-
-            if 'Intel' in line:
-                architecture_found = True
-                break
-
-        if architecture_found:
-            break
-
-    if not architecture_found:
-        raise errors.CreatorError("Failed to get architecture from any of the "
-                                  "following files %s from chroot." \
-                                  % files_to_check)
+    arch = ELF_arch(chrootdir)
+    if arch == "arm":
+        qemu_emulator = misc.setup_qemu_emulator(chrootdir, "arm")
+    else:
+        qemu_emulator = None
 
     try:
         msger.info("Launching shell. Exit to continue.\n"
