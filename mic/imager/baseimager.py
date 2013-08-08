@@ -33,6 +33,7 @@ from mic import kickstart
 from mic import msger
 from mic.utils.errors import CreatorError, Abort
 from mic.utils import misc, grabber, runner, fs_related as fs
+from mic.chroot import kill_proc_inchroot
 
 class BaseImageCreator(object):
     """Installs a system to a chroot directory.
@@ -853,6 +854,8 @@ class BaseImageCreator(object):
         """
         if not self.__builddir:
             return
+
+        kill_proc_inchroot(self._instroot)
 
         self.unmount()
 

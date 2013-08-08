@@ -172,7 +172,7 @@ def cleanup_resolv(chrootdir):
     except:
         pass
 
-def kill_processes(chrootdir):
+def kill_proc_inchroot(chrootdir):
     import glob
     for fp in glob.glob("/proc/*/root"):
         try:
@@ -210,7 +210,7 @@ def cleanup_chrootenv(chrootdir, bindmounts=None, globalmounts=()):
     # unlock
     chroot_lockfd.close()
     # kill processes
-    kill_processes(chrootdir)
+    kill_proc_inchroot(chrootdir)
     # clean mtab
     cleanup_mtab(chrootdir)
     # clean resolv.conf
