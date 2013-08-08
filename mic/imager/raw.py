@@ -56,7 +56,7 @@ class RawImageCreator(BaseImageCreator):
         self.appliance_release = None
         self.compress_image = compress_image
         self.bmap_needed = generate_bmap
-        self._need_extlinux = not kickstart.use_installerfw(self.ks, "extlinux")
+        self._need_extlinux = not kickstart.use_installerfw(self.ks, "bootloader")
         #self.getsource = False
         #self.listpkg = False
 

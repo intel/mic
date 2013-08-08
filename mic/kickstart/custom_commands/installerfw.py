@@ -17,16 +17,17 @@
 
 from pykickstart.base import *
 from pykickstart.options import *
+from mic import msger
 
 class Mic_installerfw(KickstartCommand):
-    """ This class implements the "installerfw" KS option. The argument
+    """ This class implements the "installerfw_plugins" KS option. The argument
     of the option is a comman-separated list of MIC features which have to be
     disabled and instead, will be done in the installer. For example,
-    "installerfw=extlinux" disables all the MIC code which installs extlinux to
-    the target images, and instead, the extlinux or whatever boot-loader will
-    be installed by the installer instead.
+    "installerfw_plugins=bootloader" disables all the MIC code which installs
+    the bootloader to the target images, and instead, the bootlodaer will be
+    installed by the installer framework plugin.
 
-    The installer is a tool which is external to MIC, it comes from the
+    The plugin is a program which is external to MIC, it comes from the
     installation repositories and can be executed by MIC in order to perform
     various configuration actions. The main point here is to make sure MIC has
     no hard-wired knoledge about the target OS configuration. """
@@ -37,13 +38,12 @@ class Mic_installerfw(KickstartCommand):
     def __init__(self, *args, **kwargs):
         KickstartCommand.__init__(self, *args, **kwargs)
         self.op = self._getParser()
-        self.features = kwargs.get("installerfw", None)
 
     def __str__(self):
         retval = KickstartCommand.__str__(self)
 
         if self.features:
-            retval += "# Enable installer framework features\ninstallerfw\n"
+            retval += "# Enable installer framework plugins\ninstallerfw_plugins\n"
 
         return retval
 
@@ -52,12 +52,26 @@ class Mic_installerfw(KickstartCommand):
         return op
 
     def parse(self, args):
+        if self.currentCmd == "installerfw":
+            msger.warning("please, use 'installerfw_plugins' instead of " \
+                          "'installerfw', the latter is obsolete and will be " \
+                          "removed in future releases")
+
         (_, extra) = self.op.parse_args(args=args, lineno=self.lineno)
 
         if len(extra) != 1:
-            msg = "Kickstart command \"installerfw\" requires one " \
-                  "argumet - a list of legacy features to disable"
+            msg = "Kickstart command \"%s\" requires one " \
+                  "argumet - a list of legacy features to disable" % self.currentCmd
             raise KickstartValueError, formatErrorMsg(self.lineno, msg = msg)
 
         self.features = extra[0].split(",")
+
+        if "extlinux" in self.features:
+            msger.warning("please, use 'bootloader' installer framework " \
+                          "plugin name instead of 'extlinux', the latter " \
+                          "is obsolete and will be removed in future releases")
+            # Rename all occurances of "extlinux" to "bootloader"
+            self.reatures = [ "bootloader" if x == "extlinux" else x
+                              for x in self.features ]
+
         return self
