@@ -419,6 +419,8 @@ class Zypp(BackendPlugin):
                     baseurl.setQueryParam ("proxyuser", proxy_username)
                 if proxy_password:
                     baseurl.setQueryParam ("proxypass", proxy_password)
+            else:
+                baseurl.setQueryParam ("proxy", "_none_")
 
             repo.baseurl[0] = baseurl.asCompleteString()
             self.repos.append(repo)
