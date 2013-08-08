@@ -380,6 +380,7 @@ class RawImageCreator(BaseImageCreator):
             for imgfile in os.listdir(self.__imgdir):
                 if imgfile.endswith('.raw') or imgfile.endswith('bin'):
                     imgpath = os.path.join(self.__imgdir, imgfile)
+                    msger.info("Compressing image %s" % imgfile)
                     misc.compressing(imgpath, self.compress_image)
 
         if self.pack_to:
