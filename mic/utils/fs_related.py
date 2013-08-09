@@ -88,23 +88,6 @@ def resize2fs(fs, size):
     else:
         return runner.show([resize2fs, fs, "%sK" % (size / 1024,)])
 
-def my_fuser(fp):
-    fuser = find_binary_path("fuser")
-    if not os.path.exists(fp):
-        return False
-
-    rc = runner.quiet([fuser, "-s", fp])
-    if rc == 0:
-        for pid in runner.outs([fuser, fp]).split():
-            fd = open("/proc/%s/cmdline" % pid, "r")
-            cmdline = fd.read()
-            fd.close()
-            if cmdline[:-1] == "/bin/bash":
-                return True
-
-    # not found
-    return False
-
 class BindChrootMount:
     """Represents a bind mount of a directory into a chroot."""
     def __init__(self, src, chroot, dest = None, option = None):
@@ -134,10 +117,6 @@ class BindChrootMount:
 
         return False
 
-    def has_chroot_instance(self):
-        lock = os.path.join(self.root, ".chroot.lock")
-        return my_fuser(lock)
-
     def mount(self):
         if self.mounted or self.ismounted():
             return
@@ -159,9 +138,6 @@ class BindChrootMount:
                 os.symlink(self.src, dest)
 
     def unmount(self):
-        if self.has_chroot_instance():
-            return
-
         if self.ismounted():
             runner.show([self.umountcmd, "-l", self.dest])
         self.mounted = False
