@@ -78,6 +78,7 @@ def get_bindmounts(chrootdir, bindmounts = None):
     global chroot_bindmounts
 
     def totuple(string):
+        """ convert string contained ':' to a tuple """
         if ':' in string:
             src, dst = string.split(':', 1)
         else:
@@ -127,15 +128,15 @@ def get_bindmounts(chrootdir, bindmounts = None):
 
 def bind_mount(chrootmounts):
     """ perform bind mounting """
-    for b in chrootmounts:
-        msger.verbose("bind_mount: %s -> %s" % (b.src, b.dest))
-        b.mount()
+    for mnt in chrootmounts:
+        msger.verbose("bind_mount: %s -> %s" % (mnt.src, mnt.dest))
+        mnt.mount()
 
 def setup_resolv(chrootdir):
     """ resolve network """
     try:
         shutil.copyfile("/etc/resolv.conf", chrootdir + "/etc/resolv.conf")
-    except:
+    except (OSError, IOError):
         pass
 
 def setup_mtab(chrootdir):
@@ -173,28 +174,28 @@ def setup_chrootenv(chrootdir, bindmounts = None):
 
 def bind_unmount(chrootmounts):
     """ perform bind unmounting """
-    for b in reversed(chrootmounts):
-        msger.verbose("bind_unmount: %s -> %s" % (b.src, b.dest))
-        b.unmount()
+    for mnt in reversed(chrootmounts):
+        msger.verbose("bind_unmount: %s -> %s" % (mnt.src, mnt.dest))
+        mnt.unmount()
 
 def cleanup_resolv(chrootdir):
     """ clear resolv.conf """
     try:
-        fd = open(chrootdir + "/etc/resolv.conf", "w")
-        fd.truncate(0)
-        fd.close()
-    except:
+        fdes = open(chrootdir + "/etc/resolv.conf", "w")
+        fdes.truncate(0)
+        fdes.close()
+    except (OSError, IOError):
         pass
 
 def kill_proc_inchroot(chrootdir):
     """ kill all processes running inside chrootdir """
     import glob
-    for fp in glob.glob("/proc/*/root"):
+    for fpath in glob.glob("/proc/*/root"):
         try:
-            if os.readlink(fp) == chrootdir:
-                pid = int(fp.split("/")[2])
+            if os.readlink(fpath) == chrootdir:
+                pid = int(fpath.split("/")[2])
                 os.kill(pid, 9)
-        except:
+        except (OSError, ValueError):
             pass
 
 def cleanup_mtab(chrootdir):
@@ -289,6 +290,7 @@ def cleanup_after_chroot(targettype, imgmount, tmpdir, tmpmnt):
 def chroot(chrootdir, bindmounts = None, execute = "/bin/bash"):
     """ chroot the chrootdir and execute the command """
     def mychroot():
+        """ pre-execute function """
         os.chroot(chrootdir)
         os.chdir("/")
 
