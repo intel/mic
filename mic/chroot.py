@@ -23,15 +23,14 @@ import subprocess
 
 from mic import msger
 from mic.conf import configmgr
-from mic.utils import misc, errors, runner, fs_related
+from mic.utils import misc, errors, runner, fs_related, lock
 
 #####################################################################
 ### GLOBAL CONSTANTS
 #####################################################################
 
 chroot_bindmounts = None
-chroot_lockfd = -1
-chroot_lock = ""
+chroot_lock = None
 BIND_MOUNTS = (
                 "/proc",
                 "/proc/sys/fs/binfmt_misc",
@@ -142,6 +141,13 @@ def setup_mtab(chrootdir):
         shutil.copyfile(mtab, dstmtab)
 
 def setup_chrootenv(chrootdir, bindmounts = None):
+    global chroot_lock
+
+    # acquire the lock
+    if not chroot_lock:
+        lockpath = os.path.join(chrootdir, '.chroot.lock')
+        chroot_lock = lock.SimpleLockfile(lockpath)
+    chroot_lock.acquire()
     # bind mounting
     bind_mount(get_bindmounts(chrootdir, bindmounts))
     # setup resolv.conf
@@ -207,8 +213,6 @@ def cleanup_mounts(chrootdir):
                 msger.warning("%s is not directory or is not empty" % point)
 
 def cleanup_chrootenv(chrootdir, bindmounts=None, globalmounts=()):
-    # unlock
-    chroot_lockfd.close()
     # kill processes
     kill_proc_inchroot(chrootdir)
     # clean mtab
@@ -219,6 +223,8 @@ def cleanup_chrootenv(chrootdir, bindmounts=None, globalmounts=()):
     bind_unmount(get_bindmounts(chrootdir, bindmounts))
     # clean up mounts
     cleanup_mounts(chrootdir)
+    # release the lock
+    chroot_lock.release()
 
     return None
 
