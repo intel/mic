@@ -71,7 +71,7 @@ class Mic_installerfw(KickstartCommand):
                           "plugin name instead of 'extlinux', the latter " \
                           "is obsolete and will be removed in future releases")
             # Rename all occurances of "extlinux" to "bootloader"
-            self.reatures = [ "bootloader" if x == "extlinux" else x
+            self.features = [ "bootloader" if x == "extlinux" else x
                               for x in self.features ]
 
         return self
