@@ -22,7 +22,7 @@ import os
 
 from mic import msger
 from mic.utils import runner
-from mic.utils.errors import MountError
+from mic.utils.errors import MountError, CreatorError
 from mic.utils.fs_related import *
 from mic.utils.gpt_parser import GptParser
 
@@ -266,15 +266,12 @@ class PartitionedMount(Mount):
 
         rc, out = runner.runtool(args, catch = 3)
         out = out.strip()
-        if out:
-            msger.debug('"parted" output: %s' % out)
-
-        if rc != 0:
-            # We don't throw exception when return code is not 0, because
-            # parted always fails to reload part table with loop devices. This
-            # prevents us from distinguishing real errors based on return
-            # code.
-            msger.debug("WARNING: parted returned '%s' instead of 0" % rc)
+        msger.debug('"parted": exitcode:%d, output:%s' % (rc, out))
+        # We don't throw exception when return code is not 0, because
+        # parted always fails to reload part table with loop devices. This
+        # prevents us from distinguishing real errors based on return
+        # code.
+        return rc, out
 
     def __create_partition(self, device, parttype, fstype, start, size):
         """ Create a partition on an image described by the 'device' object. """
@@ -347,8 +344,16 @@ class PartitionedMount(Mount):
                     flag_name = "boot"
                 msger.debug("Set '%s' flag for partition '%s' on disk '%s'" % \
                             (flag_name, p['num'], d['disk'].device))
-                self.__run_parted(["-s", d['disk'].device, "set",
-                                   "%d" % p['num'], flag_name, "on"])
+                cmd = ["-s", d['disk'].device,
+                       "set", "%d" % p['num'],
+                       flag_name, "on"]
+                exitcode, output = self.__run_parted(cmd)
+                if exitcode != 0:
+                    raise CreatorError(
+                        "partition '%s' is marked with --active, "
+                        "but flag '%s' can't be set: "
+                        "exitcode: %s, output: %s"
+                        % (p['mountpoint'], flag_name, exitcode, output))
 
         # If the partition table format is "gpt", find out PARTUUIDs for all
         # the partitions. And if users specified custom parition type UUIDs,
