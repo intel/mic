@@ -38,6 +38,7 @@ class Mic_installerfw(KickstartCommand):
     def __init__(self, *args, **kwargs):
         KickstartCommand.__init__(self, *args, **kwargs)
         self.op = self._getParser()
+        self.features = None
 
     def __str__(self):
         retval = KickstartCommand.__str__(self)
