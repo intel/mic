@@ -574,7 +574,7 @@ menu clear
                         extra = ""
 
                 if len(menu) >= 3:
-                    extra = menu[2]
+                    extra = ' '.join(menu[2:])
 
                 cfg += self.__get_image_stanza(is_xen, isDracut,
                                                fslabel = self.fslabel,
