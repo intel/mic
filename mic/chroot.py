@@ -162,10 +162,6 @@ def setup_chrootenv(chrootdir, bindmounts = None):
     # update /etc/mtab
     setup_mtab(chrootdir)
 
-    # lock
-    chroot_lock = os.path.join(chrootdir, ".chroot.lock")
-    chroot_lockfd = open(chroot_lock, "w")
-
     return None
 
 ######################################################################
@@ -237,7 +233,9 @@ def cleanup_chrootenv(chrootdir, bindmounts=None, globalmounts=()):
     # clean up mounts
     cleanup_mounts(chrootdir)
     # release the lock
-    chroot_lock.release()
+    if chroot_lock:
+        chroot_lock.release()
+        chroot_lock = None
 
     return None
 
