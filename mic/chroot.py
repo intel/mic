@@ -222,6 +222,8 @@ def cleanup_mounts(chrootdir):
 
 def cleanup_chrootenv(chrootdir, bindmounts=None, globalmounts=()):
     """ clean up chroot environment """
+    global chroot_lock
+
     # kill processes
     kill_proc_inchroot(chrootdir)
     # clean mtab
