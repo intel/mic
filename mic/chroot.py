@@ -117,7 +117,11 @@ def get_bindmounts(chrootdir, bindmounts = None):
             mountlist.append(tuple((mntpoint, None)))
 
     for pair in mountlist:
-        bmount = fs_related.BindChrootMount(pair[0], chrootdir, pair[1])
+        if pair[0] == "/lib/modules":
+            opt = "ro"
+        else:
+            opt = None
+        bmount = fs_related.BindChrootMount(pair[0], chrootdir, pair[1], opt)
         chroot_bindmounts.append(bmount)
 
     return chroot_bindmounts
