@@ -15,6 +15,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc., 59
 # Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+from __future__ import with_statement
 import os
 import sys
 import time
@@ -988,16 +989,14 @@ def setup_qemu_emulator(rootdir, arch):
     node = "/proc/sys/fs/binfmt_misc/arm"
     if os.path.exists(node):
         qemu_unregister_string = "-1\n"
-        fd = open("/proc/sys/fs/binfmt_misc/arm", "w")
-        fd.write(qemu_unregister_string)
-        fd.close()
+        with open("/proc/sys/fs/binfmt_misc/arm", "w") as fd:
+            fd.write(qemu_unregister_string)
 
     # register qemu emulator for interpreting other arch executable file
     if not os.path.exists(node):
         qemu_arm_string = ":arm:M::\\x7fELF\\x01\\x01\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x02\\x00\\x28\\x00:\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\x00\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\xfa\\xff\\xff\\xff:%s:\n" % qemu_emulator
-        fd = open("/proc/sys/fs/binfmt_misc/register", "w")
-        fd.write(qemu_arm_string)
-        fd.close()
+        with open("/proc/sys/fs/binfmt_misc/register", "w") as fd:
+            fd.write(qemu_arm_string)
 
     return qemu_emulator
 
