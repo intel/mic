@@ -26,20 +26,17 @@ class SimpleLockfile(object):
             if err.errno == errno.EEXIST:
                 raise LockfileError("File %s is locked already" % self.fpath)
             raise
+        finally:
+            if self.lockf:
+                os.close(self.lockf)
 
     def release(self):
         """ release the lock """
         try:
-            # FIXME: open file and close it immediately
-            os.close(self.lockf)
-        except IOError as err:
-            if err.errno != errno.EBADF:
-                raise LockfileError("Failed to release file: %s" % self.fpath)
-        try:
             os.remove(self.fpath)
         except OSError as err:
-            if err.errno != errno.ENOENT:
-                raise LockfileError("Failed to release file: %s" % self.fpath)
+            if err.errno == errno.ENOENT:
+                pass
 
     def __enter__(self):
         self.acquire()
@@ -48,3 +45,5 @@ class SimpleLockfile(object):
     def __exit__(self, *args):
         self.release()
 
+    def __del__(self):
+        self.release()
