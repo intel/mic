@@ -236,8 +236,9 @@ def cleanup_chrootenv(chrootdir, bindmounts=None, globalmounts=()):
     cleanup_resolv(chrootdir)
     # bind umounting
     bind_unmount(get_bindmounts(chrootdir, bindmounts))
-    # clean up mounts
-    cleanup_mounts(chrootdir)
+    # FIXME: need to clean up mounts?
+    #cleanup_mounts(chrootdir)
+
     # release the lock
     if chroot_lock:
         chroot_lock.release()
