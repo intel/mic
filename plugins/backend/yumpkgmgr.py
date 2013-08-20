@@ -45,6 +45,10 @@ sslverify=1
 """
 
 class MyYumRepository(yum.yumRepo.YumRepository):
+    def __init__(self, repoid, nocache):
+        super(MyYumRepository, self).__init__(repoid)
+        self.nocache = nocache
+
     def __del__(self):
         pass
 
@@ -264,8 +268,7 @@ class Yum(BackendPlugin, yum.YumBase):
             option = option.replace("$basearch", rpmUtils.arch.getBaseArch())
             option = option.replace("$arch", rpmUtils.arch.getCanonArch())
             return option
-
-        repo = MyYumRepository(name)
+        repo = MyYumRepository(name, nocache)
 
         # Set proxy
         repo.proxy = proxy
@@ -284,7 +287,6 @@ class Yum(BackendPlugin, yum.YumBase):
                 repo.setAttribute(k, v)
 
         repo.sslverify = ssl_verify
-        repo.cache = not nocache
 
         repo.basecachedir = self.cachedir
         repo.base_persistdir = self.conf.persistdir
@@ -374,7 +376,7 @@ class Yum(BackendPlugin, yum.YumBase):
         for po in dlpkgs:
             local = po.localPkg()
             repo = filter(lambda r: r.id == po.repoid, self.repos.listEnabled())[0]
-            if not repo.cache and os.path.exists(local):
+            if repo.nocache and os.path.exists(local):
                 os.unlink(local)
             if not os.path.exists(local):
                 continue
