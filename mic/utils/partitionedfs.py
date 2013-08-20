@@ -96,7 +96,7 @@ class PartitionedMount(Mount):
     def add_partition(self, size, disk_name, mountpoint, fstype = None,
                       label=None, fsopts = None, boot = False, align = None,
                       part_type = None):
-        """ Add the next partition. Prtitions have to be added in the
+        """ Add the next partition. Partitions have to be added in the
         first-to-last order. """
 
         ks_pnum = len(self.partitions)
@@ -184,7 +184,7 @@ class PartitionedMount(Mount):
                 # in which case it would map to the 1-byte "partition type"
                 # filed at offset 3 of the partition entry.
                 raise MountError("setting custom partition type is only " \
-                                 "imlemented for GPT partitions")
+                                 "implemented for GPT partitions")
 
             # Get the disk where the partition is located
             d = self.disks[p['disk_name']]
@@ -207,7 +207,7 @@ class PartitionedMount(Mount):
                 # If not first partition and we do have alignment set we need
                 # to align the partition.
                 # FIXME: This leaves a empty spaces to the disk. To fill the
-                # gaps we could enlargea the previous partition?
+                # gaps we could enlarge the previous partition?
 
                 # Calc how much the alignment is off.
                 align_sectors = d['offset'] % (p['align'] * 1024 / self.sector_size)
@@ -248,8 +248,8 @@ class PartitionedMount(Mount):
                                p['start'], p['start'] + p['size'] - 1,
                                p['size'], p['size'] * self.sector_size))
 
-        # Once all the partitions have been layed out, we can calculate the
-        # minumim disk sizes.
+        # Once all the partitions have been laid out, we can calculate the
+        # minimum disk sizes.
         for disk_name, d in self.disks.items():
             d['min_size'] = d['offset']
             if d['ptable_format'] == 'gpt':
@@ -279,7 +279,7 @@ class PartitionedMount(Mount):
     def __create_partition(self, device, parttype, fstype, start, size):
         """ Create a partition on an image described by the 'device' object. """
 
-        # Start is included to the size so we need to substract one from the end.
+        # Start is included to the size so we need to subtract one from the end.
         end = start + size - 1
         msger.debug("Added '%s' partition, sectors %d-%d, size %d sectors" %
                     (parttype, start, end, size))
