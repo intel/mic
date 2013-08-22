@@ -19,7 +19,11 @@ Requires:   coreutils
 Requires:   python >= 2.5
 Requires:   e2fsprogs
 Requires:   dosfstools >= 2.11
+%if 0%{?centos_version}
+Requires:   syslinux >= 3.82
+%else
 Requires:   syslinux >= 4.05
+%endif
 Requires:   kpartx
 Requires:   parted
 Requires:   device-mapper
