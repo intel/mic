@@ -18,8 +18,8 @@ Requires:   util-linux
 Requires:   coreutils
 Requires:   python >= 2.5
 Requires:   e2fsprogs
-Requires:   dosfstools >= 2.11-8
-Requires:   syslinux >= 3.82
+Requires:   dosfstools >= 2.11
+Requires:   syslinux >= 4.05
 Requires:   kpartx
 Requires:   parted
 Requires:   device-mapper
