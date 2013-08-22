@@ -7,6 +7,7 @@ import test_baseimager
 #import test_msger
 import test_runner
 import test_chroot
+import test_proxy
 
 if os.getuid() != 0:
     raise SystemExit("Root permission is needed")
@@ -18,5 +19,6 @@ suite.addTests(test_baseimager.suite())
 #suite.addTests(test_msger.suite())
 suite.addTests(test_runner.suite())
 suite.addTests(test_chroot.suite())
+suite.addTests(test_proxy.suite())
 result = unittest.TextTestRunner(verbosity=2).run(suite)
 sys.exit(not result.wasSuccessful())
