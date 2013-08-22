@@ -72,7 +72,7 @@ def bootstrap_mic(argv=None):
             rootdir = os.path.join(rootdir, "bootstrap")
 
         bsenv.dirsetup(rootdir)
-        sync_mic(rootdir)
+        sync_mic(rootdir, plugin=cropts['plugin_dir'])
 
         #FIXME: sync the ks file to bootstrap
         if "/" == os.path.dirname(os.path.abspath(configmgr._ksconf)):
@@ -156,6 +156,7 @@ def get_mic_libpath():
 # the hard code path is prepared for bootstrap
 def sync_mic(bootstrap, binpth = '/usr/bin/mic',
              libpth='/usr/lib',
+             plugin='/usr/lib/mic/plugins',
              pylib = '/usr/lib/python2.7/site-packages',
              conf = '/etc/mic/mic.conf'):
     _path = lambda p: os.path.join(bootstrap, p.lstrip('/'))
@@ -163,6 +164,7 @@ def sync_mic(bootstrap, binpth = '/usr/bin/mic',
     micpaths = {
                  'binpth': get_mic_binpath(),
                  'libpth': get_mic_libpath(),
+                 'plugin': plugin,
                  'pylib': get_mic_modpath(),
                  'conf': '/etc/mic/mic.conf',
                }
