@@ -104,6 +104,10 @@ mkdir -p %{buildroot}/%{_prefix}/share/man/man1
 install -m644 doc/mic.1 %{buildroot}/%{_prefix}/share/man/man1
 %endif
 
+# install bash completion
+install -d -m0755 %{buildroot}/%{_sysconfdir}/bash_completion.d/
+install -Dp -m0755 etc/%{name}.bash %{buildroot}/%{_sysconfdir}/bash_completion.d/%{name}.sh
+
 %files
 %defattr(-,root,root,-)
 %doc doc/*
@@ -117,4 +121,5 @@ install -m644 doc/mic.1 %{buildroot}/%{_prefix}/share/man/man1
 %dir %{_prefix}/lib/%{name}
 %{_prefix}/lib/%{name}/*
 %{_bindir}/*
+%config %{_sysconfdir}/bash_completion.d/*
 
