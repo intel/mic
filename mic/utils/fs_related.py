@@ -138,7 +138,7 @@ class BindChrootMount:
                 os.symlink(self.src, dest)
 
     def unmount(self):
-        if self.ismounted():
+        if self.mounted or self.ismounted():
             runner.show([self.umountcmd, "-l", self.dest])
         self.mounted = False
 
