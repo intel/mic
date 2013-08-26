@@ -152,6 +152,7 @@ class PartitionedMount(Mount):
                      'boot': boot, # Bootable flag
                      'align': align, # Partition alignment
                      'part_type' : part_type, # Partition type
+                     'uuid': None, # Partition UUID (no-GPT use)
                      'partuuid': None } # Partition UUID (GPT-only)
 
             self.__add_partition(part)
