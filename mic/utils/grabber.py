@@ -79,11 +79,10 @@ class TextProgress(object):
     def start(self, filename, url, *args, **kwargs):
         self.url = url
         self.termwidth = terminal_width()
-        msger.info("\r%-*s" % (self.termwidth, " "))
         if self.total is None:
-            msger.info("\rRetrieving %s ..." % truncate_url(self.url, self.termwidth - 15))
+            msger.info("Retrieving %s ..." % truncate_url(self.url, self.termwidth - 15))
         else:
-            msger.info("\rRetrieving %s [%d/%d] ..." % (truncate_url(self.url, self.termwidth - 25), self.counter, self.total))
+            msger.info("Retrieving %s [%d/%d] ..." % (truncate_url(self.url, self.termwidth - 25), self.counter, self.total))
 
     def update(self, *args):
         pass
