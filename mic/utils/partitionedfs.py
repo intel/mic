@@ -46,6 +46,7 @@ class PartitionedMount(Mount):
         self.parted = find_binary_path("parted")
         self.kpartx = find_binary_path("kpartx")
         self.mkswap = find_binary_path("mkswap")
+        self.dmsetup = find_binary_path("dmsetup")
         self.btrfscmd=None
         self.mountcmd = find_binary_path("mount")
         self.umountcmd = find_binary_path("umount")
@@ -456,10 +457,9 @@ class PartitionedMount(Mount):
                 raise MountError("Failed to map partitions for '%s'" %
                                  d['disk'].device)
 
-            # FIXME: there is a bit delay for multipath device setup,
-            # wait 10ms for the setup
-            import time
-            time.sleep(10)
+            if not os.path.exists(mapperdev):
+                runner.quiet([self.dmsetup, "mknodes"])
+
             d['mapped'] = True
 
     def __unmap_partitions(self):
