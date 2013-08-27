@@ -459,7 +459,13 @@ class PartitionedMount(Mount):
                                  d['disk'].device)
 
             if not os.path.exists(mapperdev):
+                # load mapper device if not updated
                 runner.quiet([self.dmsetup, "mknodes"])
+                # still not updated, roll back
+                if not os.path.exists(mapperdev):
+                    runner.quiet([self.kpartx, "-d", d['disk'].device])
+                    raise MountError("Failed to load mapper devices for '%s'" %
+                                     d['disk'].device)
 
             d['mapped'] = True
 
