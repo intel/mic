@@ -268,7 +268,7 @@ class PartitionedMount(Mount):
 
         rc, out = runner.runtool(args, catch = 3)
         out = out.strip()
-        msger.debug('"parted": exitcode:%d, output:%s' % (rc, out))
+        msger.debug("'parted': exitcode: %d, output: %s" % (rc, out))
         # We don't throw exception when return code is not 0, because
         # parted always fails to reload part table with loop devices. This
         # prevents us from distinguishing real errors based on return
@@ -351,7 +351,7 @@ class PartitionedMount(Mount):
                        flag_name, "on"]
                 exitcode, output = self.__run_parted(cmd)
                 if exitcode != 0:
-                    raise CreatorError(
+                    msger.warning(
                         "partition '%s' is marked with --active, "
                         "but flag '%s' can't be set: "
                         "exitcode: %s, output: %s"
