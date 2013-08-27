@@ -1,4 +1,4 @@
-mic (0.21-0.rc3) unstable; urgency=low
+mic (0.21-0.rc4) unstable; urgency=low
   * new distribution support: Fedora 19
   * refactor chroot module to correct the logic
   * add an alias for installerfw - installerfw_plugins
