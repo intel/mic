@@ -11,23 +11,11 @@ except ImportError:
 
 MOD_NAME = 'mic'
 
-version_path = 'VERSION'
-if not os.path.isfile(version_path):
-    print 'No VERSION file in topdir, abort'
-    sys.exit(1)
-
 try:
-    # first line should be the version number
-    version = open(version_path).readline().strip()
-    if not version:
-        print 'VERSION file is invalid, abort'
-        sys.exit(1)
-
-    ver_file = open('%s/__version__.py' % MOD_NAME, 'w')
-    ver_file.write("VERSION = \"%s\"\n" % version)
-    ver_file.close()
-except IOError:
-    print 'WARNING: Cannot write version number file'
+    import mic
+    version = mic.__version__
+except (ImportError, AttributeError):
+    version = "dev"
 
 # --install-layout is recognized after 2.5
 if sys.version_info[:2] > (2, 5):

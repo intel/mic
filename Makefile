@@ -1,6 +1,6 @@
 PYTHON ?= python
-VERSION = $(shell cat VERSION)
-TAGVER = $(shell cat VERSION | sed -e "s/\([0-9\.]*\).*/\1/")
+VERSION = $(shell sed -ne 's/__version__\s*=\s*"\(.*\)"/\1/p ' mic/__init__.py)
+TAGVER = $(shell echo $(VERSION) | sed -e "s/\([0-9\.]*\).*/\1/")
 
 PKGNAME = mic
 

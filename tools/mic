@@ -16,11 +16,10 @@
 # Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 import os, sys, errno
-from mic import msger, creator
+from mic import msger, creator, __version__ as VERSION
 from mic.utils import cmdln, misc, errors
 from mic.conf import configmgr
 from mic.plugin import pluginmgr
-from mic.__version__ import VERSION
 
 
 def optparser_setup(func):
