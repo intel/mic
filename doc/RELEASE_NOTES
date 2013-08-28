@@ -1,8 +1,8 @@
- MIC Image Creator 0.20 Release Notes
+ MIC Image Creator 0.21 Release Notes
 ===========================================================
-Released Jule 08 2013
+Released August 28 2013
 
-This release note documents the changes included in the MIC 0.20 release. And
+This release note documents the changes included in the new release. And
 the release contains new features, enhancements and bug fixes.
 
 New Features & Ehancements
@@ -14,11 +14,12 @@ New Features & Ehancements
  * enable proxy setting with authentication
  * don't get proxy info from /etc/sysconfig/proxy ever
  * kill processes inside chroot after post script running
+ * reload device mapper using 'dmsetup' utility
 
 Bug Fixes
 ---------
  * fix bootloader options omitted
- * raise when incorrectly set partition flags 'legacy_boot'
+ * warn failed boot partition flags set
  * fix wrong file descriptor issue
  * fix some requires
 

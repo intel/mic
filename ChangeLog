@@ -7,9 +7,10 @@ Release 0.21 - Mon Aug 26 2013 - Gui Chen <gui.chen@intel.com>
   * enable proxy setting with authentication
   * don't get proxy info from /etc/sysconfig/proxy ever
   * kill processes inside chroot after post script running
+  * reload device mapper using 'dmsetup' utility
   * bug fix:
     - fix bootloader options omitted
-    - raise when incorrectly set partition flags 'legacy_boot'
+    - warn failed boot partition flags set
     - fix wrong file descriptor issue
     - fix some requires
 
