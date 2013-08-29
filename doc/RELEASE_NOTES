@@ -1,5 +1,6 @@
- MIC Image Creator 0.21 Release Notes
+          MIC Image Creator 0.21 Release Notes
 ===========================================================
+
 Released August 28 2013
 
 This release note documents the changes included in the new release. And
@@ -8,13 +9,13 @@ the release contains new features, enhancements and bug fixes.
 New Features & Ehancements
 --------------------------
  * new distribution support: Fedora 19
- * refactor chroot module to correct the logic
- * add an alias for installerfw - installerfw_plugins
- * remove fuser dependency to avoid some unmount issue
- * enable proxy setting with authentication
- * don't get proxy info from /etc/sysconfig/proxy ever
+ * refactor part of chroot modules for better cleanup handling
+ * add an alias "installerfw_plugins" for installerfw
+ * remove unnecessary fuser dependency for "fuser" command
+ * enable proxy with user authentication setting
+ * correct no_proxy handling in openSUSE
  * kill processes inside chroot after post script running
- * reload device mapper using 'dmsetup' utility
+ * ulitize 'dmsetup' to avoid possible dm device unaccessible issue
 
 Bug Fixes
 ---------

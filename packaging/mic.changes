@@ -1,24 +1,25 @@
 * Mon Aug 26 2013 Gui Chen <gui.chen@intel.com> - 0.21
-  * new distribution support: Fedora 19
-  * refactor chroot module to correct the logic
-  * add an alias for installerfw - installerfw_plugins
-  * remove fuser dependency to avoid some unmount issue
-  * enable proxy setting with authentication
-  * don't get proxy info from /etc/sysconfig/proxy ever
-  * kill processes inside chroot after post script running
-  * bug fix:
-    - fix bootloader options omitted
-    - raise when incorrectly set partition flags 'legacy_boot'
-    - fix wrong file descriptor issue
-    - fix some requires
+ - new distribution support: Fedora 19
+ - refactor part of chroot modules for better cleanup handling
+ - add an alias "installerfw_plugins" for installerfw
+ - remove unnecessary fuser dependency for "fuser" command
+ - enable proxy with user authentication setting
+ - correct no_proxy handling in openSUSE
+ - kill processes inside chroot after post script running
+ - ulitize 'dmsetup' to avoid possible dm device unaccessible issue
+ - bug fix:
+   - fix bootloader options omitted
+   - warn failed boot partition flags set
+   - fix wrong file descriptor issue
+   - fix some requires
 
 * Mon Jul 01 2013 Gui Chen <gui.chen@intel.com> - 0.20
-  * new distribution support: CentOS 6
-  * drop image creation if checked packages not present in image
-  * introduce 'installerfw' command in kickstart to customize configuration
-  * improve output message of post scripts
-  * bug fix:
-    - fix rpm not support 'VCS' tag traceback
+ - new distribution support: CentOS 6
+ - drop image creation if checked packages not present in image
+ - introduce 'installerfw' command in kickstart to customize configuration
+ - improve output message of post scripts
+ - bug fix:
+   - fix rpm not support 'VCS' tag traceback
 
 * Thu May 16 2013 Gui Chen <gui.chen@intel.com> - 0.19
  - new distribution support: Ubuntu 13.04 and openSUSE 12.3
