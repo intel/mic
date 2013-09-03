@@ -80,7 +80,7 @@ class PluginMgr(object):
                         except ImportError, err:
                             msg = 'Failed to load plugin %s/%s: %s' \
                                 % (os.path.basename(pdir), mod, err)
-                            msger.warning(msg)
+                            msger.verbose(msg)
 
             del(sys.path[0])
 
