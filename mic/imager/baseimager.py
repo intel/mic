@@ -64,6 +64,7 @@ class BaseImageCreator(object):
         """
 
         self.pkgmgr = pkgmgr
+        self.distro_name = ""
 
         self.__builddir = None
         self.__bindmounts = []

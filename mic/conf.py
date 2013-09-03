@@ -47,6 +47,7 @@ class ConfigMgr(object):
                     "cachedir": '/var/tmp/mic/cache',
                     "outdir": './mic-output',
 
+                    "plugin_dir": "/usr/lib/mic/plugins",
                     "arch": None, # None means auto-detect
                     "pkgmgr": "auto",
                     "name": "output",
@@ -78,6 +79,7 @@ class ConfigMgr(object):
                 'bootstrap': {
                     "rootdir": '/var/tmp/mic-bootstrap',
                     "packages": [],
+                    "distro_name": "",
                 },
                }
 
