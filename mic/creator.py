@@ -16,6 +16,7 @@
 # Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 import os, sys, re
+import pwd
 from optparse import SUPPRESS_HELP
 
 from mic import msger, rt_util
@@ -303,6 +304,11 @@ class Creator(cmdln.Cmdln):
 
         if os.geteuid() != 0:
             raise msger.error("Root permission is required, abort")
+
+        try:
+            w = pwd.getpwuid(os.geteuid())
+        except KeyError:
+            msger.warning("Might fail in compressing stage for undetermined user")
 
         return argv
 
