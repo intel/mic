@@ -942,7 +942,7 @@ def get_loop_device(losetupcmd, lofile):
 
         # provide an avaible loop device
         rc, out = runner.runtool([losetupcmd, "--find"])
-        if rc == 0:
+        if rc == 0 and out:
             loopdev = out.split()[0]
             devinst.register(loopdev)
         if not loopdev or not os.path.exists(loopdev):
