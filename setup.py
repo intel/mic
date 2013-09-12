@@ -3,11 +3,6 @@
 import os, sys
 import glob
 from distutils.core import setup
-try:
-    import setuptools
-    # enable "setup.py develop", optional
-except ImportError:
-    pass
 
 MOD_NAME = 'mic'
 
@@ -45,53 +40,28 @@ PACKAGES = [MOD_NAME,
 IMAGER_PLUGINS = glob.glob(os.path.join("plugins", "imager", "*.py"))
 BACKEND_PLUGINS = glob.glob(os.path.join("plugins", "backend", "*.py"))
 
-# the following code to do a simple parse for '--prefix' opts
 prefix = sys.prefix
-is_next = False
-for arg in sys.argv:
-    if is_next:
-        prefix = arg
-        break
-    if '--prefix=' in arg:
-        prefix = arg[9:]
-        break
-    elif '--prefix' == arg:
-        is_next = True
-
-# get the installation path of mic.conf
-prefix = os.path.abspath(os.path.expanduser(prefix)).rstrip('/')
-if prefix.lstrip('/') == 'usr':
-    etc_prefix = '/etc'
-else:
-    etc_prefix = os.path.join(prefix, 'etc')
+# if real_prefix, it must be in virtualenv, use prefix as root
+root = sys.prefix if hasattr(sys, 'real_prefix') else ''
 
 conffile = 'etc/mic.conf'
-if os.path.isfile('%s/mic/mic.conf' % etc_prefix):
-    conffile += '.new'
-
 # apply prefix to mic.conf.in to generate actual mic.conf
 conf_str = file('etc/mic.conf.in').read()
 conf_str = conf_str.replace('@PREFIX@', prefix)
 with file(conffile, 'w') as wf:
     wf.write(conf_str)
 
-try:
-    os.environ['PREFIX'] = prefix
-    setup(name=MOD_NAME,
-          version = version,
-          description = 'Image Creator for Linux Distributions',
-          author='Jian-feng Ding, Qiang Zhang, Gui Chen',
-          author_email='jian-feng.ding@intel.com, qiang.z.zhang@intel.com, gui.chen@intel.com',
-          url='https://github.com/jfding/mic',
-          scripts=[
-              'tools/mic',
-              ],
-          packages = PACKAGES,
-          data_files = [("%s/lib/mic/plugins/imager" % prefix, IMAGER_PLUGINS),
-                        ("%s/lib/mic/plugins/backend" % prefix, BACKEND_PLUGINS),
-                        ("%s/mic" % etc_prefix, [conffile])]
-    )
-finally:
-    # remove dynamic file distfiles/mic.conf
-    os.unlink(conffile)
-
+setup(name=MOD_NAME,
+  version = version,
+  description = 'Image Creator for Linux Distributions',
+  author='Jian-feng Ding, Qiang Zhang, Gui Chen',
+  author_email='jian-feng.ding@intel.com, qiang.z.zhang@intel.com, gui.chen@intel.com',
+  url='https://github.com/jfding/mic',
+  scripts=[
+      'tools/mic',
+      ],
+  packages = PACKAGES,
+  data_files = [("%s/lib/mic/plugins/imager" % prefix, IMAGER_PLUGINS),
+                ("%s/lib/mic/plugins/backend" % prefix, BACKEND_PLUGINS),
+                ("%s/etc/mic" % root, [conffile])]
+)
