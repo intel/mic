@@ -1,0 +1,187 @@
+#compdef mic
+#
+# Copyright (c) 2013 Intel, Inc.
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the Free
+# Software Foundation; version 2 of the License
+
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc., 59
+# Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+_mic() {
+  typeset -A opt_args
+  local context state line curcontext="$curcontext"
+
+  local ret=1
+
+  _arguments -C \
+    {-h,--help}'[show this help message and exit]' \
+    "--version[show program\'s version number and exit]" \
+    {-d,--debug}'[print debug message]' \
+    {-v,--verbose}'[verbose information]' \
+    '1: :_mic_cmds' \
+    '*::arg:->args' \
+  && ret=0
+
+
+  case "$state" in
+    (args)
+      curcontext="${curcontext%:*:*}:mic-cmd-$words[1]:"
+      case $words[1] in
+        (chroot|ch)
+          _arguments \
+            {-h,--help}'[show this help message and exit]' \
+            {-s,--saveto=}'[Save the unpacked image to specified dir]: :_files -/' \
+            '1: :_files -/' \
+              && ret=0
+        ;;
+        (convert|cv)
+          _arguments \
+            {-h,--help}'[show this help message and exit]' \
+            {-S,--shell}'[Launch shell before packaging the converted image]' \
+              && ret=0
+        ;;
+        (create|cr)
+          _arguments -C \
+            {-h,--help}'[show this help message and exit]' \
+            '--logfile=[Path of logfile]:path' \
+            '-c[Specify config file for mic]:file' \
+            '-k[Cache directory to store the downloaded]: :_files -/' \
+            '-o[Output directory]: :_files -/' \
+            '-A[Specify repo architecture]:parameter' \
+            '--release=[Generate a release of RID with all necessary files, when @BUILD_ID@ is contained in kickstart file, it will be replaced by RID]:parameter' \
+            '--record-pkgs=[Record the info of installed packages, multiple values can be specified which joined by \",\", valid values: \"name\", \"content\", \"license\", \"vcs\"]: :_mic_create_filters -s ,' \
+            '--pkgmgr=[Specify backend package manager]:parameter' \
+            '--local-pkgs-path=[Path for local pkgs(rpms) to be installed]:path' \
+            '--runtime=[Specify  runtime mode, avaiable: bootstrap, native]: :(bootstrap native)' \
+            '--pack-to=[Pack the images together into the specified achive, extension supported: .zip, .tar, .tar.gz, .tar.bz2, etc. by default, .tar will be used]:parameter' \
+            '--copy-kernel[Copy kernel files from image /boot directory to the image output directory.]' \
+            '--install-pkgs=[Specify what type of packages to be installed, valid: source, debuginfo, debugsource]: :(source debuginfo debugsource)' \
+            '--check-pkgs=[Check if given packages would be installed, packages should be separated by comma]' \
+            '--tmpfs[Setup tmpdir as tmpfs to accelerate, experimental feature, use it if you have more than 4G memory]' \
+            '1: :_mic_create_entities' \
+            '*::create-arg:->create-args' \
+              && ret=0
+          case "$state" in
+            (create-args)
+              local -a common_ops
+              common_ops=(
+                '1:: :(`ls`)' \
+                {-h,--help}'[show this help message and exit]' \
+                '--logfile=[Path of logfile]:path' \
+                '-c[Specify config file for mic]:file' \
+                '-k[Cache directory to store the downloaded]: :_files -/' \
+                '-o[Output directory]: :_files -/' \
+                '-A[Specify repo architecture]:parameter' \
+                '--release=[Generate a release of RID with all necessary files, when @BUILD_ID@ is contained in kickstart file, it will be replaced by RID]:parameter' \
+                '--record-pkgs=[Record the info of installed packages, multiple values can be specified which joined by \",\", valid values: \"name\", \"content\", \"license\", \"vcs\"]: :_mic_create_filters -s ,' \
+                '--pkgmgr=[Specify backend package manager]:parameter' \
+                '--local-pkgs-path=[Path for local pkgs(rpms) to be installed]:path' \
+                '--runtime=[Specify  runtime mode, avaiable: bootstrap, native]: :(bootstrap native)' \
+                '--pack-to=[Pack the images together into the specified achive, extension supported: .zip, .tar, .tar.gz, .tar.bz2, etc. by default, .tar will be used]:parameter' \
+                '--copy-kernel[Copy kernel files from image /boot directory to the image output directory.]' \
+                '--install-pkgs=[Specify what type of packages to be installed, valid: source, debuginfo, debugsource]: :(source debuginfo debugsource)' \
+                '--check-pkgs=[Check if given packages would be installed, packages should be separated by comma]' \
+                '--tmpfs[Setup tmpdir as tmpfs to accelerate, experimental feature, use it if you have more than 4G memory]' \
+              )
+              case $words[1] in
+                (auto)
+                  _arguments \
+                    $common_ops \
+                      && ret=0
+                  ;;
+                (fs)
+                  _arguments \
+                    $common_ops \
+                    '--include-src[Generate a image with source rpms included]' \
+                    && ret=0
+                  ;;
+                (livecd)
+                  _arguments \
+                    $common_ops \
+                      && ret=0
+                  ;;
+                (liveusb)
+                  _arguments \
+                    $common_ops \
+                      && ret=0
+                  ;;
+                (loop)
+                  _arguments \
+                    $common_ops \
+                    '--shrink[Whether to shrink loop images to minimal size]' \
+                    "--compress-image=[Compress all loop images with \'gz\' or \'bz2\']: :(gz bz2)" \
+                    "--compress-disk-image=[Same with --compress-image]: :(gz bz2)" \
+                      && ret=0
+                  ;;
+                (raw)
+                  _arguments \
+                    $common_ops \
+                    "--fstab-entry=[Set fstab entry, \'name\' means using device names, \'uuid\' means using filesystem uuid]: :(name uuid)" \
+                    '--generate-bmap[also generate the block map file]' \
+                    '--compress-image=[Compress all raw images before package]: :(gz bz2)' \
+                    '--compress-disk-image=[Same with --compress-image]: :(gz bz2)' \
+                    && ret=0
+                  ;;
+                (help)
+                  _arguments -C \
+                    '1: :_mic_create_entities' \
+                    && ret=0
+                  ;;
+              esac
+              ;;
+          esac
+         ;;
+         (help)
+           _arguments -C \
+             '1: :_mic_cmds' \
+             && ret=0
+        ;;
+      esac
+    ;;
+  esac
+
+  return ret
+}
+
+(( $+functions[_mic_cmds] )) ||
+_mic_cmds() {
+  local commands; commands=(
+    'chroot:chroot into an image'
+    'convert:convert image format'
+    'create:create an image'
+    'help:give detailed help on a specific sub-command'
+  )
+  _describe -t commands 'command' commands "$@"
+}
+
+(( $+functions[_mic_create_entities] )) ||
+_mic_create_entities() {
+  local entities; entities=(
+    'auto:auto detect image type from magic header'
+    'fs:create fs image'
+    'help:give detailed help on a specific sub-command'
+    'livecd:create livecd image'
+    'liveusb:create liveusb image'
+    'loop:create loop image'
+    'raw:create raw image'
+  )
+  _describe -t entities 'entity' entities "$@"
+}
+
+(( $+functions[_mic_create_filters] )) ||
+_mic_create_filters() {
+  local filters; filters=(name content license vcs)
+  _values $@ 'filter' "${filters[@]}"
+}
+
+_mic "$@"
+
+# vim: ft=zsh sw=2 ts=2 et

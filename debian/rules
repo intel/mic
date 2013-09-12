@@ -31,9 +31,10 @@ install: build
 	dh_installdirs
 
 	# Installing package
-	mkdir -p $(CURDIR)/debian/mic $(CURDIR)/debian/mic/usr/bin $(CURDIR)/debian/mic/usr/share/man/man1 $(CURDIR)/debian/mic/etc/bash_completion.d
+	mkdir -p $(CURDIR)/debian/mic $(CURDIR)/debian/mic/usr/bin $(CURDIR)/debian/mic/usr/share/man/man1 $(CURDIR)/debian/mic/etc/bash_completion.d $(CURDIR)/debian/mic/etc/zsh_completion.d
 	install -m644 doc/mic.1 $(CURDIR)/debian/mic/usr/share/man/man1
 	install -m755 etc/mic.bash $(CURDIR)/debian/mic/etc/bash_completion.d/mic.sh
+	install -m755 etc/_mic $(CURDIR)/debian/mic/etc/zsh_completion.d/_mic
 	python setup.py install --root=$(CURDIR)/debian/mic
 
 binary-indep: build install
