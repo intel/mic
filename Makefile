@@ -1,33 +1,28 @@
 PYTHON ?= python
 VERSION = $(shell sed -ne 's/__version__\s*=\s*"\(.*\)"/\1/p ' mic/__init__.py)
-TAGVER = $(shell echo $(VERSION) | sed -e "s/\([0-9\.]*\).*/\1/")
+TAGVER = $(shell git describe --abbrev=0 --tags)
 
 PKGNAME = mic
-
-ifeq ($(VERSION), $(TAGVER))
-	TAG = $(TAGVER)
-else
-	TAG = "HEAD"
-endif
-
 
 all: build
 
 build:
 	$(PYTHON) setup.py build
 
-dist-common: man
-	git archive --format=tar --prefix=$(PKGNAME)-$(TAGVER)/ $(TAG) | tar xpf -
-	git show $(TAG) --oneline | head -1 > $(PKGNAME)-$(TAGVER)/commit-id
-	rm -rf $(PKGNAME)-$(TAGVER)/tests
+_archive: man
+	git archive --format=tar --prefix=$(PKGNAME)-$(VER)/ $(TAG) | tar xpf -
+	git show $(TAG) --oneline | head -1 > $(PKGNAME)-$(VER)/commit-id
+	rm -rf $(PKGNAME)-$(VER)/tests
+	tar zcpf $(PKGNAME)_$(VER).tar.gz $(PKGNAME)-$(VER)
+	rm -rf $(PKGNAME)-$(VER)
 
-dist-bz2: dist-common
-	tar jcpf $(PKGNAME)-$(TAGVER).tar.bz2 $(PKGNAME)-$(TAGVER)
-	rm -rf $(PKGNAME)-$(TAGVER)
+dist: VER=$(VERSION)
+dist: TAG='HEAD'
+dist: _archive
 
-dist-gz: dist-common
-	tar zcpf $(PKGNAME)-$(TAGVER).tar.gz $(PKGNAME)-$(TAGVER)
-	rm -rf $(PKGNAME)-$(TAGVER)
+release: VER=$(TAGVER)
+release: TAG=$(TAGVER)
+release: _archive
 
 man:
 	rst2man doc/man.rst > doc/mic.1
@@ -39,14 +34,10 @@ develop: build
 	$(PYTHON) setup.py develop
 
 test:
-	cd tests/ && $(PYTHON) suite.py 
+	cd tests/ && $(PYTHON) suite.py
 
 clean:
 	rm -f *.tar.gz
-	rm -f *.tar.bz2
-	rm -f mic/__version__.*
-	rm -f tools/*.py[co]
-	rm -f mic.1
+	rm -f doc/mic.1
 	rm -rf *.egg-info
-	rm -rf build/
-	rm -rf dist/
+	rm -rf build/ dist/
