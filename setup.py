@@ -56,7 +56,7 @@ setup(name=MOD_NAME,
   description = 'Image Creator for Linux Distributions',
   author='Jian-feng Ding, Qiang Zhang, Gui Chen',
   author_email='jian-feng.ding@intel.com, qiang.z.zhang@intel.com, gui.chen@intel.com',
-  url='https://github.com/jfding/mic',
+  url='https://github.com/01org/mic',
   scripts=[
       'tools/mic',
       ],
