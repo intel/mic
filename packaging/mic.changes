@@ -1,3 +1,8 @@
+* Wed Sep 18 2013 Gui Chen <gui.chen@intel.com> - 0.21
+ - prefer to use 'pbzip2'/'pigz' to compress image if possible
+ - fix exiting at packaging images on Ubuntu distro
+ - won't fallback to native mode if bootstrap not found
+
 * Mon Aug 26 2013 Gui Chen <gui.chen@intel.com> - 0.21
  - new distribution support: Fedora 19
  - refactor part of chroot modules for better cleanup handling

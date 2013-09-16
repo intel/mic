@@ -2,7 +2,7 @@ Format: 1.0
 Source: mic
 Binary: mic
 Architecture: all
-Version: 0.21
+Version: 0.21.1
 Maintainer: Jian-feng Ding <jian-feng.ding@intel.com>
 Homepage: http://www.tizen.org
 Standards-Version: 3.8.0
