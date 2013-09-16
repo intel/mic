@@ -181,13 +181,21 @@ def extract_rpm(rpmfile, targetdir):
 
 def compressing(fpath, method):
     comp_map = {
-        "gz": "gzip",
-        "bz2": "bzip2"
+        "gz": ["pgzip", "pigz", "gzip"],
+        "bz2": ["pbzip2", "bzip2"],
     }
     if method not in comp_map:
         raise CreatorError("Unsupport compress format: %s, valid values: %s"
                            % (method, ','.join(comp_map.keys())))
-    cmd = find_binary_path(comp_map[method])
+    cmd = None
+    for cmdname in comp_map[method]:
+        try:
+            cmd = find_binary_path(cmdname)
+            break
+        except CreatorError as err:
+            pass
+    if not cmd:
+        raise CreatorError("Command %s not available" % cmdname)
     rc = runner.show([cmd, "-f", fpath])
     if rc:
         raise CreatorError("Failed to %s file: %s" % (comp_map[method], fpath))
