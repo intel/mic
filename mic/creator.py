@@ -303,7 +303,7 @@ class Creator(cmdln.Cmdln):
             return ['help', argv[0]]
 
         if os.geteuid() != 0:
-            raise msger.error("Root permission is required, abort")
+            msger.error("Root permission is required, abort")
 
         try:
             w = pwd.getpwuid(os.geteuid())
