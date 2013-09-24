@@ -167,9 +167,9 @@ class Creator(cmdln.Cmdln):
         abspath = lambda pth: os.path.abspath(os.path.expanduser(pth))
 
         if self.options.verbose:
-            msger.set_loglevel('verbose')
+            msger.set_loglevel('VERBOSE')
         if self.options.debug:
-            msger.set_loglevel('debug')
+            msger.set_loglevel('DEBUG')
 
         if self.options.logfile:
             logfile_abs_path = abspath(self.options.logfile)

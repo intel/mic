@@ -64,7 +64,7 @@ class MicCmd(cmdln.Cmdln):
 
     def postoptparse(self):
         if self.options.verbose:
-            msger.set_loglevel('verbose')
+            msger.set_loglevel('VERBOSE')
 
         if self.options.debug:
             try:
@@ -73,7 +73,7 @@ class MicCmd(cmdln.Cmdln):
             except ImportError:
                 pass
 
-            msger.set_loglevel('debug')
+            msger.set_loglevel('DEBUG')
 
         self.print_version()
 
@@ -235,8 +235,8 @@ if __name__ == "__main__":
         msger.info(str(msg))
 
     except errors.CreatorError, err:
-        if msger.get_loglevel() == 'debug':
+        if msger.get_loglevel() == 'DEBUG':
             import traceback
             msger.error(traceback.format_exc())
         else:
-            msger.error('\n'+str(err))
+            msger.error(str(err))

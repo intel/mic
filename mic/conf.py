@@ -216,7 +216,7 @@ class ConfigMgr(object):
         else:
             if len(target_archlist) == 1:
                 self.create['arch'] = str(target_archlist[0])
-                msger.info("\nUse detected arch %s." % target_archlist[0])
+                msger.info("Use detected arch %s." % target_archlist[0])
             else:
                 raise errors.ConfigError("Please specify a valid arch, "
                                          "the choice can be: %s" \

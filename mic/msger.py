@@ -1,7 +1,5 @@
-#!/usr/bin/python -tt
-# vim: ai ts=4 sts=4 et sw=4
 #
-# Copyright (c) 2009, 2010, 2011 Intel, Inc.
+# Copyright (c) 2013 Intel, Inc.
 #
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -16,294 +14,412 @@
 # with this program; if not, write to the Free Software Foundation, Inc., 59
 # Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-import os,sys
-import re
-import time
+""" This logging module is fully compatible with the old msger module, and
+    it supports interactive mode, logs the messages with specified levels
+    to specified stream, can also catch all error messages including the
+    involved 3rd party modules to the logger
+"""
 
-__ALL__ = ['set_mode',
-           'get_loglevel',
-           'set_loglevel',
-           'set_logfile',
-           'raw',
-           'debug',
-           'verbose',
-           'info',
-           'warning',
-           'error',
-           'ask',
-           'pause',
-          ]
+import os
+import sys
+import logging
+import tempfile
 
-# COLORs in ANSI
-INFO_COLOR = 32 # green
-WARN_COLOR = 33 # yellow
-ERR_COLOR  = 31 # red
-ASK_COLOR  = 34 # blue
-NO_COLOR = 0
+__ALL__ = [
+    'get_loglevel',
+    'set_loglevel',
+    'set_logfile',
+    'enable_interactive',
+    'disable_interactive',
+    'enable_logstderr',
+    'disable_logstderr',
+    'raw',
+    'debug',
+    'verbose',
+    'info',
+    'warning',
+    'error',
+    'select',
+    'choice',
+    'ask',
+    'pause',
+]
 
-PREFIX_RE = re.compile('^<(.*?)>\s*(.*)', re.S)
 
-INTERACTIVE = True
+# define the color constants
+BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = range(30, 38)
 
-LOG_LEVEL = 1
-LOG_LEVELS = {
-                'quiet': 0,
-                'normal': 1,
-                'verbose': 2,
-                'debug': 3,
-                'never': 4,
-             }
+# color sequence for tty terminal
+COLOR_SEQ = "\033[%dm"  # pylint: disable=W1401
+# reset sequence for tty terminal
+RESET_SEQ = "\033[0m" # pylint: disable=W1401
 
-LOG_FILE_FP = None
-LOG_CONTENT = ''
-CATCHERR_BUFFILE_FD = -1
-CATCHERR_BUFFILE_PATH = None
-CATCHERR_SAVED_2 = -1
+# new log level
+RAWTEXT = 25
+VERBOSE = 15
 
-def _general_print(head, color, msg = None, stream = None, level = 'normal'):
-    global LOG_CONTENT
-    if not stream:
-        stream = sys.stdout
+# define colors for log levels
+COLORS = {
+    'DEBUG':    COLOR_SEQ % BLUE,
+    'VERBOSE':  COLOR_SEQ % MAGENTA,
+    'INFO':     COLOR_SEQ % GREEN,
+    'WARNING':  COLOR_SEQ % YELLOW,
+    'ERROR':    COLOR_SEQ % RED,
+}
 
-    if LOG_LEVELS[level] > LOG_LEVEL:
-        # skip
-        return
 
-    # encode raw 'unicode' str to utf8 encoded str
-    if msg and isinstance(msg, unicode):
-        msg = msg.encode('utf-8', 'ignore')
+class LevelFilter(logging.Filter):
+    """ A filter that selects logging message with specified level """
+    def __init__(self, levels):  # pylint: disable=W0231
+        self._levels = levels
 
-    errormsg = ''
-    if CATCHERR_BUFFILE_FD > 0:
-        size = os.lseek(CATCHERR_BUFFILE_FD , 0, os.SEEK_END)
-        os.lseek(CATCHERR_BUFFILE_FD, 0, os.SEEK_SET)
-        errormsg = os.read(CATCHERR_BUFFILE_FD, size)
-        os.ftruncate(CATCHERR_BUFFILE_FD, 0)
+    def filter(self, record):
+        if self._levels:
+            return record.levelname in self._levels
+        return False
 
-    # append error msg to LOG
-    if errormsg:
-        LOG_CONTENT += errormsg
 
-    # append normal msg to LOG
-    save_msg = msg.strip() if msg else None
-    if save_msg:
-        timestr = time.strftime("[%m/%d %H:%M:%S %Z] ", time.localtime())
-        LOG_CONTENT += timestr + save_msg + '\n'
+class MicStreamHandler(logging.StreamHandler):
+    """ A stream handler that print colorized levelname in tty terminal """
+    def __init__(self, stream=None):
+        logging.StreamHandler.__init__(self, stream)
+        msg_fmt = "%(color)s%(levelname)s:%(reset)s %(message)s"
+        self.setFormatter(logging.Formatter(fmt=msg_fmt))
 
-    if errormsg:
-        _color_print('', NO_COLOR, errormsg, stream, level)
+    def _use_color(self):
+        """ Check if to print in color or not """
+        in_emacs = (os.getenv("EMACS") and
+                    os.getenv("INSIDE_EMACS", "").endswith(",comint"))
+        return self.stream.isatty() and not in_emacs
 
-    _color_print(head, color, msg, stream, level)
+    def format(self, record):
+        """ Format the logging record if need color """
+        record.color = record.reset = ""
+        if self._use_color():
+            record.color = COLORS[record.levelname]
+            record.reset = RESET_SEQ
+        return logging.StreamHandler.format(self, record)
 
-def _color_print(head, color, msg, stream, level):
-    colored = True
-    if color == NO_COLOR or \
-       not stream.isatty() or \
-       os.getenv('ANSI_COLORS_DISABLED') is not None:
-        colored = False
 
-    if head.startswith('\r'):
-        # need not \n at last
-        newline = False
-    else:
-        newline = True
+class RedirectedStderr(object):
+    """ A faked error stream that redirect stderr to a temp file """
+    def __init__(self):
+        self.tmpfile = tempfile.NamedTemporaryFile()
+        self.fderr = None
+        self.value = None
 
-    if colored:
-        head = '\033[%dm%s:\033[0m ' %(color, head)
-        if not newline:
-            # ESC cmd to clear line
-            head = '\033[2K' + head
-    else:
-        if head:
-            head += ': '
-            if head.startswith('\r'):
-                head = head.lstrip()
-                newline = True
+    def __del__(self):
+        self.close()
 
-    if msg is not None:
-        if isinstance(msg, unicode):
-            msg = msg.encode('utf8', 'ignore')
+    def close(self):
+        """ Close the temp file and clear the buffer """
+        try:
+            self.value = None
+            self.tmpfile.close()
+        except OSError:
+            pass
 
-        stream.write('%s%s' % (head, msg))
-        if newline:
-            stream.write('\n')
+    def truncate(self):
+        """ Truncate the tempfile to size zero """
+        if self.tmpfile:
+            os.ftruncate(self.tmpfile.fileno(), 0)
 
-    stream.flush()
+    def redirect(self):
+        """ Redirect stderr to the temp file """
+        self.fderr = os.dup(2)
+        os.dup2(self.tmpfile.fileno(), 2)
 
-def _color_perror(head, color, msg, level = 'normal'):
-    if CATCHERR_BUFFILE_FD > 0:
-        _general_print(head, color, msg, sys.stdout, level)
-    else:
-        _general_print(head, color, msg, sys.stderr, level)
+    def restore(self):
+        """ Restore the stderr and read the bufferred data """
+        os.dup2(self.fderr, 2)
+        self.fderr = None
 
-def _split_msg(head, msg):
-    if isinstance(msg, list):
-        msg = '\n'.join(map(str, msg))
+        if self.tmpfile:
+            self.tmpfile.seek(0, 0)
+            self.value = self.tmpfile.read()
 
-    if msg.startswith('\n'):
-        # means print \n at first
-        msg = msg.lstrip()
-        head = '\n' + head
+    def getvalue(self):
+        """ Read the bufferred data """
+        if self.tmpfile:
+            self.tmpfile.seek(0, 0)
+            self.value = self.tmpfile.read()
+            os.ftruncate(self.tmpfile.fileno(), 0)
+            return self.value
+        return None
 
-    elif msg.startswith('\r'):
-        # means print \r at first
-        msg = msg.lstrip()
-        head = '\r' + head
+class MicFileHandler(logging.FileHandler):
+    """ This file handler is supposed to catch the stderr output from
+        all modules even 3rd party modules involed, as it redirects
+        the stderr stream to a temp file stream, if logfile assigned,
+        it will flush the record to file stream, else it's a buffer
+        handler; once logfile assigned, the buffer will be flushed
+    """
+    def __init__(self, filename=None, mode='w', encoding=None, capacity=10):
+        # we don't use FileHandler to initialize,
+        # because filename might be expected to None
+        logging.Handler.__init__(self)
+        self.stream = None
+        if filename:
+            self.baseFilename = os.path.abspath(filename)
+        else:
+            self.baseFilename = None
+        self.mode = mode
+        self.encoding = None
+        self.capacity = capacity
+        # buffering the records
+        self.buffer = []
 
-    m = PREFIX_RE.match(msg)
-    if m:
-        head += ' <%s>' % m.group(1)
-        msg = m.group(2)
+        # set formater locally
+        msg_fmt = "[%(asctime)s] %(message)s"
+        date_fmt = "%m/%d %H:%M:%S %Z"
+        self.setFormatter(logging.Formatter(fmt=msg_fmt, datefmt=date_fmt))
+        self.olderr = sys.stderr
+        self.stderr = RedirectedStderr()
+        self.errmsg = None
 
-    return head, msg
+    def set_logfile(self, filename, mode='w'):
+        """ Set logfile path to make it possible flush records not-on-fly """
+        self.baseFilename = os.path.abspath(filename)
+        self.mode = mode
 
-def get_loglevel():
-    return (k for k,v in LOG_LEVELS.items() if v==LOG_LEVEL).next()
+    def redirect_stderr(self):
+        """ Start to redirect stderr for catching all error output """
+        self.stderr.redirect()
 
-def set_loglevel(level):
-    global LOG_LEVEL
-    if level not in LOG_LEVELS:
-        # no effect
-        return
+    def restore_stderr(self):
+        """ Restore stderr stream and log the error messages to both stderr
+            and log file if error messages are not empty
+        """
+        self.stderr.restore()
+        self.errmsg = self.stderr.value
+        if self.errmsg:
+            self.logstderr()
 
-    LOG_LEVEL = LOG_LEVELS[level]
+    def logstderr(self):
+        """ Log catched error message from stderr redirector """
+        if not self.errmsg:
+            return
 
-def set_interactive(mode=True):
-    global INTERACTIVE
-    if mode:
-        INTERACTIVE = True
-    else:
-        INTERACTIVE = False
+        sys.stdout.write(self.errmsg)
+        sys.stdout.flush()
 
-def log(msg=''):
-    # log msg to LOG_CONTENT then save to logfile
-    global LOG_CONTENT
-    if msg:
-        LOG_CONTENT += msg
+        record = logging.makeLogRecord({'msg': self.errmsg})
+        self.buffer.append(record)
 
-def raw(msg=''):
-    _general_print('', NO_COLOR, msg)
+        # truncate the redirector for the errors is logged
+        self.stderr.truncate()
+        self.errmsg = None
 
-def info(msg):
-    head, msg = _split_msg('Info', msg)
-    _general_print(head, INFO_COLOR, msg)
+    def emit(self, record):
+        """ Emit the log record to Handler """
+        # if there error message catched, log it first
+        self.errmsg = self.stderr.getvalue()
+        if self.errmsg:
+            self.logstderr()
 
-def verbose(msg):
-    head, msg = _split_msg('Verbose', msg)
-    _general_print(head, INFO_COLOR, msg, level = 'verbose')
+        # if no logfile assigned, it's a buffer handler
+        if not self.baseFilename:
+            self.buffer.append(record)
+            if len(self.buffer) >= self.capacity:
+                self.buffer = []
+        else:
+            self.flushing(record)
 
-def warning(msg):
-    head, msg = _split_msg('Warning', msg)
-    _color_perror(head, WARN_COLOR, msg)
+    def flushing(self, record=None):
+        """ Flush buffer and record to logfile """
+        # NOTE: 'flushing' can't be named 'flush' because of 'emit' calling it
+        # set file stream position to SEEK_END(=2)
+        if self.stream:
+            self.stream.seek(0, 2)
+        # if bufferred, flush it
+        if self.buffer:
+            for arecord in self.buffer:
+                logging.FileHandler.emit(self, arecord)
+            self.buffer = []
+        # if recorded, flush it
+        if record:
+            logging.FileHandler.emit(self, record)
 
-def debug(msg):
-    head, msg = _split_msg('Debug', msg)
-    _color_perror(head, ERR_COLOR, msg, level = 'debug')
+    def close(self):
+        """ Close handler after flushing the buffer """
+        # if any left in buffer, flush it
+        if self.stream:
+            self.flushing()
+        logging.FileHandler.close(self)
+
+
+class MicLogger(logging.Logger):
+    """ The MIC logger class, it supports interactive mode, and logs the
+        messages with specified levels tospecified stream, also can catch
+        all error messages including the involved 3rd party modules
+    """
+    def __init__(self, name, level=logging.INFO):
+        logging.Logger.__init__(self, name, level)
+        self.interactive = True
+        self.logfile = None
+        self._allhandlers = {
+            'default': logging.StreamHandler(sys.stdout),
+            'stdout': MicStreamHandler(sys.stdout),
+            'stderr': MicStreamHandler(sys.stderr),
+            'logfile': MicFileHandler(),
+        }
+
+        self._allhandlers['default'].addFilter(LevelFilter(['RAWTEXT']))
+        self._allhandlers['default'].setFormatter(
+            logging.Formatter(fmt="%(message)s"))
+        self.addHandler(self._allhandlers['default'])
+
+        self._allhandlers['stdout'].addFilter(LevelFilter(['DEBUG', 'VERBOSE',
+                                                          'INFO']))
+        self.addHandler(self._allhandlers['stdout'])
+
+        self._allhandlers['stderr'].addFilter(LevelFilter(['WARNING',
+                                                           'ERROR']))
+        self.addHandler(self._allhandlers['stderr'])
+
+        self.addHandler(self._allhandlers['logfile'])
+
+    def set_logfile(self, filename, mode='w'):
+        """ Set logfile path """
+        self.logfile = filename
+        self._allhandlers['logfile'].set_logfile(self.logfile, mode)
+
+    def enable_logstderr(self):
+        """ Start to log all error messages """
+        if self.logfile:
+            self._allhandlers['logfile'].redirect_stderr()
+
+    def disable_logstderr(self):
+        """ Stop to log all error messages """
+        if self.logfile:
+            self._allhandlers['logfile'].restore_stderr()
+
+    def verbose(self, msg, *args, **kwargs):
+        """ Log a message with level VERBOSE """
+        if self.isEnabledFor(VERBOSE):
+            self._log(VERBOSE, msg, args, **kwargs)
+
+    def raw(self, msg, *args, **kwargs):
+        """ Log a message in raw text format """
+        if self.isEnabledFor(RAWTEXT):
+            self._log(RAWTEXT, msg, args, **kwargs)
+
+    def select(self, msg, optdict, default=None):
+        """ Log a message in interactive mode """
+        if not optdict.keys():
+            return default
+        if default is None:
+            default = optdict.keys()[0]
+        msg += " [%s](%s): " % ('/'.join(optdict.keys()), default)
+        if not self.interactive or self.logfile:
+            reply = default
+            self.raw(msg + reply)
+        else:
+            while True:
+                reply = raw_input(msg).strip()
+                if not reply or reply in optdict:
+                    break
+            if not reply:
+                reply = default
+        return optdict[reply]
+
 
 def error(msg):
-    head, msg = _split_msg('Error', msg)
-    _color_perror(head, ERR_COLOR, msg)
-    sys.exit(1)
+    """ Log a message with level ERROR on the MIC logger """
+    LOGGER.error(msg)
+    sys.exit(2)
 
-def ask(msg, default=True):
-    _general_print('\rQ', ASK_COLOR, '')
-    try:
-        if default:
-            msg += '(Y/n) '
-        else:
-            msg += '(y/N) '
-        if INTERACTIVE:
-            while True:
-                repl = raw_input(msg)
-                if repl.lower() == 'y':
-                    return True
-                elif repl.lower() == 'n':
-                    return False
-                elif not repl.strip():
-                    # <Enter>
-                    return default
+def warning(msg):
+    """ Log a message with level WARNING on the MIC logger """
+    LOGGER.warning(msg)
 
-                # else loop
-        else:
-            if default:
-                msg += ' Y'
-            else:
-                msg += ' N'
-            _general_print('', NO_COLOR, msg)
+def info(msg):
+    """ Log a message with level INFO on the MIC logger """
+    LOGGER.info(msg)
 
-            return default
-    except KeyboardInterrupt:
-        sys.stdout.write('\n')
-        sys.exit(2)
+def verbose(msg):
+    """ Log a message with level VERBOSE on the MIC logger """
+    # pylint: disable=E1103
+    LOGGER.verbose(msg)
 
-def choice(msg, choices, default=0):
-    if default >= len(choices):
-        return None
-    _general_print('\rQ', ASK_COLOR, '')
-    try:
-        msg += " [%s] " % '/'.join(choices)
-        if INTERACTIVE:
-            while True:
-                repl = raw_input(msg)
-                if repl in choices:
-                    return repl
-                elif not repl.strip():
-                    return choices[default]
-        else:
-            msg += choices[default]
-            _general_print('', NO_COLOR, msg)
+def debug(msg):
+    """ Log a message with level DEBUG on the MIC logger """
+    LOGGER.debug(msg)
 
-            return choices[default]
-    except KeyboardInterrupt:
-        sys.stdout.write('\n')
-        sys.exit(2)
+def raw(msg):
+    """ Log a message on the MIC logger in raw text format"""
+    # pylint: disable=E1103
+    LOGGER.raw(msg)
+
+def select(msg, optdict, default=None):
+    """ Show an interactive scene in tty terminal and
+        logs them on MIC logger
+    """
+    # pylint: disable=E1103
+    return LOGGER.select(msg, optdict, default)
+
+def choice(msg, optlist, default=0):
+    """ Give some alternatives to users for answering the question """
+    # pylint: disable=E1103
+    return LOGGER.select(msg, dict(zip(optlist, optlist)), optlist[default])
+
+def ask(msg, ret=True):
+    """ Ask users to answer 'yes' or 'no' to the question """
+    answers = {'y': True, 'n': False}
+    default = {True: 'y', False: 'n'}[ret]
+    # pylint: disable=E1103
+    return LOGGER.select(msg, answers, default)
 
 def pause(msg=None):
-    if INTERACTIVE:
-        _general_print('\rQ', ASK_COLOR, '')
-        if msg is None:
-            msg = 'press <ENTER> to continue ...'
-        raw_input(msg)
+    """ Pause for any key """
+    if msg is None:
+        msg = "press ANY KEY to continue ..."
+    raw_input(msg)
 
-def set_logfile(fpath):
-    global LOG_FILE_FP
+def set_logfile(logfile, mode='w'):
+    """ Set logfile path to the MIC logger """
+    # pylint: disable=E1103
+    LOGGER.set_logfile(logfile, mode)
 
-    def _savelogf():
-        if LOG_FILE_FP:
-            fp = open(LOG_FILE_FP, 'w')
-            fp.write(LOG_CONTENT)
-            fp.close()
+def set_loglevel(level):
+    """ Set loglevel to the MIC logger """
+    if isinstance(level, basestring):
+        level = logging.getLevelName(level)
+    LOGGER.setLevel(level)
 
-    if LOG_FILE_FP is not None:
-        warning('duplicate log file configuration')
+def get_loglevel():
+    """ Get the loglevel of the MIC logger """
+    return logging.getLevelName(LOGGER.level)
 
-    LOG_FILE_FP = fpath
+def disable_interactive():
+    """ Disable the interactive mode """
+    LOGGER.interactive = False
 
-    import atexit
-    atexit.register(_savelogf)
+def enable_interactive():
+    """ Enable the interactive mode """
+    LOGGER.interactive = True
 
-def enable_logstderr(fpath):
-    global CATCHERR_BUFFILE_FD
-    global CATCHERR_BUFFILE_PATH
-    global CATCHERR_SAVED_2
+def set_interactive(value):
+    """ Set the interactive mode (for compatibility) """
+    if value:
+        enable_interactive()
+    else:
+        disable_interactive()
 
-    if os.path.exists(fpath):
-        os.remove(fpath)
-    CATCHERR_BUFFILE_PATH = fpath
-    CATCHERR_BUFFILE_FD = os.open(CATCHERR_BUFFILE_PATH, os.O_RDWR|os.O_CREAT)
-    CATCHERR_SAVED_2 = os.dup(2)
-    os.dup2(CATCHERR_BUFFILE_FD, 2)
+def enable_logstderr(fpath=None):  # pylint: disable=W0613
+    """ Start to log all error message on the MIC logger """
+    # pylint: disable=E1103
+    LOGGER.enable_logstderr()
 
 def disable_logstderr():
-    global CATCHERR_BUFFILE_FD
-    global CATCHERR_BUFFILE_PATH
-    global CATCHERR_SAVED_2
+    """ Stop to log all error message on the MIC logger """
+    # pylint: disable=E1103
+    LOGGER.disable_logstderr()
 
-    raw(msg = None) # flush message buffer and print it.
-    os.dup2(CATCHERR_SAVED_2, 2)
-    os.close(CATCHERR_SAVED_2)
-    os.close(CATCHERR_BUFFILE_FD)
-    os.unlink(CATCHERR_BUFFILE_PATH)
-    CATCHERR_BUFFILE_FD = -1
-    CATCHERR_BUFFILE_PATH = None
-    CATCHERR_SAVED_2 = -1
+
+# add two level to the MIC logger: 'VERBOSE', 'RAWTEXT'
+logging.addLevelName(VERBOSE, 'VERBOSE')
+logging.addLevelName(RAWTEXT, 'RAWTEXT')
+# initial the MIC logger
+logging.setLoggerClass(MicLogger)
+LOGGER = logging.getLogger("MIC")

@@ -263,8 +263,8 @@ class Bootstrap(object):
             value = '%s: %s' % (value, ' '.join(cmd))
             raise RuntimeError, value, tb
         finally:
-            if self.logfile and os.path.isfile(self.logfile):
-                msger.log(file(self.logfile).read())
+            #if self.logfile and os.path.isfile(self.logfile):
+            #    msger.log(file(self.logfile).read())
             cleanup_chrootenv(rootdir, bindmounts, gloablmounts)
             proxy.unset_proxy_environ()
         return retcode

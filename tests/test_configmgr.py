@@ -33,7 +33,7 @@ class ConfigMgrTest(unittest.TestCase):
             os.makedirs(CACHEDIR)
         self.configmgr.create['cachedir'] = CACHEDIR
         self.level = msger.get_loglevel()
-        msger.set_loglevel('quiet')
+        msger.set_loglevel('RAWTEXT')
 
     def tearDown(self):
         msger.set_loglevel(self.level)
