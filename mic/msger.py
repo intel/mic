@@ -265,6 +265,7 @@ class MicLogger(logging.Logger):
     """
     def __init__(self, name, level=logging.INFO):
         logging.Logger.__init__(self, name, level)
+        self.propagate = False
         self.interactive = True
         self.logfile = None
         self._allhandlers = {
