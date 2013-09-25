@@ -448,13 +448,13 @@ class PartitionedMount(Mount):
                 os.symlink(mapperdev, loopdev)
 
             msger.debug("Adding partx mapping for %s" % d['disk'].device)
-            rc = runner.show([self.kpartx, "-v", "-a", d['disk'].device])
+            rc = runner.show([self.kpartx, "-v", "-sa", d['disk'].device])
 
             if rc != 0:
                 # Make sure that the device maps are also removed on error case.
                 # The d['mapped'] isn't set to True if the kpartx fails so
                 # failed mapping will not be cleaned on cleanup either.
-                runner.quiet([self.kpartx, "-d", d['disk'].device])
+                runner.quiet([self.kpartx, "-sd", d['disk'].device])
                 raise MountError("Failed to map partitions for '%s'" %
                                  d['disk'].device)
 
@@ -463,7 +463,7 @@ class PartitionedMount(Mount):
                 runner.quiet([self.dmsetup, "mknodes"])
                 # still not updated, roll back
                 if not os.path.exists(mapperdev):
-                    runner.quiet([self.kpartx, "-d", d['disk'].device])
+                    runner.quiet([self.kpartx, "-sd", d['disk'].device])
                     raise MountError("Failed to load mapper devices for '%s'" %
                                      d['disk'].device)
 
@@ -482,7 +482,7 @@ class PartitionedMount(Mount):
                     self.partitions[pnum]['device'] = None
 
             msger.debug("Unmapping %s" % d['disk'].device)
-            rc = runner.quiet([self.kpartx, "-d", d['disk'].device])
+            rc = runner.quiet([self.kpartx, "-sd", d['disk'].device])
             if rc != 0:
                 raise MountError("Failed to unmap partitions for '%s'" %
                                  d['disk'].device)
