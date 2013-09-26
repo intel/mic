@@ -1,3 +1,8 @@
+mic (0.21.2-1) unstable; urgency=low
+  * use sync mode in kpartx command
+
+ -- Gui Chen <gui.chen@intel.com>  Thu, 26 Sep 2013 17:25:35 +0800
+
 mic (0.21.1-1) unstable; urgency=low
   * prefer to use 'pbzip2'/'pigz' to compress image if possible
   * fix exiting at packaging images on Ubuntu distro

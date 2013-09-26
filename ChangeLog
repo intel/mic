@@ -1,3 +1,7 @@
+Release 0.21.2 - Thu Sep 26 2013 - Gui Chen <gui.chen@intel.com>
+=====================================================================
+  * use sync mode in kpartx command
+
 Release 0.21.1 - Wed Sep 18 2013 - Gui Chen <gui.chen@intel.com>
 =====================================================================
   * prefer to use 'pbzip2'/'pigz' to compress image if possible
