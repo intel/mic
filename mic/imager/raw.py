@@ -366,6 +366,10 @@ class RawImageCreator(BaseImageCreator):
         for p in self.__instloop.partitions:
             env.update(self._set_part_env(p['ks_pnum'], "UUID", p['uuid']))
             env.update(self._set_part_env(p['ks_pnum'], "PARTUUID", p['partuuid']))
+            env.update(self._set_part_env(p['ks_pnum'], "DEVNODE_NOW",
+                                          p['mapper_device']))
+            env.update(self._set_part_env(p['ks_pnum'], "DISK_DEVNODE_NOW",
+                                          self.__disks[p['disk_name']].device))
 
         return env
 

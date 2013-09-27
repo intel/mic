@@ -448,6 +448,8 @@ class BaseImageCreator(object):
             env.update(self._set_part_env(pnum, "TYPE_ID", p.part_type))
             env.update(self._set_part_env(pnum, "DEVNODE",
                                           "/dev/%s%d" % (p.disk, pnum + 1)))
+            env.update(self._set_part_env(pnum, "DISK_DEVNODE",
+                                          "/dev/%s" % p.disk))
             pnum += 1
 
         # Count of paritions
