@@ -438,6 +438,7 @@ class PartitionedMount(Mount):
                 msger.debug("Dev %s: %s -> %s" % (newdev, loopdev, mapperdev))
                 pnum = d['partitions'][i]
                 self.partitions[pnum]['device'] = loopdev
+                self.partitions[pnum]['mapper_device'] = mapperdev
 
                 # grub's install wants partitions to be named
                 # to match their parent device + partition num
