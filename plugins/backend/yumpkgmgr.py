@@ -150,14 +150,6 @@ class Yum(BackendPlugin, yum.YumBase):
         yum.YumBase.close(self)
         self.closeRpmDB()
 
-        if not os.path.exists("/etc/fedora-release") and \
-           not os.path.exists("/etc/meego-release"):
-            for i in range(3, os.sysconf("SC_OPEN_MAX")):
-                try:
-                    os.close(i)
-                except:
-                    pass
-
     def __del__(self):
         pass
 
