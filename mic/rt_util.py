@@ -31,6 +31,11 @@ from mic.chroot import setup_chrootenv, cleanup_chrootenv
 
 expath = lambda p: os.path.abspath(os.path.expanduser(p))
 
+def inbootstrap():
+    if os.path.exists(os.path.join("/", ".chroot.lock")):
+        return True
+    return (os.stat("/").st_ino != 2)
+
 def bootstrap_mic(argv=None):
 
 

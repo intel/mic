@@ -179,7 +179,11 @@ class Creator(cmdln.Cmdln):
             if not os.path.exists(os.path.dirname(logfile_abs_path)):
                 os.makedirs(os.path.dirname(logfile_abs_path))
             msger.set_interactive(False)
-            msger.set_logfile(logfile_abs_path)
+            if rt_util.inbootstrap():
+                mode = 'a'
+            else:
+                mode = 'w'
+            msger.set_logfile(logfile_abs_path, mode)
             configmgr.create['logfile'] = self.options.logfile
 
         if self.options.config:
