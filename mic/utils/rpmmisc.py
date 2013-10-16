@@ -35,6 +35,7 @@ class RPMInstallCallback:
         self.callbackfilehandles = {}
         self.total_actions = 0
         self.total_installed = 0
+        self.total_installing = 0
         self.installed_pkg_names = []
         self.total_removed = 0
         self.mark = "+"
@@ -67,7 +68,7 @@ class RPMInstallCallback:
         l = len(str(self.total_actions))
         size = "%s.%s" % (l, l)
         fmt_done = "[%" + size + "s/%" + size + "s]"
-        done = fmt_done % (self.total_installed + self.total_removed,
+        done = fmt_done % (self.total_installing,
                            self.total_actions)
         marks = self.marks - (2 * l)
         width = "%s.%s" % (marks, marks)
@@ -137,6 +138,12 @@ class RPMInstallCallback:
                 # log stuff
                 #pkgtup = self._dopkgtup(hdr)
                 self.logString.append(self._logPkgString(hdr))
+
+        elif what == rpm.RPMCALLBACK_INST_START:
+            self.total_installing += 1
+
+        elif what == rpm.RPMCALLBACK_UNINST_STOP:
+            pass
 
         elif what == rpm.RPMCALLBACK_INST_PROGRESS:
             if h is not None:
