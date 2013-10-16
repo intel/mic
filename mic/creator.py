@@ -201,6 +201,12 @@ class Creator(cmdln.Cmdln):
               and not os.path.isdir(configmgr.create[cdir]):
                 msger.error('Invalid directory specified: %s' \
                             % configmgr.create[cdir])
+            if not os.path.exists(configmgr.create[cdir]):
+                os.makedirs(configmgr.create[cdir])
+                if os.getenv('SUDO_UID', '') and os.getenv('SUDO_GID', ''):
+                    os.chown(configmgr.create[cdir],
+                             int(os.getenv('SUDO_UID')),
+                             int(os.getenv('SUDO_GID')))
 
         if self.options.local_pkgs_path is not None:
             if not os.path.exists(self.options.local_pkgs_path):
