@@ -7,21 +7,23 @@ the release contains new features, enhancements and bug fixes.
 
 New Features & Ehancements
 --------------------------
- * new distribution support: Fedora 19
- * refactor chroot module to correct the logic
- * add an alias for installerfw - installerfw_plugins
- * remove fuser dependency to avoid some unmount issue
- * enable proxy setting with authentication
- * don't get proxy info from /etc/sysconfig/proxy ever
- * kill processes inside chroot after post script running
- * reload device mapper using 'dmsetup' utility
+ * refactor msger module to ulitize logging module
+ * refine error class module
+ * improve installation in virtualenv
+ * add bash completion support
+ * add zsh completion support
+ * export mapper device related to installer framework
+ * update BmapCreate to the latest version
 
 Bug Fixes
 ---------
- * fix bootloader options omitted
- * warn failed boot partition flags set
- * fix wrong file descriptor issue
- * fix some requires
+ - fix customized plugin_dir not work in bootstrap
+ - fix packing process exit on Ubuntu
+ - fix loop device alloaction failed on openSUSE
+ - fix incorrect number showing during installing
+ - set owner of cacheidr/outdir to SUDO_USER
+ - correct project url in setup.py
+ - fix mic not work when mic.conf disappear
 
 Resource
 --------

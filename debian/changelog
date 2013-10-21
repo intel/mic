@@ -1,3 +1,23 @@
+mic (0.22-0.rc1) unstable; urgency=low
+   * use __version__ variable instead of VERSION file
+   * refactor msger module to ulitize logging module
+   * refine error class module
+   * improve installation in virtualenv
+   * add bash completion support
+   * add zsh completion support
+   * export mapper device related to installer framework
+   * update BmapCreate to the latest version
+   * bug fix:
+     - fix customized plugin_dir not work in bootstrap
+     - fix packing process exit on Ubuntu
+     - fix loop device alloaction failed on openSUSE
+     - fix incorrect number showing during installing
+     - set owner of cacheidr/outdir to SUDO_USER
+     - correct project url in setup.py
+     - fix mic not work when mic.conf disappear
+
+ -- Gui Chen <gui.chen@intel.com>  Thu, 24 Oct 2013 17:25:35 +0800
+
 mic (0.21-1) unstable; urgency=low
   * new distribution support: Fedora 19
   * refactor chroot module to correct the logic
@@ -12,7 +32,7 @@ mic (0.21-1) unstable; urgency=low
     - fix wrong file descriptor issue
     - fix some requires
 
- -- Gui Chen <gui.chen@intel.com>  Mon, 01 Jul 2013 17:25:35 +0800
+ -- Gui Chen <gui.chen@intel.com>  Mon, 26 Aug 2013 17:25:35 +0800
 
 mic (0.20-1) unstable; urgency=low
   * new distribution support: CentOS 6
