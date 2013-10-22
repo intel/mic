@@ -14,12 +14,22 @@
 # with this program; if not, write to the Free Software Foundation, Inc., 59
 # Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+# Following messages should be disabled in pylint:
+#  * Too many instance attributes (R0902)
+#  * Too few public methods (R0903)
+#  * Too many public methods (R0904)
+#  * Anomalous backslash in string (W1401)
+#  * __init__ method from base class %r is not called (W0231)
+#  * __init__ method from a non direct base class %r is called (W0233)
+#  * Invalid name for type (C0103)
+#  * RootLogger has no '%s' member (E1103)
+# pylint: disable=R0902,R0903,R0904,W1401,W0231,W0233,C0103,E1103
+
 """ This logging module is fully compatible with the old msger module, and
     it supports interactive mode, logs the messages with specified levels
     to specified stream, can also catch all error messages including the
     involved 3rd party modules to the logger
 """
-
 import os
 import sys
 import logging
@@ -50,9 +60,9 @@ __ALL__ = [
 BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = range(30, 38)
 
 # color sequence for tty terminal
-COLOR_SEQ = "\033[%dm"  # pylint: disable=W1401
+COLOR_SEQ = "\033[%dm" 
 # reset sequence for tty terminal
-RESET_SEQ = "\033[0m" # pylint: disable=W1401
+RESET_SEQ = "\033[0m"
 
 # new log level
 RAWTEXT = 25
@@ -70,7 +80,7 @@ COLORS = {
 
 class LevelFilter(logging.Filter):
     """ A filter that selects logging message with specified level """
-    def __init__(self, levels):  # pylint: disable=W0231
+    def __init__(self, levels):
         self._levels = levels
 
     def filter(self, record):
@@ -339,7 +349,6 @@ def info(msg):
 
 def verbose(msg):
     """ Log a message with level VERBOSE on the MIC logger """
-    # pylint: disable=E1103
     LOGGER.verbose(msg)
 
 def debug(msg):
@@ -348,26 +357,22 @@ def debug(msg):
 
 def raw(msg):
     """ Log a message on the MIC logger in raw text format"""
-    # pylint: disable=E1103
     LOGGER.raw(msg)
 
 def select(msg, optdict, default=None):
     """ Show an interactive scene in tty terminal and
         logs them on MIC logger
     """
-    # pylint: disable=E1103
     return LOGGER.select(msg, optdict, default)
 
 def choice(msg, optlist, default=0):
     """ Give some alternatives to users for answering the question """
-    # pylint: disable=E1103
     return LOGGER.select(msg, dict(zip(optlist, optlist)), optlist[default])
 
 def ask(msg, ret=True):
     """ Ask users to answer 'yes' or 'no' to the question """
     answers = {'y': True, 'n': False}
     default = {True: 'y', False: 'n'}[ret]
-    # pylint: disable=E1103
     return LOGGER.select(msg, answers, default)
 
 def pause(msg=None):
@@ -378,7 +383,6 @@ def pause(msg=None):
 
 def set_logfile(logfile, mode='w'):
     """ Set logfile path to the MIC logger """
-    # pylint: disable=E1103
     LOGGER.set_logfile(logfile, mode)
 
 def set_loglevel(level):
@@ -406,14 +410,12 @@ def set_interactive(value):
     else:
         disable_interactive()
 
-def enable_logstderr(fpath=None):  # pylint: disable=W0613
+def enable_logstderr(fpath=None):
     """ Start to log all error message on the MIC logger """
-    # pylint: disable=E1103
     LOGGER.enable_logstderr()
 
 def disable_logstderr():
     """ Stop to log all error message on the MIC logger """
-    # pylint: disable=E1103
     LOGGER.disable_logstderr()
 
 
