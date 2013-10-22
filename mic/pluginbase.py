@@ -72,7 +72,7 @@ class ImagerPlugin(_Plugin):
                 else:
                     os.unlink(image)
             else:
-                raise errors.Abort("Cancled")
+                raise errors.Abort("Canceled")
 
     def do_create(self):
         pass
