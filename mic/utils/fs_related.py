@@ -898,7 +898,7 @@ class LoopDevice(object):
                 self.cleanup()
                 self.device = None
             except MountError, e:
-                msger.error("%s" % e)
+                raise CreatorError("%s" % e)
 
     def cleanup(self):
 

@@ -341,7 +341,7 @@ class LoopImageCreator(BaseImageCreator):
             elif fstype in ("vfat", "msdos"):
                 MyDiskMount = fs.VfatDiskMount
             else:
-                msger.error('Cannot support fstype: %s' % fstype)
+                raise MountError('Cannot support fstype: %s' % fstype)
 
             loop['loop'] = MyDiskMount(fs.SparseLoopbackDisk(
                                            os.path.join(self.__imgdir, imgname),

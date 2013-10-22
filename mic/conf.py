@@ -121,7 +121,7 @@ class ConfigMgr(object):
 
     def __set_ksconf(self, ksconf):
         if not os.path.isfile(ksconf):
-            msger.error('Cannot find ks file: %s' % ksconf)
+            raise errors.KsError('Cannot find ks file: %s' % ksconf)
 
         self.__ksconf = ksconf
         self._parse_kickstart(ksconf)
@@ -155,7 +155,7 @@ class ConfigMgr(object):
             if m:
                 scheme = m.group(1)
                 if scheme not in ('http', 'https', 'ftp', 'socks'):
-                    msger.error("%s: proxy scheme is incorrect" % siteconf)
+                    raise errors.ConfigError("%s: proxy scheme is incorrect" % siteconf)
             else:
                 msger.warning("%s: proxy url w/o scheme, use http as default"
                               % siteconf)
@@ -230,7 +230,7 @@ class ConfigMgr(object):
 
     def set_runtime(self, runtime):
         if runtime not in ("bootstrap", "native"):
-            msger.error("Invalid runtime mode: %s" % runtime)
+            raise errors.CreatorError("Invalid runtime mode: %s" % runtime)
 
         if misc.get_distro()[0] in ("tizen", "Tizen"):
             runtime = "native"

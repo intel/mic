@@ -199,8 +199,8 @@ class Creator(cmdln.Cmdln):
         for cdir in ('outdir', 'cachedir'):
             if os.path.exists(configmgr.create[cdir]) \
               and not os.path.isdir(configmgr.create[cdir]):
-                msger.error('Invalid directory specified: %s' \
-                            % configmgr.create[cdir])
+                raise errors.Usage('Invalid directory specified: %s' \
+                                   % configmgr.create[cdir])
             if not os.path.exists(configmgr.create[cdir]):
                 os.makedirs(configmgr.create[cdir])
                 if os.getenv('SUDO_UID', '') and os.getenv('SUDO_GID', ''):
@@ -210,7 +210,7 @@ class Creator(cmdln.Cmdln):
 
         if self.options.local_pkgs_path is not None:
             if not os.path.exists(self.options.local_pkgs_path):
-                msger.error('Local pkgs directory: \'%s\' not exist' \
+                raise errors.Usage('Local pkgs directory: \'%s\' not exist' \
                               % self.options.local_pkgs_path)
             configmgr.create['local_pkgs_path'] = self.options.local_pkgs_path
 
@@ -289,7 +289,7 @@ class Creator(cmdln.Cmdln):
             except cmdln.CmdlnUserError, ex:
                 msg = "%s: %s\nTry '%s help' for info.\n"\
                       % (self.name, ex, self.name)
-                msger.error(msg)
+                raise errors.Usage(msg)
 
             except cmdln.StopOptionProcessing, ex:
                 return 0

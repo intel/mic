@@ -158,7 +158,7 @@ class LoopPlugin(ImagerPlugin):
             elif fstype in ("vfat", "msdos"):
                 myDiskMount = fs_related.VfatDiskMount
             else:
-                msger.error("Cannot support fstype: %s" % fstype)
+                raise errors.CreatorError("Cannot support fstype: %s" % fstype)
 
             name = os.path.join(tmpdir, name)
             size = size * 1024L * 1024L

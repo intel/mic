@@ -70,7 +70,7 @@ def runtool(cmdln_or_args, catch=1):
     except OSError, e:
         if e.errno == 2:
             # [Errno 2] No such file or directory
-            msger.error('Cannot run command: %s, lost dependency?' % cmd)
+            raise errors.CreatorError('Cannot run command: %s, lost dependency?' % cmd)
         else:
             raise # relay
     finally:
