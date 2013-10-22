@@ -1,4 +1,4 @@
-mic (0.22-0.rc1) unstable; urgency=low
+mic (0.22-1) unstable; urgency=low
    * use __version__ variable instead of VERSION file
    * refactor msger module to ulitize logging module
    * refine error class module
