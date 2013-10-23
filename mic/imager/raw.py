@@ -218,69 +218,6 @@ class RawImageCreator(BaseImageCreator):
         self.__instloop.mount()
         self._create_mkinitrd_config()
 
-    def mount(self, base_on = None, cachedir = None):
-        """
-        This method calls the base class' 'mount()' method and then creates
-        block device nodes corresponding to the image's partitions in the image
-        itself. Namely, the image has /dev/loopX device corresponding to the
-        entire image, and per-partition /dev/mapper/* devices.
-
-        We copy these files to image's "/dev" directory in order to enable
-        scripts which run in the image chroot environment to access own raw
-        partitions. For example, this can be used to install the bootloader to
-        the MBR (say, from an installer framework plugin).
-        """
-
-        def copy_devnode(src, dest):
-            """A helper function for copying device nodes."""
-
-            stat_obj = os.stat(src)
-            assert stat.S_ISBLK(stat_obj.st_mode)
-
-            os.mknod(dest, stat_obj.st_mode,
-                     os.makedev(os.major(stat_obj.st_rdev),
-                                os.minor(stat_obj.st_rdev)))
-            # os.mknod uses process umask may create a nod with different
-            # permissions, so we use os.chmod to make sure permissions are
-            # correct.
-            os.chmod(dest, stat_obj.st_mode)
-
-        BaseImageCreator.mount(self, base_on, cachedir)
-
-        # Copy the disk loop devices
-        for name in self.__disks.keys():
-            loopdev = self.__disks[name].device
-            copy_devnode(loopdev, self._instroot + loopdev)
-
-        # Copy per-partition dm nodes
-        os.mkdir(self._instroot + "/dev/mapper", os.stat("/dev/mapper").st_mode)
-        for p in self.__instloop.partitions:
-            copy_devnode(p['mapper_device'],
-                         self._instroot + p['mapper_device'])
-
-    def unmount(self):
-        """
-        Remove loop/dm device nodes which we created in 'mount()' and call the
-        base class' 'unmount()' method.
-        """
-
-        for p in self.__instloop.partitions:
-            path = self._instroot + p['mapper_device']
-            if os.path.exists(path):
-                os.unlink(path)
-
-        path = self._instroot + "/dev/mapper"
-        if os.path.exists(path):
-            os.rmdir(path)
-
-        for name in self.__disks.keys():
-            if self.__disks[name].device:
-                path = self._instroot + self.__disks[name].device
-                if os.path.exists(path):
-                    os.unlink(path)
-
-        BaseImageCreator.unmount(self)
-
     def _get_required_packages(self):
         required_packages = BaseImageCreator._get_required_packages(self)
         if self._need_extlinux:
