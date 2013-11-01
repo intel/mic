@@ -34,7 +34,7 @@ Requires:   isomd5sum
 %endif
 Requires:   gzip
 Requires:   bzip2
-Requires:   python-urlgrabber
+Requires:   python-urlgrabber >= 3.9.0
 Requires:   yum >= 3.2.24
 Requires:   psmisc
 %if ! 0%{?centos_version}
