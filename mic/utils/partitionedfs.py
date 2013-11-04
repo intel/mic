@@ -122,6 +122,7 @@ class PartitionedMount(Mount):
                                     'fsopts': fsopts, # Filesystem mount options
                                     'disk_name': disk_name, # physical disk name holding partition
                                     'device': None, # kpartx device node for partition
+                                    'mapper_device': None, # mapper device node
                                     'mount': None, # Mount object
                                     'subvol': subvol, # Subvolume name
                                     'boot': boot, # Bootable flag
@@ -147,6 +148,7 @@ class PartitionedMount(Mount):
                      'label': label, # Partition label
                      'disk_name': disk_name, # physical disk name holding partition
                      'device': None, # kpartx device node for partition
+                     'mapper_device': None, # mapper device node
                      'mount': None, # Mount object
                      'num': None, # Partition number
                      'boot': boot, # Bootable flag
