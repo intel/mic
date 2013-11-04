@@ -234,6 +234,9 @@ class RawImageCreator(BaseImageCreator):
         def copy_devnode(src, dest):
             """A helper function for copying device nodes."""
 
+            if not src:
+                return
+
             stat_obj = os.stat(src)
             assert stat.S_ISBLK(stat_obj.st_mode)
 
@@ -265,9 +268,10 @@ class RawImageCreator(BaseImageCreator):
         """
 
         for p in self.__instloop.partitions:
-            path = self._instroot + p['mapper_device']
-            if os.path.exists(path):
-                os.unlink(path)
+            if p['mapper_device']:
+                path = self._instroot + p['mapper_device']
+                if os.path.exists(path):
+                    os.unlink(path)
 
         path = self._instroot + "/dev/mapper"
         if os.path.exists(path):
