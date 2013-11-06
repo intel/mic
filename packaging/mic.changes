@@ -1,3 +1,6 @@
+* Fri Nov 18 2013 Gui Chen <gui.chen@intel.com> - 0.22.1
+  * export MAPPER_DEVICE for installer framework
+
 * Thu Oct 24 2013 Gui Chen <gui.chen@intel.com> - 0.22
   * use __version__ variable instead of VERSION file
   * refactor msger module to ulitize logging module

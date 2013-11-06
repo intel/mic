@@ -7,23 +7,10 @@ the release contains new features, enhancements and bug fixes.
 
 New Features & Ehancements
 --------------------------
- * refactor msger module to ulitize logging module
- * refine error class module
- * improve installation in virtualenv
- * add bash completion support
- * add zsh completion support
- * export mapper device related to installer framework
- * update BmapCreate to the latest version
+ * export mapper device for installer framework
 
 Bug Fixes
 ---------
- - fix customized plugin_dir not work in bootstrap
- - fix packing process exit on Ubuntu
- - fix loop device alloaction failed on openSUSE
- - fix incorrect number showing during installing
- - set owner of cacheidr/outdir to SUDO_USER
- - correct project url in setup.py
- - fix mic not work when mic.conf disappear
 
 Resource
 --------
