@@ -1,4 +1,4 @@
-mic (0.22.1-0.rc1) unstable; urgency=low
+mic (0.22.1-1) unstable; urgency=low
    * export MAPPER_DEVICE for installer framework
 
  -- Gui Chen <gui.chen@intel.com>  Thu, 24 Oct 2013 17:25:35 +0800
