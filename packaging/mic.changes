@@ -1,5 +1,6 @@
-* Fri Nov 18 2013 Gui Chen <gui.chen@intel.com> - 0.22.1
+* Fri Nov 18 2013 Gui Chen <gui.chen@intel.com> - 0.22.2
   * export MAPPER_DEVICE for installer framework
+  * update BmapCreate module to 2.0
 
 * Thu Oct 24 2013 Gui Chen <gui.chen@intel.com> - 0.22
   * use __version__ variable instead of VERSION file
