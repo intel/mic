@@ -43,8 +43,6 @@ class ConfigMgr(object):
                     "tmpdir": '/var/tmp/mic',
                     "cachedir": '/var/tmp/mic/cache',
                     "outdir": './mic-output',
-
-                    "plugin_dir": "/usr/lib/mic/plugins",
                     "arch": None, # None means auto-detect
                     "pkgmgr": "auto",
                     "name": "output",
@@ -143,6 +141,9 @@ class ConfigMgr(object):
         for section in parser.sections():
             if section in self.DEFAULTS:
                 getattr(self, section).update(dict(parser.items(section)))
+
+        if os.getenv("MIC_PLUGIN_DIR"):
+            self.common["plugin_dir"] = os.environ["MIC_PLUGIN_DIR"]
 
         # append common section items to other sections
         for section in self.DEFAULTS.keys():

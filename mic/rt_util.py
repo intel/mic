@@ -185,8 +185,7 @@ def get_mic_modpath():
     return os.path.dirname(path)
 
 def get_mic_libpath():
-    # TBD: so far mic lib path is hard coded
-    return "/usr/lib/mic"
+    return os.getenv("MIC_LIBRARY_PATH", "/usr/lib/mic")
 
 # the hard code path is prepared for bootstrap
 def sync_mic(bootstrap, binpth = '/usr/bin/mic',
