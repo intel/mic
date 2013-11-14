@@ -442,7 +442,9 @@ class BaseImageCreator(object):
             env.update(self._set_part_env(pnum, "MOUNTPOINT", p.mountpoint))
             env.update(self._set_part_env(pnum, "FSTYPE", p.fstype))
             env.update(self._set_part_env(pnum, "LABEL", p.label))
-            env.update(self._set_part_env(pnum, "FSOPTS", p.fsopts))
+            env.update(self._set_part_env(pnum, "FSOPTS",
+                                          "defaults,noatime" if not p.fsopts
+                                          else p.fsopts))
             env.update(self._set_part_env(pnum, "BOOTFLAG", p.active))
             env.update(self._set_part_env(pnum, "ALIGN", p.align))
             env.update(self._set_part_env(pnum, "TYPE_ID", p.part_type))
