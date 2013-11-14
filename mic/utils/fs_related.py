@@ -411,11 +411,11 @@ class DiskMount(Mount):
 
 class ExtDiskMount(DiskMount):
     """A DiskMount object that is able to format/resize ext[23] filesystems."""
-    def __init__(self, disk, mountdir, fstype, blocksize, fslabel, rmmountdir=True, skipformat = False, fsopts = None):
+    def __init__(self, disk, mountdir, fstype, blocksize, fslabel, rmmountdir=True, skipformat = False, fsopts = None, fsuuid=None):
         DiskMount.__init__(self, disk, mountdir, fstype, rmmountdir)
         self.blocksize = blocksize
         self.fslabel = fslabel.replace("/", "")
-        self.uuid = str(uuid.uuid4())
+        self.uuid = fsuuid or str(uuid.uuid4())
         self.skipformat = skipformat
         self.fsopts = fsopts
         self.extopts = None
@@ -522,13 +522,13 @@ class ExtDiskMount(DiskMount):
 
 class VfatDiskMount(DiskMount):
     """A DiskMount object that is able to format vfat/msdos filesystems."""
-    def __init__(self, disk, mountdir, fstype, blocksize, fslabel, rmmountdir=True, skipformat = False, fsopts = None):
+    def __init__(self, disk, mountdir, fstype, blocksize, fslabel, rmmountdir=True, skipformat = False, fsopts = None, fsuuid = None):
         DiskMount.__init__(self, disk, mountdir, fstype, rmmountdir)
         self.blocksize = blocksize
         self.fslabel = fslabel.replace("/", "")
         rand1 = random.randint(0, 2**16 - 1)
         rand2 = random.randint(0, 2**16 - 1)
-        self.uuid = "%04X-%04X" % (rand1, rand2)
+        self.uuid = fsuuid or "%04X-%04X" % (rand1, rand2)
         self.skipformat = skipformat
         self.fsopts = fsopts
         self.fsckcmd = find_binary_path("fsck." + self.fstype)
@@ -606,12 +606,12 @@ class VfatDiskMount(DiskMount):
 
 class BtrfsDiskMount(DiskMount):
     """A DiskMount object that is able to format/resize btrfs filesystems."""
-    def __init__(self, disk, mountdir, fstype, blocksize, fslabel, rmmountdir=True, skipformat = False, fsopts = None):
+    def __init__(self, disk, mountdir, fstype, blocksize, fslabel, rmmountdir=True, skipformat = False, fsopts = None, fsuuid = None):
         self.__check_btrfs()
         DiskMount.__init__(self, disk, mountdir, fstype, rmmountdir)
         self.blocksize = blocksize
         self.fslabel = fslabel.replace("/", "")
-        self.uuid  = None
+        self.uuid  = fsuuid or None
         self.skipformat = skipformat
         self.fsopts = fsopts
         self.blkidcmd = find_binary_path("blkid")

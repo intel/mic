@@ -153,6 +153,7 @@ class LoopImageCreator(BaseImageCreator):
                     'fstype': part.fstype or 'ext3',
                     'extopts': part.extopts or None,
                     'loop': None,  # to be created in _mount_instroot
+                    'uuid': part.uuid or None,
                     })
             self._instloops = allloops
 
@@ -323,7 +324,8 @@ class LoopImageCreator(BaseImageCreator):
                  "size": self.__image_size or 4096L,
                  "fstype": self.__fstype or "ext3",
                  "extopts": None,
-                 "loop": None
+                 "loop": None,
+                 "uuid": None,
                  })
 
         self._check_imgdir()
@@ -349,7 +351,8 @@ class LoopImageCreator(BaseImageCreator):
                                        mp,
                                        fstype,
                                        self._blocksize,
-                                       loop['label'])
+                                       loop['label'],
+                                       fsuuid = loop['uuid'])
 
             if fstype in ("ext2", "ext3", "ext4"):
                 loop['loop'].extopts = loop['extopts']
