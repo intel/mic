@@ -1081,6 +1081,8 @@ class BaseImageCreator(object):
             os.chmod(path, 0700)
 
             env = self._get_post_scripts_env(s.inChroot)
+            if 'PATH' not in env:
+                env['PATH'] = '/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin'
 
             if not s.inChroot:
                 preexec = None
