@@ -22,14 +22,41 @@ import glob
 import re
 import shutil
 import subprocess
+import ctypes
 
 from mic import bootstrap, msger
 from mic.conf import configmgr
 from mic.utils import errors, proxy
 from mic.utils.fs_related import find_binary_path, makedirs
-from mic.chroot import setup_chrootenv, cleanup_chrootenv
+from mic.chroot import setup_chrootenv, cleanup_chrootenv, ELF_arch
+
+_libc = ctypes.cdll.LoadLibrary(None)
+_errno = ctypes.c_int.in_dll(_libc, "errno")
+_libc.personality.argtypes = [ctypes.c_ulong]
+_libc.personality.restype = ctypes.c_int
+_libc.unshare.argtypes = [ctypes.c_int,]
+_libc.unshare.restype = ctypes.c_int
 
 expath = lambda p: os.path.abspath(os.path.expanduser(p))
+
+PER_LINUX32=0x0008
+PER_LINUX=0x0000
+personality_defs = {
+    'x86_64': PER_LINUX, 'ppc64': PER_LINUX, 'sparc64': PER_LINUX,
+    'i386': PER_LINUX32, 'i586': PER_LINUX32, 'i686': PER_LINUX32,
+    'ppc': PER_LINUX32, 'sparc': PER_LINUX32, 'sparcv9': PER_LINUX32,
+    'ia64' : PER_LINUX, 'alpha' : PER_LINUX,
+    's390' : PER_LINUX32, 's390x' : PER_LINUX,
+}
+
+def condPersonality(per=None):
+    if per is None or per in ('noarch',):
+        return
+    if personality_defs.get(per, None) is None:
+        return
+    res = _libc.personality(personality_defs[per])
+    if res == -1:
+        raise OSError(_errno.value, os.strerror(_errno.value))
 
 def inbootstrap():
     if os.path.exists(os.path.join("/", ".chroot.lock")):
@@ -84,6 +111,9 @@ def bootstrap_mic(argv=None):
             safecopy(configmgr._ksconf, rootdir)
 
         msger.info("Start mic in bootstrap: %s\n" % rootdir)
+        bsarch = ELF_arch(rootdir)
+        if bsarch in personality_defs:
+            condPersonality(bsarch)
         bindmounts = get_bindmounts(cropts)
         ret = bsenv.run(argv, cwd, rootdir, bindmounts)
 
