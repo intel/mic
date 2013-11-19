@@ -4,7 +4,7 @@ Binary: mic, mic-native
 Architecture: all
 Version: 0.22
 Maintainer: Gui Chen <gui.chen@intel.com>
-Homepage: http://www.tizen.org
+Homepage: https://review.tizen.org/gerrit/tools/mic
 Standards-Version: 3.8.0
 Build-Depends: debhelper (>= 7.0.15), dpatch, cdbs, python-dev, python-support, python-docutils
 Files:

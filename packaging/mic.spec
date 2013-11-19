@@ -113,11 +113,11 @@ install -m644 doc/mic.1 %{buildroot}/%{_prefix}/share/man/man1
 
 # install bash completion
 install -d -m0755 %{buildroot}/%{_sysconfdir}/bash_completion.d/
-install -Dp -m0755 etc/%{name}.bash %{buildroot}/%{_sysconfdir}/bash_completion.d/%{name}.sh
+install -Dp -m0755 etc/bash_completion.d/%{name}.sh %{buildroot}/%{_sysconfdir}/bash_completion.d/
 
 # install zsh completion
 install -d -m0755 %{buildroot}/%{_sysconfdir}/zsh_completion.d/
-install -Dp -m0755 etc/_%{name} %{buildroot}/%{_sysconfdir}/zsh_completion.d/_%{name}
+install -Dp -m0755 etc/zsh_completion.d/_%{name} %{buildroot}/%{_sysconfdir}/zsh_completion.d/
 
 install -Dp -m0755 tools/mic %{buildroot}/%{_bindir}/mic-native
 

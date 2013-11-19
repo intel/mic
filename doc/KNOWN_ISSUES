@@ -3,9 +3,11 @@ Known Issues
 
 ARM64 support
 -------------
-Currently mic only supports aarch64 (aka arm64) in native mode. To support
-aarch64 in mic, you should upgrade following packages manually:
-libzypp
-python-zypp
-qemu-arm-static
+Currently mic only supports aarch64 (ARM64) in native running mode because
+of current enabling status in Tizen repository. And the following packages
+need to be upgraded by using Tizen-tools repository:
+
+* libzypp
+* python-zypp
+* qemu-arm-static
 
