@@ -1,6 +1,7 @@
-* Fri Nov 18 2013 Gui Chen <gui.chen@intel.com> - 0.22.2
+* Fri Nov 19 2013 Gui Chen <gui.chen@intel.com> - 0.22.3
   * export MAPPER_DEVICE for installer framework
   * update BmapCreate module to 2.0
+  * enable internal setarch in bootstrap environment
 
 * Thu Oct 24 2013 Gui Chen <gui.chen@intel.com> - 0.22
   * use __version__ variable instead of VERSION file

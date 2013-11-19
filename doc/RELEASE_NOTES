@@ -1,6 +1,6 @@
- MIC Image Creator 0.22.2 Release Notes
+ MIC Image Creator 0.22.3 Release Notes
 ===========================================================
-Released Nov 18 2013
+Released Nov 19 2013
 
 This release note documents the changes included in the new release. And
 the release contains new features, enhancements and bug fixes.
@@ -9,6 +9,7 @@ New Features & Ehancements
 --------------------------
  * export mapper device for installer framework
  * update BmapCreate to 2.0
+ * enable internal setarch in bootstrap environment
 
 Bug Fixes
 ---------
