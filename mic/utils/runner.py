@@ -19,6 +19,7 @@ import os
 import subprocess
 
 from mic import msger
+from mic.utils import errors
 
 def runtool(cmdln_or_args, catch=1):
     """ wrapper for most of the subprocess calls
