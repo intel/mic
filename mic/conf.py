@@ -128,11 +128,21 @@ class ConfigMgr(object):
     _ksconf = property(__get_ksconf, __set_ksconf)
 
     def _parse_siteconf(self, siteconf):
-        if not siteconf:
-            return
 
-        if not os.path.exists(siteconf):
-            msger.warning("cannot read config file: %s" % siteconf)
+        if os.getenv("MIC_PLUGIN_DIR"):
+            self.common["plugin_dir"] = os.environ["MIC_PLUGIN_DIR"]
+
+        if siteconf and not os.path.exists(siteconf):
+            msger.warning("cannot find config file: %s" % siteconf)
+            siteconf = None
+
+        if not siteconf:
+            self.common["distro_name"] = "Tizen"
+            # append common section items to other sections
+            for section in self.DEFAULTS.keys():
+                if section != "common":
+                    getattr(self, section).update(self.common)
+
             return
 
         parser = ConfigParser.SafeConfigParser()
@@ -141,9 +151,6 @@ class ConfigMgr(object):
         for section in parser.sections():
             if section in self.DEFAULTS:
                 getattr(self, section).update(dict(parser.items(section)))
-
-        if os.getenv("MIC_PLUGIN_DIR"):
-            self.common["plugin_dir"] = os.environ["MIC_PLUGIN_DIR"]
 
         # append common section items to other sections
         for section in self.DEFAULTS.keys():
