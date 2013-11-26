@@ -8,30 +8,13 @@ Homepage: http://www.tizen.org
 
 Package: mic
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}, ${dist:Depends},
+Depends: ${misc:Depends}, ${python:Depends},
+ rpm,
  python-rpm,
- bzip2,
- dmsetup,
- dosfstools,
- e2fsprogs (>= 1.41),
- isomd5sum,
- genisoimage,
- kpartx,
- parted,
- psmisc,
- squashfs-tools (>= 4.0),
- yum (>= 3.2),
- syslinux (>= 2:4.05),
- extlinux (>= 2:4.05),
- libzypp,
- tizen-python-zypp-0.5.14,
- python-m2crypto,
  python-urlgrabber,
- psmisc
-Recommends:
- binfmt-support,
- btrfs-tools,
- udisks | hal
+ cpio,
+ bzip2,
+ gzip
 Conflicts:
  mic2
 Description: image creator for Linux distributions
@@ -40,3 +23,32 @@ Description: image creator for Linux distributions
   is used to create images with different types; subcommand convert is used to
   convert an image to a specified type; subcommand chroot is used to chroot into
   an image.
+
+Package: mic-native
+Architecture: all
+Depends: ${misc:Depends}, ${python:Depends}, ${dist:Depends},
+ util-linux,
+ coreutils,
+ psmisc,
+ e2fsprogs (>= 1.41),
+ dosfstools,
+ isomd5sum,
+ genisoimage,
+ dmsetup,
+ kpartx,
+ parted,
+ squashfs-tools (>= 4.0),
+ yum (>= 3.2),
+ syslinux (>= 2:4.05),
+ extlinux (>= 2:4.05),
+ libzypp,
+ tizen-python-zypp-0.5.14,
+ python-m2crypto,
+ mic,
+Recommends:
+ binfmt-support,
+ btrfs-tools,
+ udisks | hal
+Description: Native support for mic
+ The native support package for mic, it includes all requirements
+ for mic native running.

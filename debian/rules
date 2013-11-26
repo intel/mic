@@ -35,6 +35,7 @@ install: build
 	install -m644 doc/mic.1 $(CURDIR)/debian/mic/usr/share/man/man1
 	install -m755 etc/mic.bash $(CURDIR)/debian/mic/etc/bash_completion.d/mic.sh
 	install -m755 etc/_mic $(CURDIR)/debian/mic/etc/zsh_completion.d/_mic
+	install -m755 tools/mic $(CURDIR)/debian/mic/usr/bin/mic-native
 	python setup.py install --root=$(CURDIR)/debian/mic
 
 binary-indep: build install

@@ -1,0 +1,3 @@
+debian/mic/usr/bin/mic
+debian/mic/usr/lib/*
+debian/mic/etc/*
