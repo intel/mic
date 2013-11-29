@@ -118,14 +118,12 @@ def bootstrap_mic(argv=None):
         ret = bsenv.run(argv, cwd, rootdir, bindmounts)
 
     except errors.BootstrapError, err:
-        msger.warning('\n%s' % err)
-        if msger.ask("Switch to native mode and continue?", False):
-            return
-        raise
+        raise errors.CreatorError("Failed to download/install bootstrap package " \
+                                  "or the package is in bad format: %s" % err)
     except RuntimeError, err:
         #change exception type but keep the trace back
         value, tb = sys.exc_info()[1:]
-        raise errors.BootstrapError, value, tb
+        raise errors.CreatorError, value, tb
     else:
         sys.exit(ret)
     finally:
