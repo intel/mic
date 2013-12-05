@@ -965,7 +965,7 @@ class BaseImageCreator(object):
             if not os.path.exists(fpath):
                 # download pkgs
                 try:
-                    fpath = grabber.myurlgrab(url, fpath, proxies, None)
+                    fpath = grabber.myurlgrab(url.full, fpath, proxies, None)
                 except CreatorError:
                     raise
 

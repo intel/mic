@@ -9,6 +9,7 @@ import termios
 from mic import msger
 from mic.utils import runner
 from mic.utils.errors import CreatorError
+from mic.utils.safeurl import SafeURL
 
 from urlgrabber import grabber
 from urlgrabber import __version__ as grabber_version
@@ -30,6 +31,8 @@ def myurlgrab(url, filename, proxies, progress_obj = None):
 
     else:
         try:
+            # cast url to str here, sometimes it can be unicode,
+            # but pycurl only accept str
             filename = g.urlgrab(url=str(url),
                                  filename=filename,
                                  ssl_verify_host=False,
@@ -39,9 +42,14 @@ def myurlgrab(url, filename, proxies, progress_obj = None):
                                  quote=0,
                                  progress_obj=progress_obj)
         except grabber.URLGrabError, err:
+            tmp = SafeURL(url)
             msg = str(err)
+
             if msg.find(url) < 0:
-                msg += ' on %s' % url
+                msg += ' on %s' % tmp
+            else:
+                msg = msg.replace(url, tmp)
+
             raise CreatorError(msg)
 
     return filename

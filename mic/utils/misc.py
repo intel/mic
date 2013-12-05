@@ -47,6 +47,7 @@ from mic.utils.grabber import myurlgrab
 from mic.utils.proxy import get_proxy_for
 from mic.utils import runner
 from mic.utils import rpmmisc
+from mic.utils.safeurl import SafeURL
 
 
 RPM_RE  = re.compile("(.*)\.(.*) (.*)-(.*)")
@@ -559,13 +560,15 @@ def get_repostrs_from_ks(ks):
 
         if 'name' not in repo:
             repo['name'] = _get_temp_reponame(repodata.baseurl)
+        if hasattr(repodata, 'baseurl') and getattr(repodata, 'baseurl'):
+            repo['baseurl'] = SafeURL(getattr(repodata, 'baseurl'))
 
         kickstart_repos.append(repo)
 
     return kickstart_repos
 
 def _get_uncompressed_data_from_url(url, filename, proxies):
-    filename = myurlgrab(url, filename, proxies)
+    filename = myurlgrab(url.full, filename, proxies)
     suffix = None
     if filename.endswith(".gz"):
         suffix = ".gz"
@@ -579,7 +582,7 @@ def _get_uncompressed_data_from_url(url, filename, proxies):
 
 def _get_metadata_from_repo(baseurl, proxies, cachedir, reponame, filename,
                             sumtype=None, checksum=None):
-    url = os.path.join(baseurl, filename)
+    url = baseurl.join(filename)
     filename_tmp = str("%s/%s/%s" % (cachedir, reponame, os.path.basename(filename)))
     if os.path.splitext(filename_tmp)[1] in (".gz", ".bz2"):
         filename = os.path.splitext(filename_tmp)[0]
@@ -604,7 +607,6 @@ def get_metadata_from_repos(repos, cachedir):
         reponame = repo['name']
         baseurl  = repo['baseurl']
 
-
         if 'proxy' in repo:
             proxy = repo['proxy']
         else:
@@ -612,12 +614,12 @@ def get_metadata_from_repos(repos, cachedir):
 
         proxies = None
         if proxy:
-            proxies = {str(baseurl.split(":")[0]):str(proxy)}
+            proxies = {str(baseurl.split(":")[0]): str(proxy)}
 
         makedirs(os.path.join(cachedir, reponame))
-        url = os.path.join(baseurl, "repodata/repomd.xml")
+        url = baseurl.join("repodata/repomd.xml")
         filename = os.path.join(cachedir, reponame, 'repomd.xml')
-        repomd = myurlgrab(url, filename, proxies)
+        repomd = myurlgrab(url.full, filename, proxies)
         try:
             root = xmlparse(repomd)
         except SyntaxError:
@@ -818,7 +820,7 @@ def get_package(pkg, repometadata, arch = None):
             con.close()
     if target_repo:
         makedirs("%s/packages/%s" % (target_repo["cachedir"], target_repo["name"]))
-        url = os.path.join(target_repo["baseurl"], pkgpath)
+        url = target_repo["baseurl"].join(pkgpath)
         filename = str("%s/packages/%s/%s" % (target_repo["cachedir"], target_repo["name"], os.path.basename(pkgpath)))
         if os.path.exists(filename):
             ret = rpmmisc.checkRpmIntegrity('rpm', filename)
@@ -829,7 +831,7 @@ def get_package(pkg, repometadata, arch = None):
                           (os.path.basename(filename), filename))
             os.unlink(filename)
 
-        pkg = myurlgrab(str(url), filename, target_repo["proxies"])
+        pkg = myurlgrab(url.full, filename, target_repo["proxies"])
         return pkg
     else:
         return None

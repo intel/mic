@@ -273,7 +273,7 @@ class Yum(BackendPlugin, yum.YumBase):
         repo.proxy_password = proxy_password
 
         if url:
-            repo.baseurl.append(_varSubstitute(url))
+            repo.baseurl.append(_varSubstitute(url.full))
 
         if mirrorlist:
             repo.mirrorlist = _varSubstitute(mirrorlist)

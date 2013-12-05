@@ -33,6 +33,7 @@ from pykickstart.handlers.control import dataMap
 from mic import msger
 from mic.utils import errors, misc, runner, fs_related as fs
 from custom_commands import desktop, micrepo, micboot, partition, installerfw
+from mic.utils.safeurl import SafeURL
 
 
 AUTH_URL_PTN = r"(?P<scheme>.*)://(?P<username>.*)(:?P<password>.*)?@(?P<url>.*)"
@@ -730,6 +731,8 @@ def get_repos(ks, repo_urls=None):
         if repo_urls and repo.name in repo_urls:
             baseurl = repo_urls[repo.name]
             mirrorlist = None
+
+        baseurl = SafeURL(baseurl)
 
         if repos.has_key(repo.name):
             msger.warning("Overriding already specified repo %s" %(repo.name,))

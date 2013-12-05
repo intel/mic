@@ -370,7 +370,7 @@ class Zypp(BackendPlugin):
             repo_info.setEnabled(repo.enabled)
             repo_info.setAutorefresh(repo.autorefresh)
             repo_info.setKeepPackages(repo.keeppackages)
-            baseurl = zypp.Url(repo.baseurl[0])
+            baseurl = repo.baseurl[0].url
             if not ssl_verify:
                 baseurl.setQueryParam("ssl_verify", "no")
             if proxy:
@@ -409,7 +409,6 @@ class Zypp(BackendPlugin):
             else:
                 baseurl.setQueryParam ("proxy", "_none_")
 
-            repo.baseurl[0] = baseurl.asCompleteString()
             self.repos.append(repo)
 
             repo_info.addBaseUrl(baseurl)
@@ -770,7 +769,7 @@ class Zypp(BackendPlugin):
             proxies = self.get_proxies(po)
 
             try:
-                filename = myurlgrab(url, filename, proxies, progress_obj)
+                filename = myurlgrab(url.full, filename, proxies, progress_obj)
             except CreatorError:
                 self.close()
                 raise
@@ -952,18 +951,12 @@ class Zypp(BackendPlugin):
         except IndexError:
             return None
 
-        baseurl = repo.baseurl[0]
-
-        index = baseurl.find("?")
-        if index > -1:
-            baseurl = baseurl[:index]
-
         location = pobj.location()
         location = str(location.filename())
         if location.startswith("./"):
             location = location[2:]
 
-        return os.path.join(baseurl, location)
+        return repo.baseurl[0].join(location)
 
     def package_url(self, pkgname):
 
