@@ -60,9 +60,20 @@ class MicCmd(cmdln.Cmdln):
         optparser.add_option('-v', '--verbose', action='store_true',
                              dest='verbose',
                              help='verbose information')
+        optparser.add_option('-i', '--interactive', action='store_true',
+                             dest='interactive', default='True',
+                             help='interactive output')
+        optparser.add_option('--non-interactive', action='store_false',
+                             dest='interactive', default='True',
+                             help='non-interactive output')
         return optparser
 
     def postoptparse(self):
+        if self.options.interactive:
+            msger.enable_interactive()
+        else:
+            msger.disable_interactive()
+
         if self.options.verbose:
             msger.set_loglevel('VERBOSE')
 
