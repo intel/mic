@@ -1,3 +1,5 @@
-debian/mic/usr/bin/mic
-debian/mic/usr/lib/*
-debian/mic/etc/*
+usr/bin/mic
+usr/lib/*
+usr/share/*
+usr/share/*
+etc/*
