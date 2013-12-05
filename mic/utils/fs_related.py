@@ -92,7 +92,7 @@ class BindChrootMount:
     """Represents a bind mount of a directory into a chroot."""
     def __init__(self, src, chroot, dest = None, option = None):
         self.root = os.path.abspath(os.path.expanduser(chroot))
-        self.option = option
+        self.mount_option = option
 
         self.orig_src = self.src = src
         if os.path.islink(src):
@@ -122,14 +122,15 @@ class BindChrootMount:
             return
 
         makedirs(self.dest)
-        rc = runner.show([self.mountcmd, "--bind", self.src, self.dest])
+        if self.mount_option:
+            cmdline = [self.mountcmd, "--bind", "-o", "%s" % \
+                       self.mount_option, self.src, self.dest]
+        else:
+            cmdline = [self.mountcmd, "--bind", self.src, self.dest]
+        rc, errout = runner.runtool(cmdline, catch=2)
         if rc != 0:
-            raise MountError("Bind-mounting '%s' to '%s' failed" %
-                             (self.src, self.dest))
-        if self.option:
-            rc = runner.show([self.mountcmd, "--bind", "-o", "remount,%s" % self.option, self.dest])
-            if rc != 0:
-                raise MountError("Bind-remounting '%s' failed" % self.dest)
+            raise MountError("Bind-mounting '%s' to '%s' failed: %s" %
+                             (self.src, self.dest, errout))
 
         self.mounted = True
         if os.path.islink(self.orig_src):
