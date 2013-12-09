@@ -296,7 +296,7 @@ class GptParser:
                                 entry['first_lba'],
                                 entry['last_lba'],
                                 entry['flags'],
-                                entry['name'].encode('UTF-16'))
+                                entry['name'].encode('UTF-16LE'))
 
         # Write the updated entry to the disk
         entry_offs = header['ptable_offs'] + \
