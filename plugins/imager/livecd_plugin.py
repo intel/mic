@@ -48,6 +48,16 @@ class LiveCDPlugin(ImagerPlugin):
         if creatoropts['runtime'] == 'bootstrap':
             configmgr._ksconf = ksconf
             rt_util.bootstrap_mic()
+        elif not rt_util.inbootstrap():
+            try:
+                fs_related.find_binary_path('mic-native')
+            except errors.CreatorError:
+                if not msger.ask("Subpackage \"mic-native\" has not been "
+                                 "installed in your host system, still "
+                                 "continue with \"native\" running mode?",
+                                 False):
+                    raise errors.Abort("Abort because subpackage 'mic-native' "
+                                       "has not been installed")
 
         if creatoropts['arch'] and creatoropts['arch'].startswith('arm'):
             msger.warning('livecd cannot support arm images, Quit')
