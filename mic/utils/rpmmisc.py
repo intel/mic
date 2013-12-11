@@ -291,6 +291,7 @@ archPolicies = {
     "i686":         "i686:i586:i486:i386",
     "i586":         "i586:i486:i386",
     "ia64":         "ia64:i686:i586:i486:i386",
+    "aarch64":      "aarch64",
     "armv7tnhl":    "armv7tnhl:armv7thl:armv7nhl:armv7hl",
     "armv7thl":     "armv7thl:armv7hl",
     "armv7nhl":     "armv7nhl:armv7hl",

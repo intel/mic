@@ -966,28 +966,21 @@ def setup_qemu_emulator(rootdir, arch):
 
     # qemu_emulator is a special case, we can't use find_binary_path
     # qemu emulator should be a statically-linked executable file
-    qemu_emulator = "/usr/bin/qemu-arm"
-    if not os.path.exists(qemu_emulator) or not is_statically_linked(qemu_emulator):
-        qemu_emulator = "/usr/bin/qemu-arm-static"
-    if not os.path.exists(qemu_emulator):
-        raise CreatorError("Please install a statically-linked qemu-arm")
+    if arch == "aarch64":
+        arm_binary = "qemu-arm64"
+    else:
+        arm_binary = "qemu-arm"
 
-    # qemu emulator version check
-    armv7_list = [arch for arch in rpmmisc.archPolicies.keys() if arch.startswith('armv7')]
-    if arch in armv7_list:  # need qemu (>=0.13.0)
-        qemuout = runner.outs([qemu_emulator, "-h"])
-        m = re.search("version\s*([.\d]+)", qemuout)
-        if m:
-            qemu_version = m.group(1)
-            if qemu_version < "0.13":
-                raise CreatorError("Requires %s version >=0.13 for %s" % (qemu_emulator, arch))
-        else:
-            msger.warning("Can't get version info of %s, please make sure it's higher than 0.13.0" % qemu_emulator)
+    qemu_emulator = "/usr/bin/%s" % arm_binary
+    if not os.path.exists(qemu_emulator) or not is_statically_linked(qemu_emulator):
+        qemu_emulator = "/usr/bin/%s-static" % arm_binary
+    if not os.path.exists(qemu_emulator):
+        raise CreatorError("Please install a statically-linked %s" % arm_binary)
 
     if not os.path.exists(rootdir + "/usr/bin"):
         makedirs(rootdir + "/usr/bin")
-    shutil.copy(qemu_emulator, rootdir + "/usr/bin/qemu-arm-static")
-    qemu_emulator = "/usr/bin/qemu-arm-static"
+    shutil.copy(qemu_emulator, rootdir + qemu_emulator)
+    qemu_emulator = "/usr/bin/%s-static" % arm_binary
 
     # disable selinux, selinux will block qemu emulator to run
     if os.path.exists("/usr/sbin/setenforce"):
@@ -1003,7 +996,10 @@ def setup_qemu_emulator(rootdir, arch):
 
     # register qemu emulator for interpreting other arch executable file
     if not os.path.exists(node):
-        qemu_arm_string = ":arm:M::\\x7fELF\\x01\\x01\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x02\\x00\\x28\\x00:\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\x00\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\xfa\\xff\\xff\\xff:%s:\n" % qemu_emulator
+        if arch == "aarch64":
+            qemu_arm_string = ":aarch64:M::\\x7fELF\\x02\\x01\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x02\\x00\\xb7:\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\x00\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\xfa\\xff\\xff\\xff:%s:\n" % qemu_emulator
+        else:
+            qemu_arm_string = ":arm:M::\\x7fELF\\x01\\x01\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x02\\x00\\x28\\x00:\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\x00\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\xfa\\xff\\xff\\xff:%s:\n" % qemu_emulator
         with open("/proc/sys/fs/binfmt_misc/register", "w") as fd:
             fd.write(qemu_arm_string)
 

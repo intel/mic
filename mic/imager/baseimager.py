@@ -779,10 +779,10 @@ class BaseImageCreator(object):
                   "/usr/bin"):
             fs.makedirs(self._instroot + d)
 
-        if self.target_arch and self.target_arch.startswith("arm"):
+        if self.target_arch and self.target_arch.startswith("arm") or \
+            self.target_arch == "aarch64":
             self.qemu_emulator = misc.setup_qemu_emulator(self._instroot,
                                                           self.target_arch)
-
 
         self.get_cachedir(cachedir)
 
