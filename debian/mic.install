@@ -1,5 +1,4 @@
-usr/bin/mic
-usr/lib/*
-usr/share/*
-usr/share/*
-etc/*
+debian/tmp/usr/bin/mic  /usr/bin
+debian/tmp/usr/lib/*  /usr/lib
+debian/tmp/usr/share/*  /usr/share
+debian/tmp/etc/*  /etc
