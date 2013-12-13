@@ -7,23 +7,21 @@ the release contains new features, enhancements and bug fixes.
 
 New Features & Ehancements
 --------------------------
- * refactor msger module to ulitize logging module
- * refine error class module
- * improve installation in virtualenv
- * add bash completion support
- * add zsh completion support
- * export mapper device related to installer framework
- * update BmapCreate to the latest version
+ * new distribution support: Ubuntu 13.10 and OpenSUSE 13.1
+ * split requirements to subpackage 'mic-native' to reduce mic's dependencies
+ * support arm64 architecture image creation in native mode
+   (to know more about arm64 support, check doc/KNOWN_ISSUES)
+ * new option '--interactive'/'--non-interactive' to enable/disable interaction 
+ * new option '--uuid' for 'part' in ks file to set filesystem uuid
+ * export more variables related to installer framework for loop format
 
 Bug Fixes
 ---------
- - fix customized plugin_dir not work in bootstrap
- - fix packing process exit on Ubuntu
- - fix loop device alloaction failed on openSUSE
- - fix incorrect number showing during installing
- - set owner of cacheidr/outdir to SUDO_USER
- - correct project url in setup.py
- - fix mic not work when mic.conf disappear
+ * fix bootstrap handling if bootstrap package failed
+ * fix 'mapper_device' key error
+ * fix detailed error messages missing in mounting
+ * fix version comparing issue of urlgrabber in Fedora
+
 
 Resource
 --------
