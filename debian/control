@@ -26,7 +26,7 @@ Description: image creator for Linux distributions
 
 Package: mic-native
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}, ${dist:Depends},
+Depends: ${misc:Depends}, ${python:Depends},
  util-linux,
  coreutils,
  psmisc,
@@ -45,6 +45,7 @@ Depends: ${misc:Depends}, ${python:Depends}, ${dist:Depends},
  python-m2crypto,
  mic,
 Recommends:
+ qemu-arm-static | qemu-user-static,
  binfmt-support,
  btrfs-tools,
  udisks | hal
