@@ -968,8 +968,10 @@ def setup_qemu_emulator(rootdir, arch):
     # qemu emulator should be a statically-linked executable file
     if arch == "aarch64":
         arm_binary = "qemu-arm64"
+        node = "/proc/sys/fs/binfmt_misc/aarch64"
     else:
         arm_binary = "qemu-arm"
+        node = "/proc/sys/fs/binfmt_misc/arm"
 
     qemu_emulator = "/usr/bin/%s" % arm_binary
     if not os.path.exists(qemu_emulator) or not is_statically_linked(qemu_emulator):
@@ -988,10 +990,9 @@ def setup_qemu_emulator(rootdir, arch):
         runner.show(["/usr/sbin/setenforce", "0"])
 
     # unregister it if it has been registered and is a dynamically-linked executable
-    node = "/proc/sys/fs/binfmt_misc/arm"
     if os.path.exists(node):
         qemu_unregister_string = "-1\n"
-        with open("/proc/sys/fs/binfmt_misc/arm", "w") as fd:
+        with open(node, "w") as fd:
             fd.write(qemu_unregister_string)
 
     # register qemu emulator for interpreting other arch executable file
