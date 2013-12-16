@@ -354,11 +354,6 @@ class Zypp(BackendPlugin):
             for pkg in exc:
                 self.excpkgs[pkg] = name
 
-        # check LICENSE files
-        if not rpmmisc.checkRepositoryEULA(name, repo):
-            msger.warning('skip repo:%s for failed EULA confirmation' % name)
-            return None
-
         if mirrorlist:
             repo.mirrorlist = mirrorlist
 
