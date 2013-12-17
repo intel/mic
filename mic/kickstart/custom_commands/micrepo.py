@@ -1,4 +1,3 @@
-#!/usr/bin/python -tt
 #
 # Copyright (c) 2008, 2009, 2010 Intel, Inc.
 #
@@ -17,111 +16,58 @@
 # with this program; if not, write to the Free Software Foundation, Inc., 59
 # Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-from pykickstart.base import *
-from pykickstart.errors import *
-from pykickstart.options import *
-from pykickstart.commands.repo import *
+from pykickstart.commands.repo import F14_RepoData, F14_Repo
 
-class Mic_RepoData(F8_RepoData):
 
-    def __init__(self, baseurl="", mirrorlist=None, name="", priority=None,
-                 includepkgs=(), excludepkgs=(), save=False, proxy=None,
-                 proxy_username=None, proxy_password=None, debuginfo=False,
-                 source=False, gpgkey=None, disable=False, ssl_verify="yes",
-                 nocache=False):
-        kw = {}
-        # F8_RepoData keywords
-        if includepkgs:
-            kw['includepkgs'] = includepkgs
-        if excludepkgs:
-            kw['excludepkgs'] = excludepkgs
+class Mic_RepoData(F14_RepoData):
+    "Mic customized repo data"
 
-        #FC6_RepoData keywords
-        if baseurl:
-            kw['baseurl'] = baseurl
-        if mirrorlist:
-            kw['mirrorlist'] = mirrorlist
-        if name:
-            kw['name'] = name
+    def __init__(self, *args, **kw):
+        F14_RepoData.__init__(self, *args, **kw)
+        for field in ('save', 'proxyuser', 'proxypasswd', 'debuginfo',
+                      'disable', 'source', 'gpgkey', 'ssl_verify', 'priority',
+                      'nocache', 'user', 'passwd'):
+            setattr(self, field, kw.get(field))
 
-        F8_RepoData.__init__(self, **kw)
-        self.save = save
-        self.proxy = proxy
-        self.proxy_username = proxy_username
-        self.proxy_password = proxy_password
-        self.debuginfo = debuginfo
-        self.disable = disable
-        self.source = source
-        self.gpgkey = gpgkey
-        self.ssl_verify = ssl_verify.lower()
-        self.priority = priority
-        self.nocache = nocache
+        if hasattr(self, 'proxy') and not self.proxy:
+            # TODO: remove this code, since it only for back-compatible.
+            # Some code behind only accept None but not empty string
+            # for default proxy
+            self.proxy = None
 
     def _getArgsAsStr(self):
-        retval = F8_RepoData._getArgsAsStr(self)
+        retval = F14_RepoData._getArgsAsStr(self)
 
-        if self.save:
-            retval += " --save"
-        if self.proxy:
-            retval += " --proxy=%s" % self.proxy
-        if self.proxy_username:
-            retval += " --proxyuser=%s" % self.proxy_username
-        if self.proxy_password:
-            retval += " --proxypasswd=%s" % self.proxy_password
-        if self.debuginfo:
-            retval += " --debuginfo"
-        if self.source:
-            retval += " --source"
-        if self.gpgkey:
-            retval += " --gpgkey=%s" % self.gpgkey
-        if self.disable:
-            retval += " --disable"
-        if self.ssl_verify:
-            retval += " --ssl_verify=%s" % self.ssl_verify
-        if self.priority:
-            retval += " --priority=%s" % self.priority
-        if self.nocache:
-            retval += " --nocache"
+        for field in ('proxyuser', 'proxypasswd', 'user', 'passwd',
+                      'gpgkey', 'ssl_verify', 'priority',
+                      ):
+            if hasattr(self, field) and getattr(self, field):
+                retval += ' --%s="%s"' % (field, getattr(self, field))
+
+        for field in ('save', 'diable', 'nocache', 'source', 'debuginfo'):
+            if hasattr(self, field) and getattr(self, field):
+                retval += ' --%s' % field
 
         return retval
 
-class Mic_Repo(F8_Repo):
-    def __init__(self, writePriority=0, repoList=None):
-        F8_Repo.__init__(self, writePriority, repoList)
 
-    def __str__(self):
-        retval = ""
-        for repo in self.repoList:
-            retval += repo.__str__()
-
-        return retval
+class Mic_Repo(F14_Repo):
+    "Mic customized repo command"
 
     def _getParser(self):
-        def list_cb (option, opt_str, value, parser):
-            for d in value.split(','):
-                parser.values.ensure_value(option.dest, []).append(d)
+        op = F14_Repo._getParser(self)
+        op.add_option('--user')
+        op.add_option('--passwd')
+        op.add_option("--proxyuser")
+        op.add_option("--proxypasswd")
 
-        op = F8_Repo._getParser(self)
-        op.add_option("--save", action="store_true", dest="save",
-                      default=False)
-        op.add_option("--proxy", type="string", action="store", dest="proxy",
-                      default=None, nargs=1)
-        op.add_option("--proxyuser", type="string", action="store",
-                      dest="proxy_username", default=None, nargs=1)
-        op.add_option("--proxypasswd", type="string", action="store",
-                      dest="proxy_password", default=None, nargs=1)
-        op.add_option("--debuginfo", action="store_true", dest="debuginfo",
-                      default=False)
-        op.add_option("--source", action="store_true", dest="source",
-                      default=False)
-        op.add_option("--disable", action="store_true", dest="disable",
-                      default=False)
-        op.add_option("--gpgkey", type="string", action="store", dest="gpgkey",
-                      default=None, nargs=1)
-        op.add_option("--ssl_verify", type="string", action="store",
-                      dest="ssl_verify", default="yes")
-        op.add_option("--priority", type="int", action="store", dest="priority",
-                      default=None)
-        op.add_option("--nocache", action="store_true", dest="nocache",
-                      default=False)
+        op.add_option("--save", action="store_true", default=False)
+        op.add_option("--debuginfo", action="store_true", default=False)
+        op.add_option("--source", action="store_true", default=False)
+        op.add_option("--disable", action="store_true", default=False)
+        op.add_option("--nocache", action="store_true", default=False)
+
+        op.add_option("--gpgkey")
+        op.add_option("--priority", type="int")
+        op.add_option("--ssl_verify", default="yes")
         return op

@@ -561,7 +561,9 @@ def get_repostrs_from_ks(ks):
         if 'name' not in repo:
             repo['name'] = _get_temp_reponame(repodata.baseurl)
         if hasattr(repodata, 'baseurl') and getattr(repodata, 'baseurl'):
-            repo['baseurl'] = SafeURL(getattr(repodata, 'baseurl'))
+            repo['baseurl'] = SafeURL(getattr(repodata, 'baseurl'),
+                                      getattr(repodata, 'user', None),
+                                      getattr(repodata, 'passwd', None))
 
         kickstart_repos.append(repo)
 

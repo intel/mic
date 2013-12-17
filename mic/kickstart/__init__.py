@@ -732,7 +732,7 @@ def get_repos(ks, repo_urls=None):
             baseurl = repo_urls[repo.name]
             mirrorlist = None
 
-        baseurl = SafeURL(baseurl)
+        baseurl = SafeURL(baseurl, repo.user, repo.passwd)
 
         if repos.has_key(repo.name):
             msger.warning("Overriding already specified repo %s" %(repo.name,))

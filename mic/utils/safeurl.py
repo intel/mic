@@ -4,22 +4,31 @@ import os
 from zypp import Url
 
 
+def remove_userpass(urlstring):
+    "Remove user and password from url string"
+    url = Url(urlstring)
+    url.setUsername('')
+    url.setPassword('')
+    return str(url)
+
+
 class SafeURL(str):
-    "URL wrapper which won't show password out"
-    def __new__(cls, urlstring):
+    """URL wrapper which won't show password out"""
+    def __new__(cls, urlstring, user=None, password=None):
         # sometimes we get unicode here, but zypp don't accept unicode string
         urlstring = str(urlstring)
-        safe = Url(urlstring)
-        safe.setUsername('')
-        safe.setPassword('')
-
-        safeurlstring = str(safe)
-        if safeurlstring.startswith("file:/"):
+        safe = remove_userpass(urlstring)
+        if safe.startswith("file:/"):
             # zypp.Url converts file:///path/to/file to file:/path/to/file
-            safeurlstring = "file://" + safeurlstring[len("file:"):]
+            safe = "file://" + safe[len("file:"):]
+        instance = super(SafeURL, cls).__new__(cls, safe)
 
-        instance = super(SafeURL, cls).__new__(cls, safeurlstring)
-        instance.url = Url(urlstring)
+        url = Url(urlstring)
+        if user:
+            url.setUsername(user)
+            if password:
+                url.setPassword(password)
+        instance.url = url
         return instance
 
     def join(self, *path):
