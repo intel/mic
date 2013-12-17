@@ -982,7 +982,6 @@ def setup_qemu_emulator(rootdir, arch):
     if not os.path.exists(rootdir + "/usr/bin"):
         makedirs(rootdir + "/usr/bin")
     shutil.copy(qemu_emulator, rootdir + qemu_emulator)
-    qemu_emulator = "/usr/bin/%s-static" % arm_binary
 
     # disable selinux, selinux will block qemu emulator to run
     if os.path.exists("/usr/sbin/setenforce"):
