@@ -7,13 +7,14 @@ the release contains new features, enhancements and bug fixes.
 
 New Features & Ehancements
 --------------------------
- * new distribution support: Ubuntu 13.10 and OpenSUSE 13.1
- * split requirements to subpackage 'mic-native' to reduce mic's dependencies
  * support arm64 architecture image creation in native mode
    (to know more about arm64 support, check doc/KNOWN_ISSUES)
- * new option '--interactive'/'--non-interactive' to enable/disable interaction 
- * new option '--uuid' for 'part' in ks file to set filesystem uuid
- * export more variables related to installer framework for loop format
+ * new distribution support: Ubuntu 13.10 and OpenSUSE 13.1
+ * split the "native" running mode support to a separated sub-package
+ * reduced the dependencies(packages) of mic main package dramatically
+ * add new options '--interactive' and '--non-interactive' to enable/disable interaction
+ * add new option '--uuid' for 'part' in ks file to set filesystem uuid
+ * export more environment variables related to installer framework for loop format
 
 Bug Fixes
 ---------
