@@ -470,6 +470,9 @@ class PartitionedMount(Mount):
                     raise MountError("Failed to load mapper devices for '%s'" %
                                      d['disk'].device)
 
+            # FIXME: need a better way to fix the latency
+            import time
+            time.sleep(1)
             d['mapped'] = True
 
     def __unmap_partitions(self):
