@@ -1,4 +1,4 @@
-mic (0.23-0.rc1) unstable; urgency=low
+mic (0.23-0.rc2) unstable; urgency=low
    * new distribution support: Ubuntu 13.10 and OpenSUSE 13.1
    * split requirements to subpackage 'mic-native' to reduce mic's dependencies
    * support arm64 architecture image creation in native mode
