@@ -466,9 +466,6 @@ class BaseImageCreator(object):
         kernel_opts = self.ks.handler.bootloader.appendLine
         env[self.installerfw_prefix + "KERNEL_OPTS"] = kernel_opts
 
-        # Name of the distribution
-        env[self.installerfw_prefix + "DISTRO_NAME"] = self.distro_name
-
         # Name of the image creation tool
         env[self.installerfw_prefix + "INSTALLER_NAME"] = "mic"
 
