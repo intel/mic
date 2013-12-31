@@ -1,70 +1,77 @@
-"safe url"
-import os
+"""
+This module provides a class SafeURL which can contain url/user/password read
+from config file, and hide plain user and password when it print to screen
+"""
+import os.path
+import urllib
+from urlparse import urlsplit, urlunsplit
 
-from zypp import Url
+
+def join_userpass(href, user, passwd):
+    """Return authenticated URL with user and passwd embeded"""
+    if not user and not passwd:
+        return href
+
+    if passwd:
+        userpass = '%s:%s' % (urllib.quote(user, safe=''),
+                              urllib.quote(passwd, safe=''))
+    else:
+        userpass = urllib.quote(user, safe='')
+
+    parts = urlsplit(href)
+    netloc = '%s@%s' % (userpass, parts[1])
+    comps = list(parts)
+    comps[1] = netloc
+    return urlunsplit(comps)
 
 
-def remove_userpass(urlstring):
-    "Remove user and password from url string"
-    url = Url(urlstring)
-    url.setUsername('')
-    url.setPassword('')
-    return str(url)
+def split_userpass(href):
+    """Returns (href, user, passwd) of an authenticated URL"""
+    parts = urlsplit(href)
+
+    netloc = parts[1]
+    if '@' not in netloc:
+        return href, None, None
+
+    userpass, netloc = netloc.split('@', 1)
+    if ':' in userpass:
+        user, passwd = [ urllib.unquote(i)
+                           for i in userpass.split(':', 1) ]
+    else:
+        user, passwd = userpass, None
+
+    comps = list(parts)
+    comps[1] = netloc
+    return urlunsplit(comps), user, passwd
 
 
 class SafeURL(str):
-    """URL wrapper which won't show password out"""
-    def __new__(cls, urlstring, user=None, password=None):
-        # sometimes we get unicode here, but zypp don't accept unicode string
-        urlstring = str(urlstring)
-        safe = remove_userpass(urlstring)
-        if safe.startswith("file:/"):
-            # zypp.Url converts file:///path/to/file to file:/path/to/file
-            safe = "file://" + safe[len("file:"):]
-        instance = super(SafeURL, cls).__new__(cls, safe)
+    '''SafeURL can hide user info when it's printed to console.
+    Use property full to get url with user info
+    '''
+    def __new__(cls, urlstring, user=None, passwd=None):
+        """Imuutable object"""
+        href, user1, passwd1 = split_userpass(urlstring)
+        user = user if user else user1
+        passwd = passwd if passwd else passwd1
 
-        url = Url(urlstring)
-        if user:
-            url.setUsername(user)
-            if password:
-                url.setPassword(password)
-        instance.url = url
-        return instance
+        obj = super(SafeURL, cls).__new__(cls, href)
+        obj.user = user
+        obj.passwd = passwd
+        obj.full = join_userpass(href, user, passwd)
+
+        parts = urlsplit(href)
+        obj.scheme = parts[0]
+        obj.netloc = parts[1]
+        obj.path = parts[2]
+        obj.host = parts.hostname
+        obj.port = parts.port
+        return obj
 
     def join(self, *path):
-        """
-        Returns a new SafeURL with new path. Search part is removed since
+        """Returns a new SafeURL with new path. Search part is removed since
         after join path is changed, keep the same search part is useless.
         """
-        urlstring = self.without_search().full.rstrip('/')
-        return SafeURL(os.path.join(urlstring, *path))
-
-    @property
-    def full(self):
-        "Returns full url string with auth info"
-        fullstring = self.url.asCompleteString()
-        if fullstring.startswith("file:/"):
-            fullstring = "file://" + fullstring[len("file:/"):]
-        return fullstring
-
-    def without_search(self):
-        "Returns a SafeURL without search part"
-        urlstring = self.full
-        idx = urlstring.find('?')
-        return self if idx == -1 else SafeURL(urlstring[:idx])
-
-    @property
-    def scheme(self):
-        return self.url.getScheme()
-
-    @property
-    def user(self):
-        return self.url.getUsername()
-
-    @property
-    def password(self):
-        return self.url.getPassword()
-
-    @property
-    def host(self):
-        return self.url.getHost()
+        idx = self.full.find('?')
+        url = self.full if idx < 0 else self.full[:idx]
+        return SafeURL(os.path.join(url.rstrip('/'), *path))

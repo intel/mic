@@ -370,7 +370,7 @@ class Zypp(BackendPlugin):
             repo_info.setEnabled(repo.enabled)
             repo_info.setAutorefresh(repo.autorefresh)
             repo_info.setKeepPackages(repo.keeppackages)
-            baseurl = repo.baseurl[0].url
+            baseurl = zypp.Url(repo.baseurl[0].full)
             if not ssl_verify:
                 baseurl.setQueryParam("ssl_verify", "no")
             if proxy:
