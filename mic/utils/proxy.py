@@ -16,6 +16,7 @@
 # Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 import os
+import re
 import urlparse
 
 _my_proxies = {}
@@ -145,7 +146,7 @@ def _isnoproxy(url):
 
     hostisip = _isip(host)
     for item in _my_noproxy_list:
-        if hostisip and item["match"] <= 1:
+        if hostisip and item["match"] == 1:
             continue
 
         if item["match"] == 2 and hostisip:
@@ -157,7 +158,7 @@ def _isnoproxy(url):
                 return True
 
         if item["match"] == 1:
-            if host.rfind(item["needle"]) > 0:
+            if re.match(r".*%s$" % item["needle"], host):
                 return True
 
     return False
