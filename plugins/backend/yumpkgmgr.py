@@ -31,7 +31,9 @@ from mic.utils import misc, rpmmisc
 from mic.utils.grabber import TextProgress
 from mic.utils.proxy import get_proxy_for
 from mic.utils.errors import CreatorError
+from mic.utils.safeurl import SafeURL
 from mic.imager.baseimager import BaseImageCreator
+
 
 YUMCONF_TEMP = """[main]
 installroot=$installroot
@@ -471,18 +473,18 @@ class Yum(BackendPlugin, yum.YumBase):
     def package_url(self, pkgname):
         pkgs = self.pkgSack.searchNevra(name=pkgname)
         if pkgs:
-            proxy = None
-            proxies = None
-            url = pkgs[0].remote_url
-            repoid = pkgs[0].repoid
-            repos = filter(lambda r: r.id == repoid, self.repos.listEnabled())
+            pkg = pkgs[0]
 
-            if repos:
-                proxy = repos[0].proxy
+            repo = pkg.repo
+            url = SafeURL(repo.baseurl[0]).join(pkg.remote_path)
+
+            proxy = repo.proxy
             if not proxy:
                 proxy = get_proxy_for(url)
             if proxy:
                 proxies = {str(url.split(':')[0]): str(proxy)}
+            else:
+                proxies = None
 
             return (url, proxies)
 
