@@ -145,10 +145,13 @@ def setup_resolv(chrootdir):
 
 def setup_mtab(chrootdir):
     """ adjust mount table """
-    mtab = "/etc/mtab"
-    dstmtab = chrootdir + mtab
-    if not os.path.islink(dstmtab):
-        shutil.copyfile(mtab, dstmtab)
+    try:
+        mtab = "/etc/mtab"
+        dstmtab = chrootdir + mtab
+        if not os.path.islink(dstmtab):
+            shutil.copyfile(mtab, dstmtab)
+    except (OSError, IOError):
+        pass
 
 def setup_chrootenv(chrootdir, bindmounts = None):
     """ setup chroot environment """
@@ -307,9 +310,12 @@ def chroot(chrootdir, bindmounts = None, execute = "/bin/bash"):
 
     savefs_before_chroot(chrootdir, None)
 
+    globalmounts = None
+
     try:
         msger.info("Launching shell. Exit to continue.\n"
                    "----------------------------------")
+
         globalmounts = setup_chrootenv(chrootdir, bindmounts)
         subprocess.call(execute, preexec_fn = mychroot, shell=True)
 

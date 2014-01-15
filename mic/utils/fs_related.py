@@ -121,7 +121,13 @@ class BindChrootMount:
         if self.mounted or self.ismounted():
             return
 
-        makedirs(self.dest)
+        try:
+            makedirs(self.dest)
+        except OSError, err:
+            if err.errno == errno.ENOSPC:
+                msger.warning("No space left on device '%s'" % err.filename)
+                return
+
         if self.mount_option:
             cmdline = [self.mountcmd, "--bind", "-o", "%s" % \
                        self.mount_option, self.src, self.dest]
