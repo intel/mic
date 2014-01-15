@@ -102,7 +102,6 @@ def read_kickstart(path):
     commandMap[using_version]["bootloader"] = micboot.Mic_Bootloader
     commandMap[using_version]["part"] = partition.Mic_Partition
     commandMap[using_version]["partition"] = partition.Mic_Partition
-    commandMap[using_version]["installerfw"] = installerfw.Mic_installerfw
     commandMap[using_version]["installerfw_plugins"] = installerfw.Mic_installerfw
     dataMap[using_version]["RepoData"] = micrepo.Mic_RepoData
     dataMap[using_version]["PartData"] = partition.Mic_PartData

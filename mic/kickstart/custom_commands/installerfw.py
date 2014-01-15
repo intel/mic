@@ -53,11 +53,6 @@ class Mic_installerfw(KickstartCommand):
         return op
 
     def parse(self, args):
-        if self.currentCmd == "installerfw":
-            msger.warning("please, use 'installerfw_plugins' instead of " \
-                          "'installerfw', the latter is obsolete and will be " \
-                          "removed in future releases")
-
         (_, extra) = self.op.parse_args(args=args, lineno=self.lineno)
 
         if len(extra) != 1:
@@ -66,13 +61,5 @@ class Mic_installerfw(KickstartCommand):
             raise KickstartValueError, formatErrorMsg(self.lineno, msg = msg)
 
         self.features = extra[0].split(",")
-
-        if "extlinux" in self.features:
-            msger.warning("please, use 'bootloader' installer framework " \
-                          "plugin name instead of 'extlinux', the latter " \
-                          "is obsolete and will be removed in future releases")
-            # Rename all occurances of "extlinux" to "bootloader"
-            self.features = [ "bootloader" if x == "extlinux" else x
-                              for x in self.features ]
 
         return self
