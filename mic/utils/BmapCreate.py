@@ -43,17 +43,23 @@ This module uses the FIBMAP ioctl to detect holes.
 # pylint: disable=R0902,R0903
 
 import hashlib
+import logging
 from mic.utils.misc import human_size
-from mic.utils import Fiemap
+from mic.utils import Filemap
 
 # The bmap format version we generate.
 #
 # Changelog:
-# o 1.3 -> 1.4:
+# o 1.3 -> 2.0:
 #   Support SHA256 and SHA512 checksums, in 1.3 only SHA1 was supported.
 #   "BmapFileChecksum" is used instead of "BmapFileSHA1", and "chksum="
-#   attribute is used instead "sha1=". Introduced "ChecksumType" tag.
-SUPPORTED_BMAP_VERSION = "1.4"
+#   attribute is used instead "sha1=". Introduced "ChecksumType" tag. This is
+#   an incompatible change.
+#   Note, bmap format 1.4 is identical to 2.0. Version 1.4 was a mistake,
+#   instead of incrementing the major version number, we incremented minor
+#   version number. Unfortunately, the mistake slipped into bmap-tools version
+#   3.0, and was only fixed in bmap-tools v3.1.
+SUPPORTED_BMAP_VERSION = "2.0"
 
 _BMAP_START_TEMPLATE = \
 """<?xml version="1.0" ?>
@@ -99,7 +105,7 @@ class Error(Exception):
     """
     pass
 
-class BmapCreate:
+class BmapCreate(object):
     """
     This class implements the bmap creation functionality. To generate a bmap
     for an image (which is supposedly a sparse file), you should first create
@@ -112,7 +118,7 @@ class BmapCreate:
     the FIEMAP ioctl to generate the bmap.
     """
 
-    def __init__(self, image, bmap, chksum_type="sha256"):
+    def __init__(self, image, bmap, chksum_type="sha256", log=None):
         """
         Initialize a class instance:
         * image  - full path or a file-like object of the image to create bmap
@@ -121,7 +127,12 @@ class BmapCreate:
                    bmap to
         * chksum - type of the check sum to use in the bmap file (all checksum
                    types which python's "hashlib" module supports are allowed).
+        * log     - the logger object to use for printing messages.
         """
+
+        self._log = log
+        if self._log is None:
+            self._log = logging.getLogger(__name__)
 
         self.image_size = None
         self.image_size_human = None
@@ -160,16 +171,19 @@ class BmapCreate:
             self._bmap_path = bmap
             self._open_bmap_file()
 
-        self.fiemap = Fiemap.Fiemap(self._f_image)
+        try:
+            self.filemap = Filemap.filemap(self._f_image, self._log)
+        except (Filemap.Error, Filemap.ErrorNotSupp) as err:
+            raise Error("cannot generate bmap: %s" % err)
 
-        self.image_size = self.fiemap.image_size
+        self.image_size = self.filemap.image_size
         self.image_size_human = human_size(self.image_size)
         if self.image_size == 0:
             raise Error("cannot generate bmap for zero-sized image file '%s'"
                         % self._image_path)
 
-        self.block_size = self.fiemap.block_size
-        self.blocks_cnt = self.fiemap.blocks_cnt
+        self.block_size = self.filemap.block_size
+        self.blocks_cnt = self.filemap.blocks_cnt
 
     def __del__(self):
         """The class destructor which closes the opened files."""
@@ -207,8 +221,6 @@ class BmapCreate:
         # We do not know the amount of mapped blocks at the moment, so just put
         # whitespaces instead of real numbers. Assume the longest possible
         # numbers.
-        mapped_count = ' ' * len(str(self.image_size))
-        mapped_size_human = ' ' * len(self.image_size_human)
 
         xml = _BMAP_START_TEMPLATE \
                % (SUPPORTED_BMAP_VERSION, self.image_size_human,
@@ -218,14 +230,14 @@ class BmapCreate:
         self._f_bmap.write(xml)
         self._mapped_count_pos1 = self._f_bmap.tell()
 
-        # Just put white-spaces instead of real information about mapped blocks
-        xml  = "%s or %.1f    -->\n" % (mapped_size_human, 100.0)
+        xml  = "%s or %s   -->\n" % (' ' * len(self.image_size_human),
+                                   ' ' * len("100.0%"))
         xml += "    <MappedBlocksCount> "
 
         self._f_bmap.write(xml)
         self._mapped_count_pos2 = self._f_bmap.tell()
 
-        xml  = "%s </MappedBlocksCount>\n\n" % mapped_count
+        xml  = "%s </MappedBlocksCount>\n\n" % (' ' * len(str(self.blocks_cnt)))
 
         # pylint: disable=C0301
         xml += "    <!-- Type of checksum used in this file -->\n"
@@ -312,7 +324,7 @@ class BmapCreate:
         # Generate the block map and write it to the XML block map
         # file as we go.
         self.mapped_cnt = 0
-        for first, last in self.fiemap.get_mapped_ranges(0, self.blocks_cnt):
+        for first, last in self.filemap.get_mapped_ranges(0, self.blocks_cnt):
             self.mapped_cnt += last - first + 1
             if include_checksums:
                 chksum = self._calculate_chksum(first, last)
