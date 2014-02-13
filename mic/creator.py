@@ -281,7 +281,17 @@ class Creator(cmdln.Cmdln):
                 configmgr.create['repourl'][key] = val
 
         if self.options.repo:
-            configmgr.create['repo'] = self.options.repo
+            for optvalue in self.options.repo:
+                repo = {}
+                for item in optvalue.split(';'):
+                    try:
+                        key, val = item.split('=')
+                    except:
+                        continue
+                    repo[key.strip()] = val.strip()
+                if 'name' in repo:
+                    configmgr.create['extrarepos'][repo['name']] = repo
+
         if self.options.ignore_ksrepo:
             configmgr.create['ignore_ksrepo'] = self.options.ignore_ksrepo
 

@@ -746,6 +746,16 @@ def get_repos(ks, repo_urls=None, ignore_ksrepo=False):
         if 'name' in repo:
             repos[repo['name']] = Repo(**repo)
 
+    if repo_urls:
+        if ignore_ksrepo:
+            repos = {}
+        for name, repo in repo_urls.items():
+            if 'baseurl' in repo:
+                repo['baseurl'] = SafeURL(repo.get('baseurl'),
+                                          repo.get('user', None),
+                                          repo.get('passwd', None))
+            repos[name] = Repo(**repo)
+
     return repos.values()
 
 def convert_method_to_repo(ks):

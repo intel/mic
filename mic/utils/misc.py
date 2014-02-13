@@ -612,11 +612,11 @@ def _get_metadata_from_repo(baseurl, proxies, cachedir, reponame, filename,
 def get_metadata_from_repos(repos, cachedir):
     my_repo_metadata = []
     for repo in repos:
-        reponame = repo['name']
-        baseurl  = repo['baseurl']
+        reponame = repo.name
+        baseurl = repo.baseurl
 
-        if 'proxy' in repo:
-            proxy = repo['proxy']
+        if hasattr(repo, 'proxy'):
+            proxy = repo.proxy
         else:
             proxy = get_proxy_for(baseurl)
 
