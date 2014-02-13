@@ -20,6 +20,7 @@ import os, sys, re
 import shutil
 import subprocess
 import string
+import collections
 
 import pykickstart.sections as kssections
 import pykickstart.commands as kscommands
@@ -713,63 +714,37 @@ def get_default_kernel(ks, default = None):
         return default
     return ks.handler.bootloader.default
 
-def get_repos(ks, repo_urls=None):
+RepoType = collections.namedtuple("Repo",
+               "name, baseurl, mirrorlist, inc, exc, proxy, \
+               proxy_username, proxy_password, debuginfo, \
+               source, gpgkey, disable, ssl_verify, nocache, \
+               cost, priority")
+
+def Repo(name, baseurl, mirrorlist=None, inc=[], exc=[], proxy=None,
+         proxy_username=None, proxy_password=None, debuginfo=None,
+         source=None, gpgkey=None, disable=None, ssl_verify=False,
+         nocache=False, cost=None, priority=None):
+    return RepoType(name, baseurl, mirrorlist, inc, exc, proxy,
+                    proxy_username, proxy_password, debuginfo,
+                    source, gpgkey, disable, ssl_verify, nocache,
+                    cost, priority)
+
+
+def get_repos(ks, repo_urls=None, ignore_ksrepo=False):
     repos = {}
-    for repo in ks.handler.repo.repoList:
-        inc = []
-        if hasattr(repo, "includepkgs"):
-            inc.extend(repo.includepkgs)
+    for repodata in ks.handler.repo.repoList:
+        repo = {}
+        for field in RepoType._fields:
+            if hasattr(repodata, field) and getattr(repodata, field):
+                repo[field] = getattr(repodata, field)
 
-        exc = []
-        if hasattr(repo, "excludepkgs"):
-            exc.extend(repo.excludepkgs)
+        if hasattr(repodata, 'baseurl') and getattr(repodata, 'baseurl'):
+            repo['baseurl'] = SafeURL(getattr(repodata, 'baseurl'),
+                                      getattr(repodata, 'user', None),
+                                      getattr(repodata, 'passwd', None))
 
-        baseurl = repo.baseurl
-        mirrorlist = repo.mirrorlist
-
-        if repo_urls and repo.name in repo_urls:
-            baseurl = repo_urls[repo.name]
-            mirrorlist = None
-
-        baseurl = SafeURL(baseurl, repo.user, repo.passwd)
-
-        if repos.has_key(repo.name):
-            msger.warning("Overriding already specified repo %s" %(repo.name,))
-
-        proxy = None
-        if hasattr(repo, "proxy"):
-            proxy = repo.proxy
-        proxy_username = None
-        if hasattr(repo, "proxy_username"):
-            proxy_username = repo.proxy_username
-        proxy_password = None
-        if hasattr(repo, "proxy_password"):
-            proxy_password = repo.proxy_password
-        if hasattr(repo, "debuginfo"):
-            debuginfo = repo.debuginfo
-        if hasattr(repo, "source"):
-            source = repo.source
-        if hasattr(repo, "gpgkey"):
-            gpgkey = repo.gpgkey
-        if hasattr(repo, "disable"):
-            disable = repo.disable
-        ssl_verify = True
-        if hasattr(repo, "ssl_verify"):
-            ssl_verify = repo.ssl_verify == "yes"
-        nocache = False
-        if hasattr(repo, "nocache"):
-            nocache = repo.nocache
-        cost = None
-        if hasattr(repo, "cost"):
-            cost = repo.cost
-        priority = None
-        if hasattr(repo, "priority"):
-            priority = repo.priority
-
-        repos[repo.name] = (repo.name, baseurl, mirrorlist, inc, exc,
-                            proxy, proxy_username, proxy_password, debuginfo,
-                            source, gpgkey, disable, ssl_verify, nocache,
-                            cost, priority)
+        if 'name' in repo:
+            repos[repo['name']] = Repo(**repo)
 
     return repos.values()
 
