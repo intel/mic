@@ -64,6 +64,8 @@ class ConfigMgr(object):
                     "repourl": {},
                     "localrepos": [],  # save localrepos
                     "runtime": "bootstrap",
+                    "repo": {},
+                    "ignore_ksrepo": False,
                 },
                 'chroot': {
                     "saveto": None,

@@ -123,6 +123,12 @@ class Creator(cmdln.Cmdln):
         optparser.add_option('', '--repourl', action='append',
                              dest='repourl', default=[],
                              help=SUPPRESS_HELP)
+        optparser.add_option('-R', '--repo', action='append',
+                             dest='repo', default=[],
+                             help=SUPPRESS_HELP)
+        optparser.add_option('', '--ignore-ksrepo', action='store_true',
+                             dest='ignore_ksrepo', default=False,
+                             help=SUPPRESS_HELP)
         return optparser
 
     def preoptparse(self, argv):
@@ -273,6 +279,11 @@ class Creator(cmdln.Cmdln):
                 except:
                     continue
                 configmgr.create['repourl'][key] = val
+
+        if self.options.repo:
+            configmgr.create['repo'] = self.options.repo
+        if self.options.ignore_ksrepo:
+            configmgr.create['ignore_ksrepo'] = self.options.ignore_ksrepo
 
     def main(self, argv=None):
         if argv is None:
