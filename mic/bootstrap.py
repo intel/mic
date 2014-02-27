@@ -140,11 +140,7 @@ class MiniBackend(object):
         # ts.run() exit codes are, hmm, "creative": None means all ok, empty 
         # list means some errors happened in the transaction and non-empty 
         # list that there were errors preventing the ts from starting...
-        if errs is None:
-            pass
-        elif len(errs) == 0:
-             msger.warning("Warning: scriptlet or other non-fatal errors occurred")
-        else:
+        if errs is not None:
              raise errors.BootstrapError("Transaction couldn't start: %s" % '\n'.join(errs))
 
     def run_pkg_script(self, pkg, prog, script, arg):
