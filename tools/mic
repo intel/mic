@@ -48,7 +48,7 @@ class MicCmd(cmdln.Cmdln):
     def print_version(self):
         msger.raw("%s %s (%s)" % (self.name,
                                   self.version,
-                                  misc.get_distro_str()))
+                                  misc.get_hostname_distro_str()))
 
     def get_optparser(self):
         optparser = cmdln.CmdlnOptionParser(self, version=self.version)

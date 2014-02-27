@@ -114,15 +114,21 @@ def get_distro():
 
     return (dist, ver, id)
 
-def get_distro_str():
+def get_hostname():
+    """Get hostname
+    """
+    return platform.node()
+
+def get_hostname_distro_str():
     """Get composited string for current linux distribution
     """
     (dist, ver, id) = get_distro()
+    hostname = get_hostname()
 
     if not dist:
-        return 'Unknown Linux Distro'
+        return "%s(Unknown Linux Distribution)" % hostname
     else:
-        distro_str = ' '.join(map(str.strip, (dist, ver, id)))
+        distro_str = ' '.join(map(str.strip, (hostname, dist, ver, id)))
         return distro_str.strip()
 
 _LOOP_RULE_PTH = None
