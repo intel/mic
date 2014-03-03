@@ -79,6 +79,8 @@ class Zypp(BackendPlugin):
 
         self.has_prov_query = True
         self.install_debuginfo = False
+        # this can't be changed, it is used by zypp
+        self.tmp_file_path = '/var/tmp'
 
     def doFileLogSetup(self, uid, logfile):
         # don't do the file log for the livecd as it can lead to open fds
@@ -117,6 +119,10 @@ class Zypp(BackendPlugin):
 
     def setup(self):
         self._cleanupRpmdbLocks(self.instroot)
+        # '/var/tmp' is used by zypp to build cache, so make sure
+        # if it exists
+        if not os.path.exists(self.tmp_file_path ):
+            os.makedirs(self.tmp_file_path)
 
     def whatObsolete(self, pkg):
         query = zypp.PoolQuery()
