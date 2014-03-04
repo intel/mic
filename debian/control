@@ -41,7 +41,7 @@ Depends: ${misc:Depends}, ${python:Depends},
  yum (>= 3.2),
  syslinux (>= 2:4.05),
  extlinux (>= 2:4.05),
- tizen-python-zypp-20131212,
+ python-zypp-tizen,
  python-m2crypto,
  mic,
 Recommends:

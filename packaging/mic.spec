@@ -83,7 +83,7 @@ Requires:   yum >= 3.2.24
 %if 0%{?tizen_version:1}
 Requires:   python-zypp
 %else
-Requires:   tizen-python-zypp >= 20131212
+Requires:   python-zypp-tizen
 %endif
 
 Requires:   mic
