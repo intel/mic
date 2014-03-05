@@ -209,8 +209,8 @@ class ConfigMgr(object):
             raise errors.KsError('no valid repos found in ks file')
 
         for repo in ksrepos:
-            if 'baseurl' in repo and repo['baseurl'].startswith("file:"):
-                repourl = repo['baseurl'].replace('file:', '')
+            if hasattr(repo, 'baseurl') and repo.baseurl.startswith("file:"):
+                repourl = repo.baseurl.replace('file:', '')
                 repourl = "/%s" % repourl.lstrip('/')
                 self.create['localrepos'].append(repourl)
 
