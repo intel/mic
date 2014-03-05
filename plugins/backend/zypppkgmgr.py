@@ -127,7 +127,7 @@ class Zypp(BackendPlugin):
     def whatObsolete(self, pkg):
         query = zypp.PoolQuery()
         query.addKind(zypp.ResKind.package)
-        query.addAttribute(zypp.SolvAttr.obsoletes, pkg)
+        query.addDependency(zypp.SolvAttr.obsoletes, pkg.name(), pkg.edition())
         query.setMatchExact()
         for pi in query.queryResults(self.Z.pool()):
             return pi
@@ -233,7 +233,7 @@ class Zypp(BackendPlugin):
                 continue
 
             found = True
-            obspkg = self.whatObsolete(item.name())
+            obspkg = self.whatObsolete(item)
             if arch:
                 if arch == str(item.arch()):
                     item.status().setToBeInstalled (zypp.ResStatus.USER)
@@ -261,7 +261,7 @@ class Zypp(BackendPlugin):
                     continue
 
                 found = True
-                obspkg = self.whatObsolete(item.name())
+                obspkg = self.whatObsolete(item)
                 markPoolItem(obspkg, pitem)
                 break
 
