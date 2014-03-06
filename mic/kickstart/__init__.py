@@ -726,7 +726,7 @@ def Repo(name, baseurl, mirrorlist=None, includepkgs=[], excludepkgs=[], proxy=N
          nocache=False, cost=None, priority=None):
     return RepoType(name, baseurl, mirrorlist, includepkgs, excludepkgs, proxy,
                     proxy_username, proxy_password, debuginfo,
-                    source, gpgkey, disable, ssl_verify, nocache,
+                    source, gpgkey, disable, ssl_verify == "yes", nocache,
                     cost, priority)
 
 
