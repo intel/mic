@@ -715,16 +715,16 @@ def get_default_kernel(ks, default = None):
     return ks.handler.bootloader.default
 
 RepoType = collections.namedtuple("Repo",
-               "name, baseurl, mirrorlist, inc, exc, proxy, \
+               "name, baseurl, mirrorlist, includepkgs, excludepkgs, proxy, \
                proxy_username, proxy_password, debuginfo, \
                source, gpgkey, disable, ssl_verify, nocache, \
                cost, priority")
 
-def Repo(name, baseurl, mirrorlist=None, inc=[], exc=[], proxy=None,
+def Repo(name, baseurl, mirrorlist=None, includepkgs=[], excludepkgs=[], proxy=None,
          proxy_username=None, proxy_password=None, debuginfo=None,
          source=None, gpgkey=None, disable=None, ssl_verify=False,
          nocache=False, cost=None, priority=None):
-    return RepoType(name, baseurl, mirrorlist, inc, exc, proxy,
+    return RepoType(name, baseurl, mirrorlist, includepkgs, excludepkgs, proxy,
                     proxy_username, proxy_password, debuginfo,
                     source, gpgkey, disable, ssl_verify, nocache,
                     cost, priority)
