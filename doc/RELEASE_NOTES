@@ -1,26 +1,30 @@
-MIC Image Creator 0.21 Release Notes
+MIC Image Creator 0.24 Release Notes
 ====================================
-Released August 28 2013
+Released March 11 2014
 
 This release note documents the changes included in the new release. And
 the release contains new features, enhancements and bug fixes.
 
 New Features & Ehancements
 --------------------------
- * new distribution support: Ubuntu 13.10 and OpenSUSE 13.1
- * split requirements to subpackage 'mic-native' to reduce mic's dependencies
- * support arm64 architecture image creation in native mode
-   (to know more about arm64 support, check doc/KNOWN_ISSUES)
- * new option '--interactive'/'--non-interactive' to enable/disable interaction 
- * new option '--uuid' for 'part' in ks file to set filesystem uuid
- * export more variables related to installer framework for loop format
+  * enhance to handle password with special characters
+  * change python-zypp require to python-zypp-tizen
+  * add --repo comand option for local build
+  * add --user and --password option for %repo directive of ks file
+  * clean up some codes relevant to EULA agreement
+  * add hostname showing in log
 
 Bug Fixes
 ---------
- * fix bootstrap handling if bootstrap package failed
- * fix 'mapper_device' key error
- * fix detailed error messages missing in mounting
- * fix version comparing issue of urlgrabber in Fedora
+  * fix chroot failed by space in image not enough
+  * fix obsolete packages incorrect handling
+  * fix yum backend failed to cache packages
+  * fix bare ip in no_proxy not working
+  * fix repeated log showing with yum backend
+  * fix loop device latency timing
+  * fix zypp failed to download by changing 'cachedir'
+  * fix 'mkfs' not working caused by mic-bootstrap install failed
+
 
 
 Resource

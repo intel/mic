@@ -1,3 +1,20 @@
+* Tue Mar 11 2014 Gui Chen <gui.chen@intel.com> - 0.24
+  * enhance to handle password with special characters
+  * change python-zypp require to python-zypp-tizen
+  * add --repo comand option for local build
+  * add --user and --password option for %repo directive of ks file
+  * clean up some codes relevant to EULA agreement
+  * add hostname showing in log
+  * bug fix:
+    - fix chroot failed by space in image not enough
+    - fix obsolete packages incorrect handling
+    - fix yum backend failed to cache packages
+    - fix bare ip in no_proxy not working
+    - fix repeated log showing with yum backend
+    - fix loop device latency timing
+    - fix zypp failed to download by changing 'cachedir'
+    - fix 'mkfs' not working caused by mic-bootstrap install failed
+ 
 * Fri Dec 12 2013 Gui Chen <gui.chen@intel.com> - 0.23
   * new distribution support: Ubuntu 13.10 and OpenSUSE 13.1
   * split requirements to subpackage 'mic-native' to reduce mic's dependencies
