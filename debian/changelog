@@ -1,4 +1,4 @@
-mic (0.24-1) unstable; urgency=low
+mic (0.24) unstable; urgency=low
    * enhance to handle password with special characters
    * change python-zypp require to python-zypp-tizen
    * add --repo comand option for local build
