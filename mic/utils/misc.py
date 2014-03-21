@@ -191,6 +191,7 @@ def compressing(fpath, method):
     comp_map = {
         "gz": ["pgzip", "pigz", "gzip"],
         "bz2": ["pbzip2", "bzip2"],
+        "lzo": ["lzop"],
     }
     if method not in comp_map:
         raise CreatorError("Unsupport compress format: %s, valid values: %s"
@@ -204,7 +205,10 @@ def compressing(fpath, method):
             pass
     if not cmd:
         raise CreatorError("Command %s not available" % cmdname)
-    rc = runner.show([cmd, "-f", fpath])
+    if 'lzop' in cmd:
+        rc = runner.show([cmd, "-Uf", fpath])
+    else:
+        rc = runner.show([cmd, "-f", fpath])
     if rc:
         raise CreatorError("Failed to %s file: %s" % (comp_map[method], fpath))
 

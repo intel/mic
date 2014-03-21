@@ -31,12 +31,14 @@ class LoopPlugin(ImagerPlugin):
 
     @classmethod
     @cmdln.option("--compress-disk-image", dest="compress_image",
-                  type='choice', choices=("gz", "bz2"), default=None,
+                  type='choice', choices=("gz", "bz2", "lzo"), default=None,
                   help="Same with --compress-image")
                   # alias to compress-image for compatibility
     @cmdln.option("--compress-image", dest="compress_image",
-                  type='choice', choices=("gz", "bz2"), default=None,
-                  help="Compress all loop images with 'gz' or 'bz2'")
+                  type='choice', choices=("gz", "bz2", "lzo"), default=None,
+                  help="Compress all loop images with 'gz' or 'bz2' or 'lzo',"
+                  "Note: if you want to use 'lzo', package 'lzop' is needed to"
+                  "be installed manually.")
     @cmdln.option("--shrink", action='store_true', default=False,
                   help="Whether to shrink loop images to minimal size")
     def do_create(self, subcmd, opts, *args):

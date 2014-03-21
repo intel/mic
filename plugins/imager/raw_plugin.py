@@ -34,11 +34,12 @@ class RawPlugin(ImagerPlugin):
 
     @classmethod
     @cmdln.option("--compress-disk-image", dest="compress_image", type='choice',
-                  choices=("gz", "bz2"), default=None,
+                  choices=("gz", "bz2", "lzo"), default=None,
                   help="Same with --compress-image")
     @cmdln.option("--compress-image", dest="compress_image", type='choice',
-                  choices=("gz", "bz2"), default = None,
-                  help="Compress all raw images before package")
+                  choices=("gz", "bz2", "lzo"), default=None,
+                  help="Compress all raw images before package, Note: if you want "
+                  "to use 'lzo', package 'lzop' is needed to be installed manually.")
     @cmdln.option("--generate-bmap", action="store_true", default = None,
                   help="also generate the block map file")
     @cmdln.option("--fstab-entry", dest="fstab_entry", type='choice',
