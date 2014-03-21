@@ -24,6 +24,8 @@ from mic.utils.fs_related import find_binary_path
 from mic.imager.baseimager import BaseImageCreator
 
 class FsImageCreator(BaseImageCreator):
+    img_format = 'fs'
+
     def __init__(self, cfgmgr = None, pkgmgr = None):
         self.zips = {
             "tar.bz2" : ""
@@ -48,6 +50,7 @@ class FsImageCreator(BaseImageCreator):
             self._save_recording_pkgs(destdir)
 
         if not self.pack_to:
+            self.image_files = {'image_files': [self.name]}
             fsdir = os.path.join(destdir, self.name)
 
             misc.check_space_pre_cp(self._instroot, destdir)
@@ -61,6 +64,7 @@ class FsImageCreator(BaseImageCreator):
             self.outimage.append(fsdir)
 
         else:
+            self.image_files = {'image_files': [self.pack_to]}
             (tar, comp) = os.path.splitext(self.pack_to)
             try:
                 tarcreat = {'.tar': '-cf',
@@ -96,4 +100,3 @@ class FsImageCreator(BaseImageCreator):
                                    "Cmdline: %s" % (" ".join(tar_cmdline)))
 
             self.outimage.append(dst)
-

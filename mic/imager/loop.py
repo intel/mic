@@ -98,6 +98,7 @@ class LoopImageCreator(BaseImageCreator):
     When specifying multiple partitions in kickstart file, each partition
     will be created as a separated loop image.
     """
+    img_format = 'loop'
 
     def __init__(self, creatoropts=None, pkgmgr=None,
                  compress_image=None,
@@ -390,8 +391,14 @@ class LoopImageCreator(BaseImageCreator):
             if item['fstype'] == "ext4":
                 runner.show('/sbin/tune2fs -O ^huge_file,extents,uninit_bg %s '
                             % imgfile)
+            self.image_files.setdefault('partitions', {}).update(
+                    {item['mountpoint']: item['label']})
             if self.compress_image:
                 misc.compressing(imgfile, self.compress_image)
+                self.image_files.setdefault('image_files', []).append(
+                                '.'.join([item['name'], self.compress_image]))
+            else:
+                self.image_files.setdefault('image_files', []).append(item['name'])
 
         if not self.pack_to:
             for item in os.listdir(self.__imgdir):
@@ -401,6 +408,8 @@ class LoopImageCreator(BaseImageCreator):
             msger.info("Pack all loop images together to %s" % self.pack_to)
             dstfile = os.path.join(self._outdir, self.pack_to)
             misc.packing(dstfile, self.__imgdir)
+            self.image_files['image_files'] = [self.pack_to]
+
 
         if self.pack_to:
             mountfp_xml = os.path.splitext(self.pack_to)[0]
@@ -426,3 +435,7 @@ class LoopImageCreator(BaseImageCreator):
             msger.verbose("Copy attachment %s to %s" % (item, dpath))
             shutil.copy(item, dpath)
 
+    def create_manifest(self):
+        if self.compress_image:
+            self.image_files.update({'compress': self.compress_image})
+        super(LoopImageCreator, self).create_manifest()

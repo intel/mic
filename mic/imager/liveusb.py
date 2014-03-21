@@ -27,6 +27,8 @@ from mic.imager.livecd import LiveCDImageCreator
 
 
 class LiveUSBImageCreator(LiveCDImageCreator):
+    img_format = 'liveusb'
+
     def __init__(self, *args):
         LiveCDImageCreator.__init__(self, *args)
 
@@ -297,10 +299,13 @@ class LiveUSBImageCreator(LiveCDImageCreator):
                 self._create_usbimg(isodir)
 
                 if self.pack_to:
+                    self.image_files.update({'image_files': self.pack_to})
                     usbimg = os.path.join(self._outdir, self.name + ".usbimg")
                     packimg = os.path.join(self._outdir, self.pack_to)
                     misc.packing(packimg, usbimg)
                     os.unlink(usbimg)
+                else:
+                    self.image_files.update({'image_files': self.name + ".usbimg"})
 
         finally:
             shutil.rmtree(isodir, ignore_errors = True)

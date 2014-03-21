@@ -26,11 +26,13 @@ import subprocess
 import re
 import tarfile
 import glob
+import json
+from datetime import datetime
 
 import rpm
 
 from mic import kickstart
-from mic import msger
+from mic import msger, __version__ as VERSION
 from mic.utils.errors import CreatorError, Abort
 from mic.utils import misc, grabber, runner, fs_related as fs
 from mic.chroot import kill_proc_inchroot
@@ -48,6 +50,8 @@ class BaseImageCreator(object):
       imgcreate.ImageCreator(ks, "foo").create()
 
     """
+    # Output image format
+    img_format = ''
 
     def __del__(self):
         self.cleanup()
@@ -121,7 +125,8 @@ class BaseImageCreator(object):
 
         # Output image file names
         self.outimage = []
-
+        # Output info related with manifest
+        self.image_files = {}
         # A flag to generate checksum
         self._genchecksum = False
 
@@ -1353,3 +1358,30 @@ class BaseImageCreator(object):
         return self.pkgmgr(target_arch = self.target_arch,
                            instroot = self._instroot,
                            cachedir = self.cachedir)
+
+    def create_manifest(self):
+        def get_pack_suffix():
+            return '.' + self.pack_to.split('.', 1)[1]
+
+        if not os.path.exists(self.destdir):
+            os.makedirs(self.destdir)
+
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        manifest_dict = {'version': VERSION,
+                         'created': now}
+        if self.img_format:
+            manifest_dict.update({'format': self.img_format})
+
+        if hasattr(self, 'logfile') and self.logfile:
+            manifest_dict.update({'log_file': self.logfile})
+
+        if self.image_files:
+            if self.pack_to:
+                self.image_files.update({'pack': get_pack_suffix()})
+            manifest_dict.update({self.img_format: self.image_files})
+
+        msger.info('Creating manifest file...')
+        manifest_file_path = os.path.join(self.destdir, 'manifest.json')
+        with open(manifest_file_path, 'w') as fest_file:
+            json.dump(manifest_dict, fest_file, indent=4)
+        self.outimage.append(manifest_file_path)

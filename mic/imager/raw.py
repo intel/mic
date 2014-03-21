@@ -34,6 +34,7 @@ class RawImageCreator(BaseImageCreator):
     and the system installed into an virtual disk. The disk image can
     subsequently be booted in a virtual machine or accessed with kpartx
     """
+    img_format = 'raw'
 
     def __init__(self, creatoropts=None, pkgmgr=None, compress_image=None, generate_bmap=None, fstab_entry="uuid"):
         """Initialize a ApplianceImageCreator instance.
@@ -440,6 +441,17 @@ class RawImageCreator(BaseImageCreator):
            write meta data
         """
         self._resparse()
+        self.image_files.update({'disks': self.__disks.keys()})
+
+        if not (self.compress_image or self.pack_to):
+            for imgfile in os.listdir(self.__imgdir):
+                if imgfile.endswith('.raw'):
+                    for disk in self.__disks.keys():
+                        if imgfile.find(disk) != -1:
+                            self.image_files.setdefault(disk, {}).update(
+                                   {'image': imgfile})
+                            self.image_files.setdefault('image_files',
+                                   []).append(imgfile)
 
         if self.compress_image:
             for imgfile in os.listdir(self.__imgdir):
@@ -447,11 +459,20 @@ class RawImageCreator(BaseImageCreator):
                     imgpath = os.path.join(self.__imgdir, imgfile)
                     msger.info("Compressing image %s" % imgfile)
                     misc.compressing(imgpath, self.compress_image)
+                if imgfile.endswith('.raw') and not self.pack_to:
+                    for disk in self.__disks.keys():
+                        if imgfile.find(disk) != -1:
+                            imgname = '%s.%s' % (imgfile, self.compress_image)
+                            self.image_files.setdefault(disk, {}).update(
+                                   {'image': imgname})
+                            self.image_files.setdefault('image_files',
+                                    []).append(imgname)
 
         if self.pack_to:
             dst = os.path.join(self._outdir, self.pack_to)
             msger.info("Pack all raw images to %s" % dst)
             misc.packing(dst, self.__imgdir)
+            self.image_files.update({'image_files': self.pack_to})
         else:
             msger.debug("moving disks to stage location")
             for imgfile in os.listdir(self.__imgdir):
@@ -459,6 +480,7 @@ class RawImageCreator(BaseImageCreator):
                 dst = os.path.join(self._outdir, imgfile)
                 msger.debug("moving %s to %s" % (src,dst))
                 shutil.move(src,dst)
+
         self._write_image_xml()
 
     def _write_image_xml(self):
@@ -556,6 +578,8 @@ class RawImageCreator(BaseImageCreator):
         for name in self.__disks.keys():
             image = self._full_path(self.__imgdir, name, self.__disk_format)
             bmap_file = self._full_path(self._outdir, name, "bmap")
+            self.image_files.setdefault(name, {}).update({'bmap': \
+                                            os.path.basename(bmap_file)})
 
             msger.debug("Generating block map file '%s'" % bmap_file)
 
@@ -565,3 +589,8 @@ class RawImageCreator(BaseImageCreator):
                 del creator
             except BmapCreate.Error as err:
                 raise CreatorError("Failed to create bmap file: %s" % str(err))
+
+    def create_manifest(self):
+        if self.compress_image:
+            self.image_files.update({'compress': self.compress_image})
+        super(RawImageCreator, self).create_manifest()
