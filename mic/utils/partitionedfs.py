@@ -367,12 +367,12 @@ class PartitionedMount(Mount):
                 continue
 
             pnum = 0
-            gpt_parser = GptParser(d['disk'].device, SECTOR_SIZE)
+            gpt_parser = GptParser(disk['disk'].device, SECTOR_SIZE)
             # Iterate over all GPT partitions on this disk
             for entry in gpt_parser.get_partitions():
                 pnum += 1
                 # Find the matching partition in the 'self.partitions' list
-                for n in d['partitions']:
+                for n in disk['partitions']:
                     p = self.partitions[n]
                     if p['num'] == pnum:
                         # Found, fetch PARTUUID (partition's unique ID)
