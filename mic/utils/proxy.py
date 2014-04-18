@@ -41,9 +41,9 @@ def unset_proxy_environ():
         if env in os.environ:
             del os.environ[env]
 
-        ENV=env.upper()
-        if ENV in os.environ:
-            del os.environ[ENV]
+        env_upper = env.upper()
+        if env_upper in os.environ:
+            del os.environ[env_upper]
 
 def _set_proxies(proxy = None, no_proxy = None):
     """Return a dictionary of scheme -> proxy server URL mappings.
@@ -74,16 +74,16 @@ def _set_proxies(proxy = None, no_proxy = None):
                 _my_noproxy = value
 
 def _ip_to_int(ip):
-    ipint=0
-    shift=24
+    ipint = 0
+    shift = 24
     for dec in ip.split("."):
         ipint |= int(dec) << shift
         shift -= 8
     return ipint
 
 def _int_to_ip(val):
-    ipaddr=""
-    shift=0
+    ipaddr = ""
+    shift = 0
     for i in range(4):
         dec = val >> shift
         dec &= 0xff
@@ -108,11 +108,11 @@ def _set_noproxy_list():
 
         if item[0] != '.' and item.find("/") == -1:
             # Need to match it
-            _my_noproxy_list.append({"match":0,"needle":item})
+            _my_noproxy_list.append({"match":0, "needle":item})
 
         elif item[0] == '.':
             # Need to match at tail
-            _my_noproxy_list.append({"match":1,"needle":item})
+            _my_noproxy_list.append({"match":1, "needle":item})
 
         elif item.find("/") > 3:
             # IP/MASK, need to match at head
@@ -126,17 +126,18 @@ def _set_noproxy_list():
                 netmask = ~((1<<(32-netmask)) - 1)
                 ip &= netmask
             else:
-                shift=24
-                netmask=0
+                shift = 24
+                netmask = 0
                 for dec in mask.split("."):
                     netmask |= int(dec) << shift
                     shift -= 8
                 ip &= netmask
 
-            _my_noproxy_list.append({"match":2,"needle":ip,"netmask":netmask})
+            _my_noproxy_list.append({"match":2, "needle":ip, "netmask":netmask})
 
 def _isnoproxy(url):
-    (scheme, host, path, parm, query, frag) = urlparse.urlparse(url)
+    host = urlparse.urlparse(url)[1]
+    # urlparse.urlparse(url) returns (scheme, host, path, parm, query, frag)
 
     if '@' in host:
         user_pass, host = host.split('@', 1)
