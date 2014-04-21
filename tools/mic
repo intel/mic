@@ -1,21 +1,35 @@
 #!/usr/bin/env python
+
+#Copyright (c) 2011 Intel, Inc.
 #
-# Copyright (c) 2011 Intel, Inc.
+#This program is free software; you can redistribute it and/or modify it
+#under the terms of the GNU General Public License as published by the Free
+#Software Foundation; version 2 of the License
 #
-# This program is free software; you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by the Free
-# Software Foundation; version 2 of the License
-#
-# This program is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+#This program is distributed in the hope that it will be useful, but
+#WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 # for more details.
 #
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc., 59
 # Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+#
+# pylint: disable-msg=E0611, E1101, R0201
+# E0611: no name in module, some attributes are set during running, so ignore it
+# E1101: %s %r has no %r member, some attributes are set during running,
+#        so ignore it
+# R0201: Method could be a function
 
-import os, sys, errno
+"""
+ This mudule is entry for mic.
+ It defines a class named MicCmd inheriting Cmdln, and supplies interfaces like
+ 'create, chroot, convert' and also some parameters for command 'mic'.
+"""
+import os
+import sys
+import errno
+
 from mic import msger, creator, __version__ as VERSION
 from mic.utils import cmdln, misc, errors
 from mic.conf import configmgr
@@ -41,11 +55,12 @@ class MicCmd(cmdln.Cmdln):
     global ${option_list}
     ${help_list}
     """
-
     name = 'mic'
     version = VERSION
 
     def print_version(self):
+        """log name, verion, hostname"""
+
         msger.raw("%s %s (%s)" % (self.name,
                                   self.version,
                                   misc.get_hostname_distro_str()))
@@ -89,29 +104,36 @@ class MicCmd(cmdln.Cmdln):
         self.print_version()
 
     def help_create(self):
+        """Get help info from doc string.
+           Fill symbols with real parameters
+        """
         crobj = creator.Creator()
         crobj.optparser = crobj.get_optparser()
         doc = crobj.__doc__
-        doc = crobj._help_reindent(doc)
-        doc = crobj._help_preprocess(doc, None)
+        doc = crobj.help_reindent(doc)
+        doc = crobj.help_preprocess(doc, None)
         doc = doc.replace(crobj.name, "${cmd_name}", 1)
         doc = doc.rstrip() + '\n'
         return doc
 
     @cmdln.alias("cr")
     def do_create(self, argv):
+        """Main for creating image"""
         crobj = creator.Creator()
         crobj.main(argv[1:])
 
     def _root_confirm(self):
+        """Make sure command is called by root
+        There are a lot of commands needed to be run during creating images,
+        some of them must be run with root privilege like mount, kpartx"""
         if os.geteuid() != 0:
             msger.error('Root permission is required to continue, abort')
 
     @cmdln.alias("cv")
     @cmdln.option("-S", "--shell",
-                  action = "store_true", dest = "shell", default = False,
-                  help = "Launch shell before packaging the converted image")
-    def do_convert(self, subcmd, opts, *args):
+                  action="store_true", dest="shell", default=False,
+                  help="Launch shell before packaging the converted image")
+    def do_convert(self, _subcmd, opts, *args):
         """${cmd_name}: convert image format
 
         Usage:
@@ -119,20 +141,14 @@ class MicCmd(cmdln.Cmdln):
 
         ${cmd_option_list}
         """
-
-        if not args:
+        if not args or len(args) != 2:
             # print help
             handler = self._get_cmd_handler('convert')
             if hasattr(handler, "optparser"):
                 handler.optparser.print_help()
-            return 1
+            raise errors.Usage("2 arguments and only 2 are required")
 
-        if len(args) == 1:
-            raise errors.Usage("It need 2 arguments (1 given)")
-        elif len(args) == 2:
-            (srcimg, destformat) = args
-        else:
-            raise errors.Usage("Extra argument given")
+        (srcimg, destformat) = args
 
         if not os.path.exists(srcimg):
             raise errors.CreatorError("Cannot find the image: %s" % srcimg)
@@ -155,35 +171,30 @@ class MicCmd(cmdln.Cmdln):
 
         if (srcimager and destimager) is None:
             raise errors.CreatorError("Can't convert from %s to %s" \
-                                      % (srcformat, destformat))
+                                  % (srcformat, destformat))
+        maptab = {
+                    "livecd": "iso",
+                    "liveusb": "usbimg",
+                    "loop": "img",
+                 }
+        if destformat in maptab:
+            imgname = os.path.splitext(os.path.basename(srcimg))[0]
+            dstname = "{0}.{1}".format(imgname, maptab[destformat])
+            if os.path.exists(dstname):
+                if msger.ask("Converted image %s seems existed, "
+                             "remove and continue?" % dstname):
+                    os.unlink(dstname)
+                else:
+                    raise errors.Abort("Canceled")
 
-        else:
-            maptab = {
-                        "livecd": "iso",
-                        "liveusb": "usbimg",
-                        "loop": "img",
-                     }
-
-            if destformat in maptab:
-                imgname = os.path.splitext(os.path.basename(srcimg))[0]
-                dstname = "{0}.{1}".format(imgname, maptab[destformat])
-
-                if os.path.exists(dstname):
-                    if msger.ask("Converted image %s seems existed, "
-                                 "remove and continue?" % dstname):
-                        os.unlink(dstname)
-                    else:
-                        raise errors.Abort("Canceled")
-
-            base_on = srcimager.do_unpack(srcimg)
-            destimager.do_pack(base_on)
+        destimager.do_pack(srcimager.do_unpack(srcimg))
 
     @cmdln.alias("ch")
     @cmdln.option('-s', '--saveto',
                   action = 'store', dest = 'saveto', default = None,
                   help = "Save the unpacked image to specified dir")
     @optparser_setup
-    def do_chroot(self, subcmd, opts, *args):
+    def do_chroot(self, _subcmd, opts, *args):
         """${cmd_name}: chroot into an image
 
         Usage:
@@ -191,7 +202,6 @@ class MicCmd(cmdln.Cmdln):
 
         ${cmd_option_list}
         """
-
         if not args:
             # print help
             handler = self._get_cmd_handler('chroot')
@@ -200,7 +210,6 @@ class MicCmd(cmdln.Cmdln):
             return 1
 
         targetimage = args[0]
-
         if not os.path.exists(targetimage):
             raise errors.CreatorError("Cannot find the image: %s"
                                       % targetimage)
@@ -225,27 +234,23 @@ class MicCmd(cmdln.Cmdln):
 
         chrootclass.do_chroot(targetimage, args[1:])
 
+
 if __name__ == "__main__":
     try:
         MIC = MicCmd()
         sys.exit(MIC.main())
-
     except KeyboardInterrupt:
         msger.error('\n^C catched, program aborted.')
-
-    # catch 'no space left' exception, etc
-    except IOError, ioerr:
+    except IOError as ioerr:
+        # catch 'no space left' exception, etc
         if ioerr.errno == errno.ENOSPC:
             msger.error('\nNo space left on device')
         raise
-
-    except errors.Usage, usage:
+    except errors.Usage as usage:
         msger.error(str(usage))
-
-    except errors.Abort, msg:
+    except errors.Abort as  msg:
         msger.info(str(msg))
-
-    except errors.CreatorError, err:
+    except errors.CreatorError as err:
         if msger.get_loglevel() == 'DEBUG':
             import traceback
             msger.error(traceback.format_exc())
