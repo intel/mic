@@ -24,7 +24,7 @@ from mic.utils import misc, fs_related, runner
 from mic.utils.errors import CreatorError, MountError
 from mic.utils.partitionedfs import PartitionedMount
 from mic.imager.livecd import LiveCDImageCreator
-
+from mic.archive import packing
 
 class LiveUSBImageCreator(LiveCDImageCreator):
     img_format = 'liveusb'
@@ -302,7 +302,7 @@ class LiveUSBImageCreator(LiveCDImageCreator):
                     self.image_files.update({'image_files': self.pack_to})
                     usbimg = os.path.join(self._outdir, self.name + ".usbimg")
                     packimg = os.path.join(self._outdir, self.pack_to)
-                    misc.packing(packimg, usbimg)
+                    packing(packimg, usbimg)
                     os.unlink(usbimg)
                 else:
                     self.image_files.update({'image_files': self.name + ".usbimg"})

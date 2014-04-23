@@ -36,6 +36,7 @@ from mic import msger, __version__ as VERSION
 from mic.utils.errors import CreatorError, Abort
 from mic.utils import misc, grabber, runner, fs_related as fs
 from mic.chroot import kill_proc_inchroot
+from mic.archive import get_archive_suffixes
 
 class BaseImageCreator(object):
     """Installs a system to a chroot directory.
@@ -116,9 +117,9 @@ class BaseImageCreator(object):
                 if '@NAME@' in self.pack_to:
                     self.pack_to = self.pack_to.replace('@NAME@', self.name)
                 (tar, ext) = os.path.splitext(self.pack_to)
-                if ext in (".gz", ".bz2") and tar.endswith(".tar"):
+                if ext in (".gz", ".bz2", ".lzo", ".bz") and tar.endswith(".tar"):
                     ext = ".tar" + ext
-                if ext not in misc.pack_formats:
+                if ext not in get_archive_suffixes():
                     self.pack_to += ".tar"
 
         self._dep_checks = ["ls", "bash", "cp", "echo", "modprobe"]

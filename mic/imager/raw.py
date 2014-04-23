@@ -24,7 +24,7 @@ from mic.utils import fs_related, runner, misc
 from mic.utils.partitionedfs import PartitionedMount
 from mic.utils.errors import CreatorError, MountError
 from mic.imager.baseimager import BaseImageCreator
-
+from mic.archive import packing, compressing
 
 class RawImageCreator(BaseImageCreator):
     """Installs a system into a file containing a partitioned disk image.
@@ -458,7 +458,7 @@ class RawImageCreator(BaseImageCreator):
                 if imgfile.endswith('.raw') or imgfile.endswith('bin'):
                     imgpath = os.path.join(self.__imgdir, imgfile)
                     msger.info("Compressing image %s" % imgfile)
-                    misc.compressing(imgpath, self.compress_image)
+                    compressing(imgpath, self.compress_image)
                 if imgfile.endswith('.raw') and not self.pack_to:
                     for disk in self.__disks.keys():
                         if imgfile.find(disk) != -1:
@@ -471,7 +471,7 @@ class RawImageCreator(BaseImageCreator):
         if self.pack_to:
             dst = os.path.join(self._outdir, self.pack_to)
             msger.info("Pack all raw images to %s" % dst)
-            misc.packing(dst, self.__imgdir)
+            packing(dst, self.__imgdir)
             self.image_files.update({'image_files': self.pack_to})
         else:
             msger.debug("moving disks to stage location")
