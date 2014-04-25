@@ -195,6 +195,60 @@ def decompress(file_path, decompress_format=None):
     return func(file_path, False)
 
 
+def _do_tar(archive_name, target_name):
+    """ Archive the directory or the file with 'tar' utility
+
+    @archive_name: the name of the tarball file
+    @target_name: the name of the target to tar
+    @retval: the path of the archived file
+    """
+    if os.path.isdir(target_name):
+        target_dir = target_name
+        target_name = "."
+    else:
+        target_dir = os.path.dirname(target_name)
+        target_name = os.path.basename(target_name)
+
+    cmdln = ["tar", "-S", "-C", target_dir, "-cf", archive_name, target_name]
+
+    _call_external(cmdln)
+
+    return archive_name
+
+def _do_untar(archive_name, target_dir=None):
+    """ Unarchive the archived file with 'tar' utility
+
+    @archive_name: the name of the archived file
+    @target_dir: the directory which the target locates
+    @retval: the target directory
+    """
+    if not target_dir:
+        target_dir = os.getcwd()
+
+    cmdln = ["tar", "-S", "-C", target_dir, "-xf", archive_name]
+
+    _call_external(cmdln)
+
+    return target_dir
+
+def _imp_tarfile(archive_name, target_name):
+    """ Archive the directory or the file with tarfile module
+
+    @archive_name: the name of the tarball file
+    @target_name: the name of the target to tar
+    @retval: the path of the archived file
+    """
+    import tarfile
+    tar = tarfile.open(archive_name, 'w')
+    if os.path.isdir(target_name):
+        for child in os.listdir(target_name):
+            tar.add(os.path.join(target_name, child), child)
+    else:
+        tar.add(target_name, os.path.basename(target_name))
+
+    tar.close()
+    return archive_name
+
 def _make_tarball(archive_name, target_name, compressor=None):
     """ Create a tarball from all the files under 'target_name' or itself.
 
@@ -208,18 +262,11 @@ def _make_tarball(archive_name, target_name, compressor=None):
     if not os.path.exists(archive_dir):
         os.makedirs(archive_dir)
 
-    import tarfile
-
     tarball_name = tempfile.mktemp(suffix=".tar", dir=archive_dir)
-    tar = tarfile.open(tarball_name, 'w')
-
-    if os.path.isdir(target_name):
-        for child in os.listdir(target_name):
-            tar.add(os.path.join(target_name, child), child)
+    if which("tar") is not None:
+        _do_tar(tarball_name, target_name)
     else:
-        tar.add(target_name, os.path.basename(target_name))
-
-    tar.close()
+        _imp_tarfile(tarball_name, target_name)
 
     if compressor:
         tarball_name = compressor(tarball_name, True)
