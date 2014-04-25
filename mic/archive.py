@@ -175,6 +175,9 @@ def compress(file_path, compress_format):
     @compress_format: the compression format
     @retval: the path of the compressed file
     """
+    if not os.path.isfile(file_path):
+        raise OSError, "can't compress a file not existed: '%s'" % file_path
+
     try:
         func = _COMPRESS_FORMATS[compress_format]
     except KeyError:
@@ -188,6 +191,9 @@ def decompress(file_path, decompress_format=None):
     @decompress_format: the format for decompression, None for auto detection
     @retval: the path of the decompressed file
     """
+    if not os.path.isfile(file_path):
+        raise OSError, "can't decompress a file not existed: '%s'" % file_path
+
     try:
         func = _COMPRESS_FORMATS[decompress_format]
     except KeyError:
