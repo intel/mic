@@ -294,7 +294,7 @@ def _imp_tarfile(archive_name, target_name):
 def _make_tarball(archive_name, target_name, compressor=None):
     """ Create a tarball from all the files under 'target_name' or itself.
 
-    @archive_name: the name of the archived file
+    @archive_name: the name of the archived file to create
     @target_name: the directory or the file name to archive
     @compressor: callback function to compress the tarball
     @retval: indicate the compressing result
@@ -316,6 +316,18 @@ def _make_tarball(archive_name, target_name, compressor=None):
     shutil.move(tarball_name, archive_name)
 
     return os.path.exists(archive_name)
+
+def _extract_tarball(archive_name, target_dir, compressor=None):
+    """ Extract a tarball to a target directory
+
+    @archive_name: the name of the archived file to extract
+    @target_dir: the directory of the extracted target
+    @retval: indicte the untar result
+    """
+
+    _do_untar(archive_name, target_dir)
+
+    return not os.path.exists(archive_name)
 
 def _make_zipfile(archive_name, target_name):
     """ Create a zip file from all the files under 'target_name' or itself.
@@ -388,6 +400,7 @@ def make_archive(archive_name, target_name):
 
     @archive_name: the name of the archived file
     @target_name: the directory or the file to archive
+    @retval: the archiving result
     """
     for aformat, suffixes in _ARCHIVE_SUFFIXES.iteritems():
         if filter(archive_name.endswith, suffixes):
@@ -403,10 +416,17 @@ def make_archive(archive_name, target_name):
 
     return func(archive_name, target_name, **kwargs)
 
-def extract_archive():
+def extract_archive(archive_name, target_name):
     """ Extract the given file
+
+    @archive_name: the name of the archived file to extract
+    @target_name: the directory name where the target locates
+    @retval: the extracting result
     """
-    pass
+    if not os.path.exists(target_dir):
+        os.makedirs(target_dir)
+
+    return _extract_tarball(archive_name, target_name)
 
 packing = make_archive
 compressing = compress
