@@ -156,6 +156,15 @@ def _do_lzop(input_name, compression=True):
 
     return output_name
 
+_COMPRESS_SUFFIXES = {
+    ".lzo"     : [".lzo"],
+    ".gz"      : [".gz"],
+    ".bz2"     : [".bz2", ".bz"],
+    ".tar.lzo" : [".tar.lzo", ".tzo"],
+    ".tar.gz"  : [".tar.gz", ".tgz", ".taz"],
+    ".tar.bz2" : [".tar.bz2", ".tbz", ".tbz2", ".tar.bz"],
+}
+
 _COMPRESS_FORMATS = {
     "gz" :  _do_gzip,
     "bz2":  _do_bzip2,
@@ -165,8 +174,22 @@ _COMPRESS_FORMATS = {
 def get_compress_formats():
     """ Get the list of the supported compression formats
 
+    @retval: a list contained supported compress formats
     """
-    pass
+    return _COMPRESS_FORMATS.keys()
+
+def get_compress_suffixes():
+    """ Get the list of the support suffixes
+
+    @retval: a list contained all suffixes
+    """
+    suffixes = []
+    for key in _COMPRESS_SUFFIXES.keys():
+        suffix = _COMPRESS_SUFFIXES[key]
+        if (suffix):
+            suffixes.extend(suffix)
+
+    return suffixes
 
 def compress(file_path, compress_format):
     """ Compress a given file
@@ -193,6 +216,19 @@ def decompress(file_path, decompress_format=None):
     """
     if not os.path.isfile(file_path):
         raise OSError, "can't decompress a file not existed: '%s'" % file_path
+
+    (file_name, file_ext) = os.path.splitext(file_path)
+    for key, suffixes in _COMPRESS_SUFFIXES.iteritems():
+        if file_ext in suffixes:
+            file_ext = key
+            break
+
+    if file_path != (file_name + file_ext):
+        shutil.move(file_path, file_name + file_ext)
+        file_path  = file_name + file_ext
+
+    if not decompress_format:
+        decompress_format = os.path.splitext(file_path)[1].lstrip(".")
 
     try:
         func = _COMPRESS_FORMATS[decompress_format]
@@ -330,16 +366,9 @@ _ARCHIVE_FORMATS = {
 def get_archive_formats():
     """ Get the list of the supported formats for archiving
 
-    @retval: a list contained tuples represented as (name, suffix)
+    @retval: a list contained archive formats
     """
-    formats = []
-
-    for name in _ARCHIVE_FORMATS.keys():
-        suffix = _ARCHIVE_SUFFIXES.get(name, None)
-        if (suffix):
-            formats.append((name, suffix))
-
-    return formats
+    return _ARCHIVE_FORMATS.keys()
 
 def get_archive_suffixes():
     """ Get the list of the support suffixes
@@ -360,8 +389,8 @@ def make_archive(archive_name, target_name):
     @archive_name: the name of the archived file
     @target_name: the directory or the file to archive
     """
-    for aformat, suffixs in _ARCHIVE_SUFFIXES.iteritems():
-        if filter(archive_name.endswith, suffixs):
+    for aformat, suffixes in _ARCHIVE_SUFFIXES.iteritems():
+        if filter(archive_name.endswith, suffixes):
             archive_format = aformat
             break
     else:
