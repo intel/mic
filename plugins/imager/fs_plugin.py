@@ -15,9 +15,6 @@
 # with this program; if not, write to the Free Software Foundation, Inc., 59
 # Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-import os
-import sys
-
 from mic import chroot, msger, rt_util
 from mic.utils import cmdln, misc, errors, fs_related
 from mic.imager import fs
@@ -30,10 +27,10 @@ class FsPlugin(ImagerPlugin):
 
     @classmethod
     @cmdln.option("--include-src",
-                  dest="include_src",
-                  action="store_true",
-                  default=False,
-                  help="Generate a image with source rpms included")
+                  dest = "include_src",
+                  action = "store_true",
+                  default = False,
+                  help = "Generate a image with source rpms included")
     def do_create(self, subcmd, opts, *args):
         """${cmd_name}: create fs image
 
@@ -75,9 +72,11 @@ class FsPlugin(ImagerPlugin):
 
         configmgr._ksconf = ksconf
 
-        # Called After setting the configmgr._ksconf as the creatoropts['name'] is reset there.
+        # Called After setting the configmgr._ksconf as the
+        # creatoropts['name'] is reset there.
         if creatoropts['release'] is not None:
-            creatoropts['outdir'] = "%s/%s/images/%s/" % (creatoropts['outdir'], creatoropts['release'], creatoropts['name'])
+            creatoropts['outdir'] = "%s/%s/images/%s/" % (creatoropts['outdir'],
+                    creatoropts['release'], creatoropts['name'])
 
         # try to find the pkgmgr
         pkgmgr = None
@@ -119,7 +118,8 @@ class FsPlugin(ImagerPlugin):
                 installed_pkgs =  creator.get_installed_packages()
                 msger.info('--------------------------------------------------')
                 msger.info('Generating the image with source rpms included ...')
-                if not misc.SrcpkgsDownload(installed_pkgs, creatoropts["repomd"], creator._instroot, creatoropts["cachedir"]):
+                if not misc.SrcpkgsDownload(installed_pkgs, creatoropts["repomd"],
+                        creator._instroot, creatoropts["cachedir"]):
                     msger.warning("Source packages can't be downloaded")
 
             creator.configure(creatoropts["repomd"])
@@ -128,7 +128,8 @@ class FsPlugin(ImagerPlugin):
             creator.package(creatoropts["outdir"])
             creator.create_manifest()
             if creatoropts['release'] is not None:
-                creator.release_output(ksconf, creatoropts['outdir'], creatoropts['release'])
+                creator.release_output(ksconf, creatoropts['outdir'],
+                        creatoropts['release'])
             creator.print_outimage_info()
         except errors.CreatorError:
             raise
