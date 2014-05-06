@@ -300,11 +300,8 @@ def _make_tarball(archive_name, target_name, compressor=None):
     @retval: indicate the compressing result
     """
     archive_dir = os.path.dirname(archive_name)
-
-    if not os.path.exists(archive_dir):
-        os.makedirs(archive_dir)
-
     tarball_name = tempfile.mktemp(suffix=".tar", dir=archive_dir)
+
     if which("tar") is not None:
         _do_tar(tarball_name, target_name)
     else:
@@ -336,11 +333,6 @@ def _make_zipfile(archive_name, target_name):
     @target_name: the directory or the file name to archive
     @retval: indicate the archiving result
     """
-    archive_dir = os.path.dirname(archive_name)
-
-    if not os.path.exists(archive_dir):
-        os.makedirs(archive_dir)
-
     import zipfile
 
     arv = zipfile.ZipFile(archive_name, 'w', compression=zipfile.ZIP_DEFLATED)
@@ -402,6 +394,9 @@ def make_archive(archive_name, target_name):
     @target_name: the directory or the file to archive
     @retval: the archiving result
     """
+    if not os.path.exists(target_name):
+        raise OSError, "archive object does not exist: '%s'" % target_name
+
     for aformat, suffixes in _ARCHIVE_SUFFIXES.iteritems():
         if filter(archive_name.endswith, suffixes):
             archive_format = aformat
@@ -413,6 +408,13 @@ def make_archive(archive_name, target_name):
         func, kwargs = _ARCHIVE_FORMATS[archive_format]
     except KeyError:
         raise ValueError, "unknown archive format '%s'" % archive_format
+
+    archive_name = os.path.abspath(archive_name)
+    target_name = os.path.abspath(target_name)
+
+    archive_dir = os.path.dirname(archive_name)
+    if not os.path.exists(archive_dir):
+        os.makedirs(archive_dir)
 
     return func(archive_name, target_name, **kwargs)
 
