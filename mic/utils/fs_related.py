@@ -458,6 +458,7 @@ class ExtDiskMount(DiskMount):
             runner.show([self.tune2fs, "-c0", "-i0", "-Odir_index", "-ouser_xattr,acl", self.disk.device])
 
     def __resize_filesystem(self, size = None):
+        msger.info("Resizing filesystem ...")
         current_size = os.stat(self.disk.lofile)[stat.ST_SIZE]
 
         if size is None:
@@ -499,6 +500,7 @@ class ExtDiskMount(DiskMount):
                                       "Block count")) * self.blocksize
 
     def __resize_to_minimal(self):
+        msger.info("Resizing filesystem to minimal ...")
         self.__fsck()
 
         #
