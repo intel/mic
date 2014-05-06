@@ -423,8 +423,8 @@ def extract_archive(archive_name, target_name):
     @target_name: the directory name where the target locates
     @retval: the extracting result
     """
-    if not os.path.exists(target_dir):
-        os.makedirs(target_dir)
+    if not os.path.exists(target_name):
+        os.makedirs(target_name)
 
     return _extract_tarball(archive_name, target_name)
 
