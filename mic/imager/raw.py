@@ -79,7 +79,7 @@ class RawImageCreator(BaseImageCreator):
 
     def _get_fstab(self):
         s = ""
-        for mp in self.__instloop.mountOrder:
+        for mp in self.__instloop.mount_order:
             p = None
             for p1 in self.__instloop.partitions:
                 if p1['mountpoint'] == mp:

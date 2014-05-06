@@ -41,13 +41,13 @@ class PartitionedMount(Mount):
         self.partitions = []
         self.subvolumes = []
         self.mapped = False
-        self.mountOrder = []
-        self.unmountOrder = []
+        self.mount_order = []
+        self.unmount_order = []
         self.parted = find_binary_path("parted")
         self.kpartx = find_binary_path("kpartx")
         self.mkswap = find_binary_path("mkswap")
         self.dmsetup = find_binary_path("dmsetup")
-        self.btrfscmd=None
+        self.btrfscmd = None
         self.mountcmd = find_binary_path("mount")
         self.umountcmd = find_binary_path("umount")
         self.skipformat = skipformat
@@ -107,7 +107,7 @@ class PartitionedMount(Mount):
 
         # We need to handle subvolumes for btrfs
         if fstype == "btrfs" and fsopts and fsopts.find("subvol=") != -1:
-            self.btrfscmd=find_binary_path("btrfs")
+            self.btrfscmd = find_binary_path("btrfs")
             subvol = None
             opts = fsopts.split(",")
             for opt in opts:
@@ -400,8 +400,8 @@ class PartitionedMount(Mount):
                 continue
 
             msger.debug("Running kpartx on %s" % d['disk'].device )
-            rc, kpartxOutput = runner.runtool([self.kpartx, "-l", "-v", d['disk'].device])
-            kpartxOutput = kpartxOutput.splitlines()
+            rc, kpartx_output = runner.runtool([self.kpartx, "-l", "-v", d['disk'].device])
+            kpartx_output = kpartx_output.splitlines()
 
             if rc != 0:
                 raise MountError("Failed to query partition mapping for '%s'" %
@@ -409,12 +409,12 @@ class PartitionedMount(Mount):
 
             # Strip trailing blank and mask verbose output
             i = 0
-            while i < len(kpartxOutput) and kpartxOutput[i][0:4] != "loop":
+            while i < len(kpartx_output) and kpartx_output[i][0:4] != "loop":
                 i = i + 1
-            kpartxOutput = kpartxOutput[i:]
+            kpartx_output = kpartx_output[i:]
 
             # Make sure kpartx reported the right count of partitions
-            if len(kpartxOutput) != d['numpart']:
+            if len(kpartx_output) != d['numpart']:
                 # If this disk has more than 3 partitions, then in case of MBR
                 # paritions there is an extended parition. Different versions
                 # of kpartx behave differently WRT the extended partition -
@@ -423,16 +423,16 @@ class PartitionedMount(Mount):
                 # table type is "msdos" and the amount of partitions is more
                 # than 3, we just assume kpartx mapped the extended parition
                 # and we remove it.
-                if len(kpartxOutput) == d['numpart'] + 1 \
-                   and d['ptable_format'] == 'msdos' and len(kpartxOutput) > 3:
-                    kpartxOutput.pop(3)
+                if len(kpartx_output) == d['numpart'] + 1 \
+                   and d['ptable_format'] == 'msdos' and len(kpartx_output) > 3:
+                    kpartx_output.pop(3)
                 else:
                     raise MountError("Unexpected number of partitions from " \
                                      "kpartx: %d != %d" % \
-                                        (len(kpartxOutput), d['numpart']))
+                                        (len(kpartx_output), d['numpart']))
 
-            for i in range(len(kpartxOutput)):
-                line = kpartxOutput[i]
+            for i in range(len(kpartx_output)):
+                line = kpartx_output[i]
                 newdev = line.split()[0]
                 mapperdev = "/dev/mapper/" + newdev
                 loopdev = d['disk'].device + newdev[-1]
@@ -500,12 +500,12 @@ class PartitionedMount(Mount):
         msger.debug("Calculating mount order")
         for p in self.partitions:
             if p['mountpoint']:
-                self.mountOrder.append(p['mountpoint'])
-                self.unmountOrder.append(p['mountpoint'])
+                self.mount_order.append(p['mountpoint'])
+                self.unmount_order.append(p['mountpoint'])
 
-        self.mountOrder.sort()
-        self.unmountOrder.sort()
-        self.unmountOrder.reverse()
+        self.mount_order.sort()
+        self.unmount_order.sort()
+        self.unmount_order.reverse()
 
     def cleanup(self):
         Mount.cleanup(self)
@@ -520,7 +520,7 @@ class PartitionedMount(Mount):
 
     def unmount(self):
         self.__unmount_subvolumes()
-        for mp in self.unmountOrder:
+        for mp in self.unmount_order:
             if mp == 'swap':
                 continue
             p = None
@@ -532,7 +532,8 @@ class PartitionedMount(Mount):
             if p['mount'] != None:
                 try:
                     # Create subvolume snapshot here
-                    if p['fstype'] == "btrfs" and p['mountpoint'] == "/" and not self.snapshot_created:
+                    if p['fstype'] == "btrfs" and p['mountpoint'] == "/" and \
+                            not self.snapshot_created:
                         self.__create_subvolume_snapshots(p, p["mount"])
                     p['mount'].cleanup()
                 except:
@@ -542,14 +543,15 @@ class PartitionedMount(Mount):
     # Only for btrfs
     def __get_subvolume_id(self, rootpath, subvol):
         if not self.btrfscmd:
-            self.btrfscmd=find_binary_path("btrfs")
+            self.btrfscmd = find_binary_path("btrfs")
         argv = [ self.btrfscmd, "subvolume", "list", rootpath ]
 
         rc, out = runner.runtool(argv)
         msger.debug(out)
 
         if rc != 0:
-            raise MountError("Failed to get subvolume id from %s', return code: %d." % (rootpath, rc))
+            raise MountError("Failed to get subvolume id from %s',"
+                    "return code: %d." % (rootpath, rc))
 
         subvolid = -1
         for line in out.splitlines():
@@ -588,7 +590,8 @@ class PartitionedMount(Mount):
                             opts.remove(opt)
                             break
                     fsopts = ",".join(opts)
-                    subvolume_metadata += "%d\t%s\t%s\t%s\n" % (subvolid, subvol["subvol"], subvol['mountpoint'], fsopts)
+                    subvolume_metadata += "%d\t%s\t%s\t%s\n" % (subvolid, subvol["subvol"],
+                            subvol['mountpoint'], fsopts)
 
         if subvolume_metadata:
             fd = open("%s/.subvolume_metadata" % pdisk.mountdir, "w")
@@ -641,9 +644,11 @@ class PartitionedMount(Mount):
             subvolid = self. __get_subvolume_id(pdisk.mountdir, subvol["subvol"])
             # Set default subvolume
             if subvolid != -1:
-                rc = runner.show([ self.btrfscmd, "subvolume", "set-default", "%d" % subvolid, pdisk.mountdir])
+                rc = runner.show([ self.btrfscmd, "subvolume", "set-default", "%d" %
+                        subvolid, pdisk.mountdir])
                 if rc != 0:
-                    raise MountError("Failed to set default subvolume id: %d', return code: %d." % (subvolid, rc))
+                    raise MountError("Failed to set default subvolume id: %d', return code: %d."
+                            % (subvolid, rc))
 
         self.__create_subvolume_metadata(p, pdisk)
 
@@ -738,7 +743,8 @@ class PartitionedMount(Mount):
             snapshotpath = subvolpath + "_%s-1" % snapshotts
             rc = runner.show([ self.btrfscmd, "subvolume", "snapshot", subvolpath, snapshotpath ])
             if rc != 0:
-                raise MountError("Failed to create subvolume snapshot '%s' for '%s', return code: %d." % (snapshotpath, subvolpath, rc))
+                raise MountError("Failed to create subvolume snapshot '%s' for '%s', return code:"
+                        "%d." % (snapshotpath, subvolpath, rc))
 
         self.snapshot_created = True
 
@@ -751,7 +757,7 @@ class PartitionedMount(Mount):
         self.__map_partitions()
         self.__calculate_mountorder()
 
-        for mp in self.mountOrder:
+        for mp in self.mount_order:
             p = None
             for p1 in self.partitions:
                 if p1['mountpoint'] == mp:
@@ -777,18 +783,18 @@ class PartitionedMount(Mount):
             if p['mountpoint'] == "/":
                 rmmountdir = True
             if p['fstype'] == "vfat" or p['fstype'] == "msdos":
-                myDiskMount = VfatDiskMount
+                my_disk_mount = VfatDiskMount
             elif p['fstype'] in ("ext2", "ext3", "ext4"):
-                myDiskMount = ExtDiskMount
+                my_disk_mount = ExtDiskMount
             elif p['fstype'] == "btrfs":
-                myDiskMount = BtrfsDiskMount
+                my_disk_mount = BtrfsDiskMount
             else:
                 raise MountError("Fail to support file system " + p['fstype'])
 
             if p['fstype'] == "btrfs" and not p['fsopts']:
                 p['fsopts'] = "subvolid=0"
 
-            pdisk = myDiskMount(RawDisk(p['size'] * self.sector_size, p['device']),
+            pdisk = my_disk_mount(RawDisk(p['size'] * self.sector_size, p['device']),
                                  self.mountdir + p['mountpoint'],
                                  p['fstype'],
                                  4096,
