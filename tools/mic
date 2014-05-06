@@ -109,8 +109,8 @@ class MicCmd(cmdln.Cmdln):
 
     @cmdln.alias("cv")
     @cmdln.option("-S", "--shell",
-                  action="store_true", dest="shell", default=False,
-                  help="Launch shell before packaging the converted image")
+                  action = "store_true", dest = "shell", default = False,
+                  help = "Launch shell before packaging the converted image")
     def do_convert(self, subcmd, opts, *args):
         """${cmd_name}: convert image format
 
@@ -180,8 +180,8 @@ class MicCmd(cmdln.Cmdln):
 
     @cmdln.alias("ch")
     @cmdln.option('-s', '--saveto',
-                  action='store', dest='saveto', default=None,
-                  help="Save the unpacked image to specified dir")
+                  action = 'store', dest = 'saveto', default = None,
+                  help = "Save the unpacked image to specified dir")
     @optparser_setup
     def do_chroot(self, subcmd, opts, *args):
         """${cmd_name}: chroot into an image

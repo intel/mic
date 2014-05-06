@@ -16,8 +16,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc., 59
 # Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-import os, sys
-import re
+import os
 import tempfile
 import glob
 from string import Template
@@ -32,7 +31,6 @@ from mic.utils.grabber import TextProgress
 from mic.utils.proxy import get_proxy_for
 from mic.utils.errors import CreatorError
 from mic.utils.safeurl import SafeURL
-from mic.imager.baseimager import BaseImageCreator
 
 
 YUMCONF_TEMP = """[main]
@@ -387,7 +385,7 @@ class Yum(BackendPlugin, yum.YumBase):
                               % (os.path.basename(local), local))
             else:
                 download_total_size -= int(po.packagesize)
-                cached_count +=1
+                cached_count += 1
 
         cache_avail_size = misc.get_filesystem_avail(self.cachedir)
         if cache_avail_size < download_total_size:
