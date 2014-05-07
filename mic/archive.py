@@ -425,6 +425,16 @@ def extract_archive(archive_name, target_name):
     @target_name: the directory name where the target locates
     @retval: the extracting result
     """
+    if not os.path.exists(archive_name):
+        raise OSError, "archived object does not exist: '%s'" % archive_name
+
+    archive_name = os.path.abspath(archive_name)
+    target_name = os.path.abspath(target_name)
+
+    if os.path.exists(target_name) and not os.path.isdir(target_name):
+        raise OSError, "%s should be directory where extracted files locate"\
+                        % target_name
+
     if not os.path.exists(target_name):
         os.makedirs(target_name)
 
