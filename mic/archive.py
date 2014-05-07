@@ -45,6 +45,8 @@ __all__ = [
             "packing",
           ]
 
+# TODO: refine Error class for archive/extract
+
 def which(binary, path=None):
     """ Find 'binary' in the directories listed in 'path'
 
@@ -262,16 +264,16 @@ def _do_untar(archive_name, target_dir=None):
 
     @archive_name: the name of the archived file
     @target_dir: the directory which the target locates
-    @retval: the target directory
+    raise exception if fail to extract archive
     """
     if not target_dir:
         target_dir = os.getcwd()
 
     cmdln = ["tar", "-S", "-C", target_dir, "-xf", archive_name]
 
-    _call_external(cmdln)
-
-    return target_dir
+    (returncode, stdout, stderr) = _call_external(cmdln)
+    if returncode != 0:
+        raise OSError, os.linesep.join([stdout, stderr])
 
 def _imp_tarfile(archive_name, target_name):
     """ Archive the directory or the file with tarfile module
@@ -319,12 +321,9 @@ def _extract_tarball(archive_name, target_dir, compressor=None):
 
     @archive_name: the name of the archived file to extract
     @target_dir: the directory of the extracted target
-    @retval: indicte the untar result
     """
 
     _do_untar(archive_name, target_dir)
-
-    return not os.path.exists(archive_name)
 
 def _make_zipfile(archive_name, target_name):
     """ Create a zip file from all the files under 'target_name' or itself.
@@ -423,7 +422,7 @@ def extract_archive(archive_name, target_name):
 
     @archive_name: the name of the archived file to extract
     @target_name: the directory name where the target locates
-    @retval: the extracting result
+    raise exception if fail to extract archive
     """
     if not os.path.exists(archive_name):
         raise OSError, "archived object does not exist: '%s'" % archive_name
@@ -438,7 +437,7 @@ def extract_archive(archive_name, target_name):
     if not os.path.exists(target_name):
         os.makedirs(target_name)
 
-    return _extract_tarball(archive_name, target_name)
+    _extract_tarball(archive_name, target_name)
 
 packing = make_archive
 compressing = compress
