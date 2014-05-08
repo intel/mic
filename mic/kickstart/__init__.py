@@ -163,6 +163,10 @@ class LanguageConfig(KickstartConfig):
             f.write("LANG=\"" + kslang.lang + "\"\n")
             f.close()
 
+            f = open(self.path("/etc/locale.conf"), "w+")
+            f.write("LANG=\"" + kslang.lang + "\"\n")
+            f.close()
+
 class KeyboardConfig(KickstartConfig):
     """A class to apply a kickstart keyboard configuration to a system."""
     @apply_wrapper
