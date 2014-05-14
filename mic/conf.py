@@ -201,6 +201,9 @@ class ConfigMgr(object):
                                               self.create['name_prefix'],
                                               self.create['name_suffix'])
 
+        if self.create['release'] is not None:
+            self.create['name'] = self.create['release'] + '_' + self.create['name']
+
         msger.info("Retrieving repo metadata:")
         ksrepos = kickstart.get_repos(ks,
                                       self.create['extrarepos'],
