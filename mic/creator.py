@@ -19,7 +19,7 @@ import os, sys, re
 import pwd
 from optparse import SUPPRESS_HELP
 
-from mic import msger, rt_util
+from mic import msger
 from mic.utils import cmdln, errors, rpmmisc
 from mic.conf import configmgr
 from mic.plugin import pluginmgr
@@ -182,15 +182,7 @@ class Creator(cmdln.Cmdln):
             if os.path.isdir(logfile_abs_path):
                 raise errors.Usage("logfile's path %s should be file"
                                    % self.options.logfile)
-            if not os.path.exists(os.path.dirname(logfile_abs_path)):
-                os.makedirs(os.path.dirname(logfile_abs_path))
-            msger.set_interactive(False)
-            if rt_util.inbootstrap():
-                mode = 'a'
-            else:
-                mode = 'w'
-            msger.set_logfile(logfile_abs_path, mode)
-            configmgr.create['logfile'] = self.options.logfile
+            configmgr.create['logfile'] = logfile_abs_path
 
         if self.options.config:
             configmgr.reset()

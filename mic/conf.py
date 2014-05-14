@@ -32,6 +32,11 @@ def get_siteconf():
     else:
         return DEFAULT_GSITECONF
 
+def inbootstrap():
+    if os.path.exists(os.path.join("/", ".chroot.lock")):
+        return True
+    return (os.stat("/").st_ino != 2)
+
 class ConfigMgr(object):
     prefer_backends = ["zypp", "yum"]
 
@@ -53,6 +58,7 @@ class ConfigMgr(object):
                     "local_pkgs_path": None,
                     "release": None,
                     "logfile": None,
+                    "releaselog": False,
                     "record_pkgs": [],
                     "pack_to": None,
                     "name_prefix": None,
@@ -208,6 +214,22 @@ class ConfigMgr(object):
                                                            self.create['release'],
                                                            self.create['name'])
             self.create['name'] = self.create['release'] + '_' + self.create['name']
+
+            if not self.create['logfile']:
+                self.create['logfile'] = os.path.join(self.create['outdir'],
+                                                      self.create['name'] + ".log")
+                self.create['releaselog'] = True
+
+        if self.create['logfile']:
+            logfile_dir = os.path.dirname(self.create['logfile'])
+            if not os.path.exists(logfile_dir):
+                os.makedirs(logfile_dir)
+            msger.set_interactive(False)
+            if inbootstrap():
+                mode = 'a'
+            else:
+                mode = 'w'
+            msger.set_logfile(self.create['logfile'], mode)
 
         msger.info("Retrieving repo metadata:")
         ksrepos = kickstart.get_repos(ks,

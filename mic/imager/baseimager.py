@@ -1284,13 +1284,11 @@ class BaseImageCreator(object):
         outimages.append(new_kspath)
 
         # save log file, logfile is only available in creator attrs
-        if hasattr(self, 'logfile') and not self.logfile:
-            log_path = _rpath(self.name + ".log")
-            # touch the log file, else outimages will filter it out
-            with open(log_path, 'w') as wf:
-                wf.write('')
-            msger.set_logfile(log_path)
-            outimages.append(_rpath(self.name + ".log"))
+        if hasattr(self, 'releaselog') and self.releaselog:
+            final_logfile = _rpath(self.name+'.log')
+            shutil.move(self.logfile, final_logfile)
+            self.logfile = final_logfile
+            outimages.append(self.logfile)
 
         # rename iso and usbimg
         for f in os.listdir(destdir):
