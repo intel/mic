@@ -86,10 +86,6 @@ class RawPlugin(ImagerPlugin):
 
         configmgr._ksconf = ksconf
 
-        # Called After setting the configmgr._ksconf as the creatoropts['name'] is reset there.
-        if creatoropts['release'] is not None:
-            creatoropts['outdir'] = "%s/%s/images/%s/" % (creatoropts['outdir'], creatoropts['release'], creatoropts['name'])
-
         # try to find the pkgmgr
         pkgmgr = None
         backends = pluginmgr.get_plugins('backend')

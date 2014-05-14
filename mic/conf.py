@@ -43,6 +43,7 @@ class ConfigMgr(object):
                     "tmpdir": '/var/tmp/mic',
                     "cachedir": '/var/tmp/mic/cache',
                     "outdir": './mic-output',
+                    "destdir": None,
                     "arch": None, # None means auto-detect
                     "pkgmgr": "auto",
                     "name": "output",
@@ -201,7 +202,11 @@ class ConfigMgr(object):
                                               self.create['name_prefix'],
                                               self.create['name_suffix'])
 
+        self.create['destdir'] = self.create['outdir']
         if self.create['release'] is not None:
+            self.create['destdir'] = "%s/%s/images/%s/" % (self.create['outdir'],
+                                                           self.create['release'],
+                                                           self.create['name'])
             self.create['name'] = self.create['release'] + '_' + self.create['name']
 
         msger.info("Retrieving repo metadata:")
