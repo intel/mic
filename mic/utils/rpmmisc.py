@@ -301,6 +301,7 @@ archPolicies = {
     "armv5tejl":    "armv5tejl:armv5tel:armv5l:armv4tl:armv4l:armv3l",
     "armv5tel":     "armv5tel:armv5l:armv4tl:armv4l:armv3l",
     "armv5l":       "armv5l:armv4tl:armv4l:armv3l",
+    "mipsel":       "mipsel",
 }
 
 # dict mapping arch -> ( multicompat, best personality, biarch personality )
@@ -334,6 +335,8 @@ arches = {
 
     #itanium
     "ia64": "noarch",
+
+    "mipsel": "mipsel",
 }
 
 def isMultiLibArch(arch=None):
