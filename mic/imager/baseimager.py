@@ -94,7 +94,6 @@ class BaseImageCreator(object):
         if createopts:
             # Mapping table for variables that have different names.
             optmap = {"pkgmgr" : "pkgmgr_name",
-                      "outdir" : "destdir",
                       "arch" : "target_arch",
                       "local_pkgs_path" : "_local_pkgs_path",
                       "copy_kernel" : "_need_copy_kernel",
