@@ -113,9 +113,9 @@ class LiveUSBPlugin(ImagerPlugin):
             creator.configure(creatoropts["repomd"])
             creator.copy_kernel()
             creator.unmount()
-            creator.package(creatoropts["outdir"])
+            creator.package(creatoropts["destdir"])
             if creatoropts['release'] is not None:
-                creator.release_output(ksconf, creatoropts['outdir'], creatoropts['release'])
+                creator.release_output(ksconf, creatoropts['destdir'], creatoropts['release'])
             creator.print_outimage_info()
 
         except errors.CreatorError:
