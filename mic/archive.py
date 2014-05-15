@@ -32,6 +32,7 @@ import os
 import shutil
 import tempfile
 import subprocess
+from mic import msger
 
 __all__ = [
             "get_compress_formats",
@@ -72,6 +73,7 @@ def _call_external(cmdln_or_args):
         shell = False
     else:
         shell = True
+    msger.info("Running command: " + " ".join(cmdln_or_args))
 
     proc = subprocess.Popen(cmdln_or_args, shell=shell,
                             stdout=subprocess.PIPE,
@@ -255,6 +257,7 @@ def _do_tar(archive_name, target_name):
 
     cmdln = ["tar", "-S", "-C", target_dir, "-cf", archive_name, target_name]
 
+
     _call_external(cmdln)
 
     return archive_name
@@ -283,6 +286,8 @@ def _imp_tarfile(archive_name, target_name):
     @retval: the path of the archived file
     """
     import tarfile
+
+    msger.info("Taring files to %s using tarfile module" % archive_name)
     tar = tarfile.open(archive_name, 'w')
     if os.path.isdir(target_name):
         for child in os.listdir(target_name):
@@ -334,6 +339,7 @@ def _make_zipfile(archive_name, target_name):
     """
     import zipfile
 
+    msger.info("Zipping files to %s using zipfile module" % archive_name)
     arv = zipfile.ZipFile(archive_name, 'w', compression=zipfile.ZIP_DEFLATED)
 
     if os.path.isdir(target_name):
