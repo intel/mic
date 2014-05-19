@@ -219,17 +219,7 @@ class ConfigMgr(object):
                 self.create['logfile'] = os.path.join(self.create['outdir'],
                                                       self.create['name'] + ".log")
                 self.create['releaselog'] = True
-
-        if self.create['logfile']:
-            logfile_dir = os.path.dirname(self.create['logfile'])
-            if not os.path.exists(logfile_dir):
-                os.makedirs(logfile_dir)
-            msger.set_interactive(False)
-            if inbootstrap():
-                mode = 'a'
-            else:
-                mode = 'w'
-            msger.set_logfile(self.create['logfile'], mode)
+                self.set_logfile()
 
         msger.info("Retrieving repo metadata:")
         ksrepos = kickstart.get_repos(ks,
@@ -269,6 +259,20 @@ class ConfigMgr(object):
         # check selinux, it will block arm and btrfs image creation
         misc.selinux_check(self.create['arch'],
                            [p.fstype for p in ks.handler.partition.partitions])
+
+    def set_logfile(self, logfile = None):
+        if not logfile:
+            logfile = self.create['logfile']
+
+        logfile_dir = os.path.dirname(self.create['logfile'])
+        if not os.path.exists(logfile_dir):
+            os.makedirs(logfile_dir)
+        msger.set_interactive(False)
+        if inbootstrap():
+            mode = 'a'
+        else:
+            mode = 'w'
+        msger.set_logfile(self.create['logfile'], mode)
 
     def set_runtime(self, runtime):
         if runtime not in ("bootstrap", "native"):
