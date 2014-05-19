@@ -183,6 +183,7 @@ class Creator(cmdln.Cmdln):
                 raise errors.Usage("logfile's path %s should be file"
                                    % self.options.logfile)
             configmgr.create['logfile'] = logfile_abs_path
+            configmgr.set_logfile()
 
         if self.options.config:
             configmgr.reset()
