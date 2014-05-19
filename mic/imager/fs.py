@@ -82,7 +82,6 @@ class FsImageCreator(BaseImageCreator):
             tar = find_binary_path('tar')
             tar_cmdline = [tar, "--numeric-owner",
                                 "--preserve-permissions",
-                                "--preserve-order",
                                 "--one-file-system",
                                 "--directory",
                                 self._instroot]
