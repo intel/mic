@@ -1,3 +1,17 @@
+Release 0.25 - Fri May 23 2014 - Gui Chen <gui.chen@intel.com>
+=====================================================================
+  * new distribution support: Ubuntu 14.04 and Debian 7.0
+  * generate manifest file to describe image information
+  * refactor archive and compress module
+  * support sparse handle for tar command
+  * replace system V with systemd on locale setting
+  * support lzop compress
+  * bug fix:
+    - fix logfile incomplete in release option
+    - fix config file disappear in bootstrap
+    - fix aarch64 bin_format
+    - fix pylint
+
 Release 0.24 - Tue Mar 11 2014 - Gui Chen <gui.chen@intel.com>
 =====================================================================
   * enhance to handle password with special characters

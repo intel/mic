@@ -1,31 +1,25 @@
-MIC Image Creator 0.24 Release Notes
+MIC Image Creator 0.25 Release Notes
 ====================================
-Released March 11 2014
+Released May 23 2014
 
 This release note documents the changes included in the new release. And
 the release contains new features, enhancements and bug fixes.
 
 New Features & Ehancements
 --------------------------
-  * enhance to handle password with special characters
-  * change python-zypp require to python-zypp-tizen
-  * add --repo comand option for local build
-  * add --user and --password option for %repo directive of ks file
-  * clean up some codes relevant to EULA agreement
-  * add hostname showing in log
+  * new distribution support: Ubuntu 14.04 and Debian 7.0
+  * generate manifest file to describe image information
+  * refactor archive and compress module
+  * support sparse handle for tar command
+  * replace system V with systemd on locale setting
+  * support lzop compress
 
 Bug Fixes
 ---------
-  * fix chroot failed by space in image not enough
-  * fix obsolete packages incorrect handling
-  * fix yum backend failed to cache packages
-  * fix bare ip in no_proxy not working
-  * fix repeated log showing with yum backend
-  * fix loop device latency timing
-  * fix zypp failed to download by changing 'cachedir'
-  * fix 'mkfs' not working caused by mic-bootstrap install failed
-
-
+  * fix logfile incomplete in release option
+  * fix config file disappear in bootstrap
+  * fix aarch64 bin_format
+  * fix pylint
 
 Resource
 --------
