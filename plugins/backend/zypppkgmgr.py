@@ -567,9 +567,11 @@ class Zypp(BackendPlugin):
             if download_count > 0:
                 msger.info("Downloading packages ...")
             self.downloadPkgs(dlpkgs, download_count)
+        except CreateError, e:
+            raise CreateError("Package download failed: %s" %(e,))
 
+        try:
             self.installPkgs(dlpkgs)
-
         except (RepoError, RpmError):
             raise
         except Exception, e:
