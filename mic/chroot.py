@@ -305,6 +305,8 @@ def chroot(chrootdir, bindmounts = None, execute = "/bin/bash"):
     arch = ELF_arch(chrootdir)
     if arch == "arm":
         qemu_emulator = misc.setup_qemu_emulator(chrootdir, "arm")
+    elif arch == "mipsel":
+        qemu_emulator = misc.setup_qemu_emulator(chrootdir, "mipsel")
     else:
         qemu_emulator = None
 
