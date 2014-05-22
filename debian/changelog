@@ -1,4 +1,4 @@
-mic (0.25~rc1) unstable; urgency=low
+mic (0.25) unstable; urgency=low
    * new distribution support: Ubuntu 14.04 and Debian 7.0
    * generate manifest file to describe image information
    * refactor archive and compress module
