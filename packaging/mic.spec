@@ -8,7 +8,7 @@
 
 Name:       mic
 Summary:    Image Creator for Linux Distributions
-Version:    0.25
+Version:    0.25.1
 Release:    %{?release_prefix}%{?opensuse_bs:<CI_CNT>.<B_CNT>}%{!?opensuse_bs:0}
 Group:      Development/Tools
 License:    GPLv2
