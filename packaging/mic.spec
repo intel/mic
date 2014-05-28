@@ -61,9 +61,11 @@ Requires:   syslinux-extlinux >= 3.82
 %endif
 
 %if 0%{?suse_version} || 0%{?tizen_version:1}
+Requires:   python-xml
 Requires:   squashfs >= 4.0
 Requires:   python-m2crypto
 %else
+Requires:   python-libs
 Requires:   squashfs-tools >= 4.0
 Requires:   m2crypto
 %endif
