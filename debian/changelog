@@ -1,3 +1,9 @@
+mic (0.25.1) unstable; urgency=low
+   * revert bind mount config file to instroot
+   * fix xml requirements
+
+ -- Gui Chen <gui.chen@intel.com>  Thu, 24 Oct 2013 17:25:35 +0800
+
 mic (0.25) unstable; urgency=low
    * new distribution support: Ubuntu 14.04 and Debian 7.0
    * generate manifest file to describe image information

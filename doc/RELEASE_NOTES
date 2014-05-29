@@ -1,25 +1,17 @@
-MIC Image Creator 0.25 Release Notes
-====================================
-Released May 23 2014
+MIC Image Creator 0.25.1 Release Notes
+======================================
+Released May 28 2014
 
 This release note documents the changes included in the new release. And
 the release contains new features, enhancements and bug fixes.
 
 New Features & Ehancements
 --------------------------
-  * new distribution support: Ubuntu 14.04 and Debian 7.0
-  * generate manifest file to describe image information
-  * refactor archive and compress module
-  * support sparse handle for tar command
-  * replace system V with systemd on locale setting
-  * support lzop compress
 
 Bug Fixes
 ---------
-  * fix logfile incomplete in release option
-  * fix config file disappear in bootstrap
-  * fix aarch64 bin_format
-  * fix pylint
+  * revert bind mount config file to instroot
+  * fix xml requirements
 
 Resource
 --------

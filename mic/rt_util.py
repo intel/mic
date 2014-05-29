@@ -140,7 +140,6 @@ def get_bindmounts(cropts):
     bindfiles = [
                   cropts['logfile'],
                   configmgr._ksconf,
-                  configmgr._siteconf,
                 ]
 
     for lrepo in cropts['localrepos']:

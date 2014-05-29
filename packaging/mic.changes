@@ -1,3 +1,7 @@
+* Fri May 28 2014 Gui Chen <gui.chen@intel.com> - 0.25.1
+  * revert bind mount config file to instroot
+  * fix xml requirements
+
 * Fri May 23 2014 Gui Chen <gui.chen@intel.com> - 0.25
   * new distribution support: Ubuntu 14.04 and Debian 7.0
   * generate manifest file to describe image information
