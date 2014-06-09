@@ -1,3 +1,9 @@
+mic (0.24.1~rc1) unstable; urgency=low
+   * fix logfile incompleted issue
+   * fix md5sum to be compatible with utility md5sum
+
+ -- Gui Chen <gui.chen@intel.com>  Mon, 09 Jun 2014 17:25:35 +0800
+
 mic (0.24) unstable; urgency=low
    * enhance to handle password with special characters
    * change python-zypp require to python-zypp-tizen
