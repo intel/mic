@@ -1175,7 +1175,7 @@ class BaseImageCreator(object):
 
         md5sum = misc.get_md5sum(image_name)
         with open(image_name + ".md5sum", "w") as f:
-            f.write("%s %s" % (md5sum, os.path.basename(image_name)))
+            f.write("%s  %s" % (md5sum, os.path.basename(image_name)))
         self.outimage.append(image_name+".md5sum")
 
     def package(self, destdir = "."):
@@ -1314,7 +1314,7 @@ class BaseImageCreator(object):
                 # There needs to be two spaces between the sum and
                 # filepath to match the syntax with md5sum.
                 # This way also md5sum -c MD5SUMS can be used by users
-                wf.write("%s *%s\n" % (md5sum, f))
+                wf.write("%s  %s\n" % (md5sum, f))
 
         outimages.append("%s/MD5SUMS" % destdir)
 
