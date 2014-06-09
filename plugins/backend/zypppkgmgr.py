@@ -236,7 +236,7 @@ class Zypp(BackendPlugin):
             obspkg = self.whatObsolete(item)
             if arch:
                 if arch == str(item.arch()):
-                    item.status().setToBeInstalled (zypp.ResStatus.USER)
+                    pitem.status().setToBeInstalled (zypp.ResStatus.USER)
             else:
                 markPoolItem(obspkg, pitem)
             if not ispattern:
