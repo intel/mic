@@ -1,3 +1,6 @@
+* Wed Jun 11 2014 Gui Chen <gui.chen@intel.com> - 0.25.2
+  * fix AttributeError in zypp backend
+
 * Fri May 28 2014 Gui Chen <gui.chen@intel.com> - 0.25.1
   * revert bind mount config file to instroot
   * fix xml requirements

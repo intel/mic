@@ -1,6 +1,6 @@
-MIC Image Creator 0.25.1 Release Notes
+MIC Image Creator 0.25.2 Release Notes
 ======================================
-Released May 28 2014
+Released Jun 11 2014
 
 This release note documents the changes included in the new release. And
 the release contains new features, enhancements and bug fixes.
@@ -10,8 +10,7 @@ New Features & Ehancements
 
 Bug Fixes
 ---------
-  * revert bind mount config file to instroot
-  * fix xml requirements
+ * fix AttributeError in zypp backend
 
 Resource
 --------
