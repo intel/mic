@@ -897,7 +897,7 @@ def setup_qemu_emulator(rootdir, arch):
     # qemu_emulator is a special case, we can't use find_binary_path
     # qemu emulator should be a statically-linked executable file
     if arch == "aarch64":
-        arm_binary = "qemu-arm64"
+        arm_binary = "qemu-aarch64"
         node = "/proc/sys/fs/binfmt_misc/aarch64"
     else:
         arm_binary = "qemu-arm"
