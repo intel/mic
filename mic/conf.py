@@ -65,6 +65,7 @@ class ConfigMgr(object):
                     "name_suffix": None,
                     "proxy": None,
                     "no_proxy": None,
+                    "ssl_verify": "yes",
                     "copy_kernel": False,
                     "install_pkgs": None,
                     "check_pkgs": [],

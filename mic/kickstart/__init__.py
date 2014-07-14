@@ -726,11 +726,11 @@ RepoType = collections.namedtuple("Repo",
 
 def Repo(name, baseurl, mirrorlist=None, includepkgs=[], excludepkgs=[], proxy=None,
          proxy_username=None, proxy_password=None, debuginfo=None,
-         source=None, gpgkey=None, disable=None, ssl_verify=False,
+         source=None, gpgkey=None, disable=None, ssl_verify=None,
          nocache=False, cost=None, priority=None):
     return RepoType(name, baseurl, mirrorlist, includepkgs, excludepkgs, proxy,
                     proxy_username, proxy_password, debuginfo,
-                    source, gpgkey, disable, ssl_verify == "yes", nocache,
+                    source, gpgkey, disable, ssl_verify, nocache,
                     cost, priority)
 
 

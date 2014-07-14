@@ -988,6 +988,11 @@ class BaseImageCreator(object):
                      the kickstart to be overridden.
 
         """
+        def get_ssl_verify(ssl_verify=None):
+            if ssl_verify is not None:
+                return not ssl_verify.lower().strip() == 'no'
+            else:
+                return not self.ssl_verify.lower().strip() == 'no'
 
         # initialize pkg list to install
         if self.ks:
@@ -1019,6 +1024,7 @@ class BaseImageCreator(object):
              source, gpgkey, disable, ssl_verify, nocache,
              cost, priority) = repo
 
+            ssl_verify = get_ssl_verify(ssl_verify)
             yr = pkg_manager.addRepository(name, baseurl, mirrorlist, proxy,
                         proxy_username, proxy_password, inc, exc, ssl_verify,
                         nocache, cost, priority)
