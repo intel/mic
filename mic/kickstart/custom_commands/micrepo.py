@@ -69,5 +69,5 @@ class Mic_Repo(F14_Repo):
 
         op.add_option("--gpgkey")
         op.add_option("--priority", type="int")
-        op.add_option("--ssl_verify", default="yes")
+        op.add_option("--ssl_verify", default=None)
         return op
