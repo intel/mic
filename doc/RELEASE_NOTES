@@ -1,4 +1,4 @@
-MIC Image Creator 0.24.1 Release Notes
+MIC Image Creator 0.24.2 Release Notes
 ====================================
 Released June 09 2014
 
@@ -7,11 +7,13 @@ the release contains new features, enhancements and bug fixes.
 
 New Features & Ehancements
 --------------------------
+ * enable ssl_verify in config file
 
 Bug Fixes
 ---------
  * fix logfile incompleted issue
  * fix md5sum to be compatible with utility md5sum
+ * fix locale issue in systemd service
 
 Resource
 --------

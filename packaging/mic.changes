@@ -1,6 +1,8 @@
-* Mon Jun 09 2014 Gui Chen <gui.chen@intel.com> - 0.24.1
+* Wed Jul 09 2014 Gui Chen <gui.chen@intel.com> - 0.24.2
+  * enable ssl_verify in config file
   * fix logfile incompleted issue
   * fix md5sum to be compatible with utility md5sum
+  * fix locale issue in systemd service
 
 * Tue Mar 11 2014 Gui Chen <gui.chen@intel.com> - 0.24
   * enhance to handle password with special characters
