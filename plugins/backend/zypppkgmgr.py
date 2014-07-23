@@ -54,7 +54,8 @@ from mic.pluginbase import BackendPlugin
 class Zypp(BackendPlugin):
     name = 'zypp'
 
-    def __init__(self, target_arch, instroot, cachedir):
+    #strict_mode not used in zypp yet(yum only)
+    def __init__(self, target_arch, instroot, cachedir, strict_mode = False):
         self.cachedir = cachedir
         self.instroot  = instroot
         self.target_arch = target_arch

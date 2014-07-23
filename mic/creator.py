@@ -129,6 +129,10 @@ class Creator(cmdln.Cmdln):
         optparser.add_option('', '--ignore-ksrepo', action='store_true',
                              dest='ignore_ksrepo', default=False,
                              help=SUPPRESS_HELP)
+        optparser.add_option('', '--strict_mode', action='store_true',
+                             dest='strict_mode', default=False,
+                             help='Abort creation of image, if there are some errors'
+                                  ' during rpm installation. ')
         return optparser
 
     def preoptparse(self, argv):
@@ -226,6 +230,8 @@ class Creator(cmdln.Cmdln):
 
                 configmgr.create['record_pkgs'].append(infotype)
 
+        if self.options.strict_mode:
+          configmgr.create['strict_mode'] = self.options.strict_mode
         if self.options.arch is not None:
             supported_arch = sorted(rpmmisc.archPolicies.keys(), reverse=True)
             if self.options.arch in supported_arch:

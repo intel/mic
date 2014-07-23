@@ -112,12 +112,13 @@ from mic.pluginbase import BackendPlugin
 class Yum(BackendPlugin, yum.YumBase):
     name = 'yum'
 
-    def __init__(self, target_arch, instroot, cachedir):
+    def __init__(self, target_arch, instroot, cachedir, strict_mode = False):
         yum.YumBase.__init__(self)
 
         self.cachedir = cachedir
         self.instroot  = instroot
         self.target_arch = target_arch
+        self.strict_mode = strict_mode
 
         if self.target_arch:
             if not rpmUtils.arch.arches.has_key(self.target_arch):
@@ -438,7 +439,9 @@ class Yum(BackendPlugin, yum.YumBase):
 
             installlogfile = "%s/__catched_stderr.buf" % (self.instroot)
             msger.enable_logstderr(installlogfile)
-            self.runTransaction(cb)
+            transactionResult = self.runTransaction(cb)
+            if transactionResult.return_code != 0 and self.strict_mode:
+                raise CreatorError("mic failes to install some packages")
             self._cleanupRpmdbLocks(self.conf.installroot)
 
         except rpmUtils.RpmUtilsError, e:

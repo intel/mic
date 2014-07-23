@@ -82,6 +82,7 @@ class BaseImageCreator(object):
         self.destdir = "."
         self.installerfw_prefix = "INSTALLERFW_"
         self.target_arch = "noarch"
+        self.strict_mode = False
         self._local_pkgs_path = None
         self.pack_to = None
         self.repourl = {}
@@ -97,6 +98,7 @@ class BaseImageCreator(object):
                       "arch" : "target_arch",
                       "local_pkgs_path" : "_local_pkgs_path",
                       "copy_kernel" : "_need_copy_kernel",
+                      "strict_mode" : "strict_mode",
                      }
 
             # update setting from createopts
@@ -1358,7 +1360,8 @@ class BaseImageCreator(object):
     def get_pkg_manager(self):
         return self.pkgmgr(target_arch = self.target_arch,
                            instroot = self._instroot,
-                           cachedir = self.cachedir)
+                           cachedir = self.cachedir,
+                           strict_mode = self.strict_mode)
 
     def create_manifest(self):
         def get_pack_suffix():
