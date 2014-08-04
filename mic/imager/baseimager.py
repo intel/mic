@@ -1309,22 +1309,32 @@ class BaseImageCreator(object):
             os.rename(_rpath(f), _rpath(newf))
             outimages.append(_rpath(newf))
 
-        # generate MD5SUMS
-        with open(_rpath("MD5SUMS"), "w") as wf:
-            for f in os.listdir(destdir):
-                if f == "MD5SUMS":
-                    continue
+        # generate MD5SUMS SHA1SUMS SHA256SUMS
+        def generate_hashsum(hash_name, hash_method):
+            with open(_rpath(hash_name), "w") as wf:
+                for f in os.listdir(destdir):
+                    if f.endswith('SUMS'):
+                        continue
 
-                if os.path.isdir(os.path.join(destdir, f)):
-                    continue
+                    if os.path.isdir(os.path.join(destdir, f)):
+                        continue
 
-                md5sum = misc.get_md5sum(_rpath(f))
-                # There needs to be two spaces between the sum and
-                # filepath to match the syntax with md5sum.
-                # This way also md5sum -c MD5SUMS can be used by users
-                wf.write("%s  %s\n" % (md5sum, f))
+                    hash_value = hash_method(_rpath(f))
+                    # There needs to be two spaces between the sum and
+                    # filepath to match the syntax with md5sum,sha1sum,
+                    # sha256sum. This way also *sum -c *SUMS can be used.
+                    wf.write("%s  %s\n" % (hash_value, f))
 
-        outimages.append("%s/MD5SUMS" % destdir)
+            outimages.append("%s/%s" % (destdir, hash_name))
+
+        hash_dict = {
+                     'MD5SUMS'    : misc.get_md5sum,
+                     'SHA1SUMS'   : misc.get_sha1sum,
+                     'SHA256SUMS' : misc.get_sha256sum
+                    }
+
+        for k, v in hash_dict.items():
+            generate_hashsum(k, v)
 
         # Filter out the nonexist file
         for fp in outimages[:]:

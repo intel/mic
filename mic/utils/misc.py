@@ -261,6 +261,11 @@ def calc_hashes(file_path, hash_names, start = 0, end = None):
 def get_md5sum(fpath):
     return calc_hashes(fpath, ('md5', ))[0]
 
+def get_sha1sum(fpath):
+    return calc_hashes(fpath, ('sha1', ))[0]
+
+def get_sha256sum(fpath):
+    return calc_hashes(fpath, ('sha256', ))[0]
 
 def normalize_ksfile(ksconf, release, arch):
     '''
