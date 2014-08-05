@@ -54,11 +54,11 @@ from mic.pluginbase import BackendPlugin
 class Zypp(BackendPlugin):
     name = 'zypp'
 
-    #strict_mode not used in zypp yet(yum only)
     def __init__(self, target_arch, instroot, cachedir, strict_mode = False):
         self.cachedir = cachedir
         self.instroot  = instroot
         self.target_arch = target_arch
+        self.strict_mode = strict_mode
 
         self.__pkgs_license = {}
         self.__pkgs_content = {}
@@ -874,7 +874,8 @@ class Zypp(BackendPlugin):
                 if len(errors) == 0:
                     msger.warning('scriptlet or other non-fatal errors occurred '
                                   'during transaction.')
-
+                    if self.strict_mode:
+                        raise CreatorError("mic failes to install some packages")
                 else:
                     for e in errors:
                         msger.warning(e[0])

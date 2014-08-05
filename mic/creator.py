@@ -129,7 +129,7 @@ class Creator(cmdln.Cmdln):
         optparser.add_option('', '--ignore-ksrepo', action='store_true',
                              dest='ignore_ksrepo', default=False,
                              help=SUPPRESS_HELP)
-        optparser.add_option('', '--strict_mode', action='store_true',
+        optparser.add_option('', '--strict-mode', action='store_true',
                              dest='strict_mode', default=False,
                              help='Abort creation of image, if there are some errors'
                                   ' during rpm installation. ')
