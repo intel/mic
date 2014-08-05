@@ -18,6 +18,10 @@ Source0:    %{name}_%{version}.tar.gz
 
 Requires:   python >= 2.6
 Requires:   python-urlgrabber >= 3.9.0
+%if 0%{?suse_version} || 0%{?tizen_version:1}
+Requires:   python-xml
+%endif
+
 %if 0%{?tizen_version:1}
 Requires:   python-rpm
 %else
@@ -61,7 +65,6 @@ Requires:   syslinux-extlinux >= 3.82
 %endif
 
 %if 0%{?suse_version} || 0%{?tizen_version:1}
-Requires:   python-xml
 Requires:   squashfs >= 4.0
 Requires:   python-m2crypto
 %else
