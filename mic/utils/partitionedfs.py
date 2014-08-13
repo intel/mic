@@ -34,6 +34,13 @@ GPT_OVERHEAD = 34
 # Size of a sector in bytes
 SECTOR_SIZE = 512
 
+def resolve_ref(ref):
+    real = os.readlink(ref)
+    if not real.startswith('/'):
+        return os.path.realpath(os.path.join(ref, real))
+    else:
+        return real
+
 class PartitionedMount(Mount):
     def __init__(self, mountdir, skipformat = False):
         Mount.__init__(self, mountdir)
@@ -123,6 +130,7 @@ class PartitionedMount(Mount):
                                     'disk_name': disk_name, # physical disk name holding partition
                                     'device': None, # kpartx device node for partition
                                     'mapper_device': None, # mapper device node
+                                    'mpath_device': None, # multipath device of device mapper
                                     'mount': None, # Mount object
                                     'subvol': subvol, # Subvolume name
                                     'boot': boot, # Bootable flag
@@ -149,6 +157,7 @@ class PartitionedMount(Mount):
                      'disk_name': disk_name, # physical disk name holding partition
                      'device': None, # kpartx device node for partition
                      'mapper_device': None, # mapper device node
+                     'mpath_device': None, # multipath device of device mapper
                      'mount': None, # Mount object
                      'num': None, # Partition number
                      'boot': boot, # Bootable flag
@@ -460,6 +469,12 @@ class PartitionedMount(Mount):
                 runner.quiet([self.kpartx, "-sd", d['disk'].device])
                 raise MountError("Failed to map partitions for '%s'" %
                                  d['disk'].device)
+
+            for p in self.partitions:
+                if p['mapper_device'] and os.path.islink(p['mapper_device']):
+                    p['mpath_device'] = resolve_ref(p['mapper_device'])
+                else:
+                    p['mpath_device'] = ''
 
             # FIXME: need a better way to fix the latency
             import time
