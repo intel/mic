@@ -897,17 +897,26 @@ def setup_qemu_emulator(rootdir, arch):
     # qemu_emulator is a special case, we can't use find_binary_path
     # qemu emulator should be a statically-linked executable file
     if arch == "aarch64":
-        arm_binary = "qemu-aarch64"
         node = "/proc/sys/fs/binfmt_misc/aarch64"
+        if os.path.exists("/usr/bin/qemu-arm64") and is_statically_linked("/usr/bin/qemu-arm64"):
+            arm_binary = "qemu-arm64"
+        elif os.path.exists("/usr/bin/qemu-aarch64") and is_statically_linked("/usr/bin/qemu-aarch64"):
+            arm_binary = "qemu-aarch64"
+        elif os.path.exists("/usr/bin/qemu-arm64-static"):
+            arm_binary = "qemu-arm64-static"
+        elif os.path.exists("/usr/bin/qemu-aarch64-static"):
+            arm_binary = "qemu-aarch64-static"
+        else:
+            raise CreatorError("Please install a statically-linked %s" % arm_binary)
     else:
-        arm_binary = "qemu-arm"
         node = "/proc/sys/fs/binfmt_misc/arm"
+        arm_binary = "qemu-arm"
+        if not os.path.exists("/usr/bin/qemu-arm") or not is_statically_linked("/usr/bin/qemu-arm"):
+            arm_binary = "qemu-arm-static"
+        if not os.path.exists("/usr/bin/qemu-arm-static"):
+            raise CreatorError("Please install a statically-linked %s" % arm_binary)
 
     qemu_emulator = "/usr/bin/%s" % arm_binary
-    if not os.path.exists(qemu_emulator) or not is_statically_linked(qemu_emulator):
-        qemu_emulator = "/usr/bin/%s-static" % arm_binary
-    if not os.path.exists(qemu_emulator):
-        raise CreatorError("Please install a statically-linked %s" % arm_binary)
 
     if not os.path.exists(rootdir + "/usr/bin"):
         makedirs(rootdir + "/usr/bin")
