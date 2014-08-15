@@ -256,6 +256,8 @@ class RawImageCreator(BaseImageCreator):
         for p in self.__instloop.partitions:
             copy_devnode(p['mapper_device'],
                          self._instroot + p['mapper_device'])
+            copy_devnode(p['mpath_device'],
+                         self._instroot + p['mpath_device'])
 
     def unmount(self):
         """
@@ -268,10 +270,14 @@ class RawImageCreator(BaseImageCreator):
                 path = self._instroot + p['mapper_device']
                 if os.path.exists(path):
                     os.unlink(path)
+            if p['mpath_device']:
+                path = self._instroot + p['mpath_device']
+                if os.path.exists(path):
+                    os.unlink(path)
 
         path = self._instroot + "/dev/mapper"
         if os.path.exists(path):
-            os.rmdir(path)
+            shutil.rmtree(path, ignore_errors=True)
 
         for name in self.__disks.keys():
             if self.__disks[name].device:
