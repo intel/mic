@@ -913,7 +913,7 @@ def setup_qemu_emulator(rootdir, arch):
         arm_binary = "qemu-arm"
         if not os.path.exists("/usr/bin/qemu-arm") or not is_statically_linked("/usr/bin/qemu-arm"):
             arm_binary = "qemu-arm-static"
-        if not os.path.exists("/usr/bin/qemu-arm-static"):
+        if not os.path.exists("/usr/bin/%s" % arm_binary):
             raise CreatorError("Please install a statically-linked %s" % arm_binary)
 
     qemu_emulator = "/usr/bin/%s" % arm_binary
