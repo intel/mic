@@ -454,6 +454,23 @@ class Yum(BackendPlugin, yum.YumBase):
             msger.disable_logstderr()
 
     def getVcsInfo(self):
+        if self.__pkgs_vcsinfo:
+            return self.__pkgs_vcsinfo
+        if not self.ts:
+            self.__initialize_transaction()
+        mi = self.ts.dbMatch()
+        for hdr in mi:
+            lname = misc.RPM_FMT % {
+                        'name': hdr['name'],
+                        'arch': hdr['arch'],
+                        'version': hdr['version'],
+                        'release': hdr['release']
+                    }
+            try:
+                self.__pkgs_vcsinfo[lname] = hdr['VCS']
+            except KeyError:
+                self.__pkgs_vcsinfo[lname] = None
+
         return self.__pkgs_vcsinfo
 
     def getAllContent(self):
