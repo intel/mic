@@ -468,7 +468,7 @@ class Yum(BackendPlugin, yum.YumBase):
                     }
             try:
                 self.__pkgs_vcsinfo[lname] = hdr['VCS']
-            except KeyError:
+            except ValueError, KeyError:
                 self.__pkgs_vcsinfo[lname] = None
 
         return self.__pkgs_vcsinfo
