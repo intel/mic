@@ -165,7 +165,7 @@ class LoopImageCreator(BaseImageCreator):
             self.__fsopts = None
             self._instloops = []
 
-        self.__imgdir = None
+        self._imgdir = None
 
         if self.ks:
             self.__image_size = kickstart.get_image_size(self.ks,
@@ -213,9 +213,9 @@ class LoopImageCreator(BaseImageCreator):
     fslabel = property(__get_fslabel, __set_fslabel)
 
     def __get_image(self):
-        if self.__imgdir is None:
+        if self._imgdir is None:
             raise CreatorError("_image is not valid before calling mount()")
-        return os.path.join(self.__imgdir, self._img_name)
+        return os.path.join(self._imgdir, self._img_name)
     #The location of the image file.
     #
     #This is the path to the filesystem image. Subclasses may use this path
@@ -304,8 +304,8 @@ class LoopImageCreator(BaseImageCreator):
             shutil.copyfile(base_on, self._image)
 
     def _check_imgdir(self):
-        if self.__imgdir is None:
-            self.__imgdir = self._mkdtemp()
+        if self._imgdir is None:
+            self._imgdir = self._mkdtemp()
 
 
     #
@@ -314,7 +314,7 @@ class LoopImageCreator(BaseImageCreator):
     def _mount_instroot(self, base_on=None):
 
         if base_on and os.path.isfile(base_on):
-            self.__imgdir = os.path.dirname(base_on)
+            self._imgdir = os.path.dirname(base_on)
             imgname = os.path.basename(base_on)
             self._base_on(base_on)
             self._set_image_size(misc.get_file_size(self._image))
@@ -350,7 +350,7 @@ class LoopImageCreator(BaseImageCreator):
                 raise MountError('Cannot support fstype: %s' % fstype)
 
             loop['loop'] = MyDiskMount(fs.SparseLoopbackDisk(
-                                           os.path.join(self.__imgdir, imgname),
+                                           os.path.join(self._imgdir, imgname),
                                            size),
                                        mp,
                                        fstype,
@@ -388,7 +388,7 @@ class LoopImageCreator(BaseImageCreator):
             self._resparse()
 
         for item in self._instloops:
-            imgfile = os.path.join(self.__imgdir, item['name'])
+            imgfile = os.path.join(self._imgdir, item['name'])
             if item['fstype'] == "ext4":
                 runner.show('/sbin/tune2fs -O ^huge_file,extents,uninit_bg %s '
                             % imgfile)
@@ -402,13 +402,13 @@ class LoopImageCreator(BaseImageCreator):
                 self.image_files.setdefault('image_files', []).append(item['name'])
 
         if not self.pack_to:
-            for item in os.listdir(self.__imgdir):
-                shutil.move(os.path.join(self.__imgdir, item),
+            for item in os.listdir(self._imgdir):
+                shutil.move(os.path.join(self._imgdir, item),
                             os.path.join(self._outdir, item))
         else:
             msger.info("Pack all loop images together to %s" % self.pack_to)
             dstfile = os.path.join(self._outdir, self.pack_to)
-            packing(dstfile, self.__imgdir)
+            packing(dstfile, self._imgdir)
             self.image_files['image_files'] = [self.pack_to]
 
 
@@ -432,7 +432,7 @@ class LoopImageCreator(BaseImageCreator):
         for item in self._attachment:
             if not os.path.exists(item):
                 continue
-            dpath = os.path.join(self.__imgdir, os.path.basename(item))
+            dpath = os.path.join(self._imgdir, os.path.basename(item))
             msger.verbose("Copy attachment %s to %s" % (item, dpath))
             shutil.copy(item, dpath)
 
