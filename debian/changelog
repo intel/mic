@@ -1,4 +1,4 @@
-mic (0.26~rc1) unstable; urgency=low
+mic (0.26) unstable; urgency=low
    * add new arch MIPS support
    * add qcow2 image format support
    * add strict mode for package installing
