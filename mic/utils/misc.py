@@ -908,6 +908,13 @@ def setup_qemu_emulator(rootdir, arch):
             arm_binary = "qemu-aarch64-static"
         else:
             raise CreatorError("Please install a statically-linked %s" % arm_binary)
+    elif arch == "mipsel":
+        node = "/proc/sys/fs/binfmt_misc/mipsel"
+        arm_binary = "qemu-mipsel"
+        if not os.path.exists("/usr/bin/%s" % arm_binary) or not is_statically_linked("/usr/bin/%s"):
+            arm_binary = "qemu-mipsel-static"
+        if not os.path.exists("/usr/bin/%s" % arm_binary):
+            raise CreatorError("Please install a statically-linked %s" % arm_binary)
     else:
         node = "/proc/sys/fs/binfmt_misc/arm"
         arm_binary = "qemu-arm"
@@ -937,8 +944,11 @@ def setup_qemu_emulator(rootdir, arch):
     if not os.path.exists(node):
         if arch == "aarch64":
             qemu_arm_string = ":aarch64:M::\\x7fELF\\x02\\x01\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x02\\x00\\xb7:\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\x00\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\xfe\\xff\\xff:%s:\n" % qemu_emulator
+        elif arch == "mipsel":
+            qemu_arm_string = ":mipsel:M::\\x7fELF\\x01\\x01\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x02\\x00\\x08\\x00:\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\x00\\xfe\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\xfe\\xff\\xff\\xff:%s:\n" % qemu_emulator
         else:
             qemu_arm_string = ":arm:M::\\x7fELF\\x01\\x01\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x02\\x00\\x28\\x00:\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\x00\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\xfa\\xff\\xff\\xff:%s:\n" % qemu_emulator
+
         with open("/proc/sys/fs/binfmt_misc/register", "w") as fd:
             fd.write(qemu_arm_string)
 
