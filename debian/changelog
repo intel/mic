@@ -1,8 +1,23 @@
+mic (0.26~rc1) unstable; urgency=low
+   * add new arch MIPS support
+   * add qcow2 image format support
+   * add strict mode for package installing
+   * enable ssl_verify option in config file
+   * enhance checksums of outputs: md5sum, sha1sum, sha256sum
+   * enhance VCS info in yum backend
+   * bug fix:
+     - fix real path of device mapper causing initrd failure
+     - fix qemu arm and arm64 issues
+     - fix AttributeError in zypp backend
+     - fix 'python-xml' depends used by cElements
+
+ -- Gui Chen <gui.chen@intel.com>  Tue, 24 Oct 2014 17:25:35 +0800
+
 mic (0.25.1) unstable; urgency=low
    * revert bind mount config file to instroot
    * fix xml requirements
 
- -- Gui Chen <gui.chen@intel.com>  Thu, 24 Oct 2013 17:25:35 +0800
+ -- Gui Chen <gui.chen@intel.com>  Fri, 28 May 2014 17:25:35 +0800
 
 mic (0.25) unstable; urgency=low
    * new distribution support: Ubuntu 14.04 and Debian 7.0
@@ -17,7 +32,7 @@ mic (0.25) unstable; urgency=low
      - fix aarch64 bin_format
      - fix pylint
  
- -- Gui Chen <gui.chen@intel.com>  Thu, 24 Oct 2013 17:25:35 +0800
+ -- Gui Chen <gui.chen@intel.com>  Fri, 23 May 2014 17:25:35 +0800
 
 mic (0.24) unstable; urgency=low
    * enhance to handle password with special characters
@@ -36,7 +51,7 @@ mic (0.24) unstable; urgency=low
      - fix zypp failed to download by changing 'cachedir'
      - fix 'mkfs' not working caused by mic-bootstrap install failed
 
- -- Gui Chen <gui.chen@intel.com>  Thu, 24 Oct 2013 17:25:35 +0800
+ -- Gui Chen <gui.chen@intel.com>  Tue, 11 Mar 2014 17:25:35 +0800
 
 mic (0.23-1) unstable; urgency=low
    * new distribution support: Ubuntu 13.10 and OpenSUSE 13.1
@@ -51,7 +66,7 @@ mic (0.23-1) unstable; urgency=low
      - fix detailed error messages missing in mounting
      - fix version comparing issue of urlgrabber in Fedora
 
- -- Gui Chen <gui.chen@intel.com>  Thu, 24 Oct 2013 17:25:35 +0800
+ -- Gui Chen <gui.chen@intel.com>  Fri, 12 Dec 2013 17:25:35 +0800
 
 mic (0.22-1) unstable; urgency=low
    * use __version__ variable instead of VERSION file

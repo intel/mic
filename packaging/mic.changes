@@ -1,3 +1,17 @@
+* Tue Oct 14 2014 Gui Chen <gui.chen@intel.com> - 0.26
+  * add new arch MIPS support
+  * add qcow2 image format support
+  * add strict mode for package installing
+  * enable ssl_verify option in config file
+  * enhance checksums of outputs: md5sum, sha1sum, sha256sum
+  * enhance VCS info in yum backend
+  * bug fix:
+    - fix real path of device mapper causing initrd failure
+    - fix qemu arm and arm64 issues
+    - fix AttributeError in zypp backend
+    - fix 'python-xml' depends used by cElements
+
+
 * Fri May 28 2014 Gui Chen <gui.chen@intel.com> - 0.25.1
   * revert bind mount config file to instroot
   * fix xml requirements
