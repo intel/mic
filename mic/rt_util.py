@@ -156,13 +156,15 @@ def get_mic_binpath():
     fp = None
     try:
         import pkg_resources # depends on 'setuptools'
-    except ImportError:
-        pass
-    else:
         dist = pkg_resources.get_distribution('mic')
         # the real script is under EGG_INFO/scripts
         if dist.has_metadata('scripts/mic'):
             fp = os.path.join(dist.egg_info, "scripts/mic")
+    except ImportError:
+        pass
+    except pkg_resources.DistributionNotFound:
+        pass
+
 
     if fp:
         return fp

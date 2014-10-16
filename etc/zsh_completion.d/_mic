@@ -117,8 +117,8 @@ _mic() {
                   _arguments \
                     $common_ops \
                     '--shrink[Whether to shrink loop images to minimal size]' \
-                    "--compress-image=[Compress all loop images with \'gz\' or \'bz2\']: :(gz bz2)" \
-                    "--compress-disk-image=[Same with --compress-image]: :(gz bz2)" \
+                    "--compress-image=[Compress all loop images with \'gz\' or \'bz2\' or \'lzo\']: :(gz bz2 lzo)" \
+                    "--compress-disk-image=[Same with --compress-image]: :(gz bz2 lzo)" \
                       && ret=0
                   ;;
                 (raw)
@@ -126,8 +126,8 @@ _mic() {
                     $common_ops \
                     "--fstab-entry=[Set fstab entry, \'name\' means using device names, \'uuid\' means using filesystem uuid]: :(name uuid)" \
                     '--generate-bmap[also generate the block map file]' \
-                    '--compress-image=[Compress all raw images before package]: :(gz bz2)' \
-                    '--compress-disk-image=[Same with --compress-image]: :(gz bz2)' \
+                    '--compress-image=[Compress all raw images before package]: :(gz bz2 lzo)' \
+                    '--compress-disk-image=[Same with --compress-image]: :(gz bz2 lzo)' \
                     && ret=0
                   ;;
                 (help)

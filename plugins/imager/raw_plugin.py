@@ -33,17 +33,18 @@ class RawPlugin(ImagerPlugin):
     name = 'raw'
 
     @classmethod
-    @cmdln.option("--compress-disk-image", dest="compress_image", type='choice',
-                  choices=("gz", "bz2"), default=None,
-                  help="Same with --compress-image")
-    @cmdln.option("--compress-image", dest="compress_image", type='choice',
-                  choices=("gz", "bz2"), default = None,
-                  help="Compress all raw images before package")
-    @cmdln.option("--generate-bmap", action="store_true", default = None,
-                  help="also generate the block map file")
-    @cmdln.option("--fstab-entry", dest="fstab_entry", type='choice',
-                  choices=("name", "uuid"), default="uuid",
-                  help="Set fstab entry, 'name' means using device names, "
+    @cmdln.option("--compress-disk-image", dest = "compress_image", type = 'choice',
+                  choices = ("gz", "bz2", "lzo"), default = None,
+                  help = "Same with --compress-image")
+    @cmdln.option("--compress-image", dest = "compress_image", type = 'choice',
+                  choices = ("gz", "bz2", "lzo"), default = None,
+                  help = "Compress all raw images before package, Note: if you want "
+                  "to use 'lzo', package 'lzop' is needed to be installed manually.")
+    @cmdln.option("--generate-bmap", action = "store_true", default = None,
+                  help = "also generate the block map file")
+    @cmdln.option("--fstab-entry", dest = "fstab_entry", type = 'choice',
+                  choices = ("name", "uuid"), default = "uuid",
+                  help = "Set fstab entry, 'name' means using device names, "
                        "'uuid' means using filesystem uuid")
     def do_create(self, subcmd, opts, *args):
         """${cmd_name}: create raw image
@@ -128,6 +129,7 @@ class RawPlugin(ImagerPlugin):
             creator.unmount()
             creator.generate_bmap()
             creator.package(creatoropts["destdir"])
+            creator.create_manifest()
             if creatoropts['release'] is not None:
                 creator.release_output(ksconf, creatoropts['destdir'], creatoropts['release'])
             creator.print_outimage_info()
@@ -172,7 +174,7 @@ class RawPlugin(ImagerPlugin):
         else:
             root_mounted = False
         partition_mounts = 0
-        for line in runner.outs([partedcmd,"-s",img,"unit","B","print"]).splitlines():
+        for line in runner.outs([ partedcmd, "-s", img, "unit", "B", "print" ]).splitlines():
             line = line.strip()
 
             # Lines that start with number are the partitions,
@@ -184,12 +186,12 @@ class RawPlugin(ImagerPlugin):
             line = line.replace(",","")
 
             # Example of parted output lines that are handled:
-            # Number  Start        End          Size         Type     File system     Flags
+            # Number  Start        End          Size         Type     File system    Flags
             #  1      512B         3400000511B  3400000000B  primary
             #  2      3400531968B  3656384511B  255852544B   primary  linux-swap(v1)
-            #  3      3656384512B  3720347647B  63963136B    primary  fat16           boot, lba
+            #  3      3656384512B  3720347647B  63963136B    primary  fat16          boot, lba
 
-            partition_info = re.split("\s+",line)
+            partition_info = re.split("\s+", line)
 
             size = partition_info[3].split("B")[0]
 
@@ -199,18 +201,19 @@ class RawPlugin(ImagerPlugin):
                 # not recognize properly.
                 # TODO: Can we make better assumption?
                 fstype = "btrfs"
-            elif partition_info[5] in ["ext2","ext3","ext4","btrfs"]:
+            elif partition_info[5] in [ "ext2", "ext3", "ext4", "btrfs" ]:
                 fstype = partition_info[5]
-            elif partition_info[5] in ["fat16","fat32"]:
+            elif partition_info[5] in [ "fat16", "fat32" ]:
                 fstype = "vfat"
             elif "swap" in partition_info[5]:
                 fstype = "swap"
             else:
-                raise errors.CreatorError("Could not recognize partition fs type '%s'." % partition_info[5])
+                raise errors.CreatorError("Could not recognize partition fs type '%s'." %
+                        partition_info[5])
 
             if rootpart and rootpart == line[0]:
                 mountpoint = '/'
-            elif not root_mounted and fstype in ["ext2","ext3","ext4","btrfs"]:
+            elif not root_mounted and fstype in [ "ext2", "ext3", "ext4", "btrfs" ]:
                 # TODO: Check that this is actually the valid root partition from /etc/fstab
                 mountpoint = "/"
                 root_mounted = True
@@ -226,9 +229,11 @@ class RawPlugin(ImagerPlugin):
             else:
                 boot = False
 
-            msger.verbose("Size: %s Bytes, fstype: %s, mountpoint: %s, boot: %s" % (size, fstype, mountpoint, boot))
+            msger.verbose("Size: %s Bytes, fstype: %s, mountpoint: %s, boot: %s" %
+                    (size, fstype, mountpoint, boot))
             # TODO: add_partition should take bytes as size parameter.
-            imgloop.add_partition((int)(size)/1024/1024, "/dev/sdb", mountpoint, fstype = fstype, boot = boot)
+            imgloop.add_partition((int)(size)/1024/1024, "/dev/sdb", mountpoint,
+                    fstype = fstype, boot = boot)
 
         try:
             imgloop.mount()

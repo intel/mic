@@ -26,14 +26,17 @@ import subprocess
 import re
 import tarfile
 import glob
+import json
+from datetime import datetime
 
 import rpm
 
 from mic import kickstart
-from mic import msger
+from mic import msger, __version__ as VERSION
 from mic.utils.errors import CreatorError, Abort
 from mic.utils import misc, grabber, runner, fs_related as fs
 from mic.chroot import kill_proc_inchroot
+from mic.archive import get_archive_suffixes
 
 class BaseImageCreator(object):
     """Installs a system to a chroot directory.
@@ -48,6 +51,8 @@ class BaseImageCreator(object):
       imgcreate.ImageCreator(ks, "foo").create()
 
     """
+    # Output image format
+    img_format = ''
 
     def __del__(self):
         self.cleanup()
@@ -77,6 +82,7 @@ class BaseImageCreator(object):
         self.destdir = "."
         self.installerfw_prefix = "INSTALLERFW_"
         self.target_arch = "noarch"
+        self.strict_mode = False
         self._local_pkgs_path = None
         self.pack_to = None
         self.repourl = {}
@@ -92,6 +98,7 @@ class BaseImageCreator(object):
                       "arch" : "target_arch",
                       "local_pkgs_path" : "_local_pkgs_path",
                       "copy_kernel" : "_need_copy_kernel",
+                      "strict_mode" : "strict_mode",
                      }
 
             # update setting from createopts
@@ -108,16 +115,17 @@ class BaseImageCreator(object):
                 if '@NAME@' in self.pack_to:
                     self.pack_to = self.pack_to.replace('@NAME@', self.name)
                 (tar, ext) = os.path.splitext(self.pack_to)
-                if ext in (".gz", ".bz2") and tar.endswith(".tar"):
+                if ext in (".gz", ".bz2", ".lzo", ".bz") and tar.endswith(".tar"):
                     ext = ".tar" + ext
-                if ext not in misc.pack_formats:
+                if ext not in get_archive_suffixes():
                     self.pack_to += ".tar"
 
         self._dep_checks = ["ls", "bash", "cp", "echo", "modprobe"]
 
         # Output image file names
         self.outimage = []
-
+        # Output info related with manifest
+        self.image_files = {}
         # A flag to generate checksum
         self._genchecksum = False
 
@@ -144,25 +152,45 @@ class BaseImageCreator(object):
                     self._dep_checks.append("mkfs.btrfs")
                     break
 
-        if self.target_arch and self.target_arch.startswith("arm"):
-            for dep in self._dep_checks:
-                if dep == "extlinux":
-                    self._dep_checks.remove(dep)
+        if self.target_arch:
+            if self.target_arch.startswith("arm"):
+                for dep in self._dep_checks:
+                    if dep == "extlinux":
+                        self._dep_checks.remove(dep)
 
-            if not os.path.exists("/usr/bin/qemu-arm") or \
-               not misc.is_statically_linked("/usr/bin/qemu-arm"):
-                self._dep_checks.append("qemu-arm-static")
+                if not os.path.exists("/usr/bin/qemu-arm") or \
+                   not misc.is_statically_linked("/usr/bin/qemu-arm"):
+                    self._dep_checks.append("qemu-arm-static")
 
-            if os.path.exists("/proc/sys/vm/vdso_enabled"):
-                vdso_fh = open("/proc/sys/vm/vdso_enabled","r")
-                vdso_value = vdso_fh.read().strip()
-                vdso_fh.close()
-                if (int)(vdso_value) == 1:
-                    msger.warning("vdso is enabled on your host, which might "
-                        "cause problems with arm emulations.\n"
-                        "\tYou can disable vdso with following command before "
-                        "starting image build:\n"
-                        "\techo 0 | sudo tee /proc/sys/vm/vdso_enabled")
+                if os.path.exists("/proc/sys/vm/vdso_enabled"):
+                    vdso_fh = open("/proc/sys/vm/vdso_enabled","r")
+                    vdso_value = vdso_fh.read().strip()
+                    vdso_fh.close()
+                    if (int)(vdso_value) == 1:
+                        msger.warning("vdso is enabled on your host, which might "
+                            "cause problems with arm emulations.\n"
+                            "\tYou can disable vdso with following command before "
+                            "starting image build:\n"
+                            "\techo 0 | sudo tee /proc/sys/vm/vdso_enabled")
+            elif self.target_arch == "mipsel":
+                for dep in self._dep_checks:
+                    if dep == "extlinux":
+                        self._dep_checks.remove(dep)
+
+                if not os.path.exists("/usr/bin/qemu-mipsel") or \
+                   not misc.is_statically_linked("/usr/bin/qemu-mipsel"):
+                    self._dep_checks.append("qemu-mipsel-static")
+
+                if os.path.exists("/proc/sys/vm/vdso_enabled"):
+                    vdso_fh = open("/proc/sys/vm/vdso_enabled","r")
+                    vdso_value = vdso_fh.read().strip()
+                    vdso_fh.close()
+                    if (int)(vdso_value) == 1:
+                        msger.warning("vdso is enabled on your host, which might "
+                            "cause problems with mipsel emulations.\n"
+                            "\tYou can disable vdso with following command before "
+                            "starting image build:\n"
+                            "\techo 0 | sudo tee /proc/sys/vm/vdso_enabled")
 
         # make sure the specified tmpdir and cachedir exist
         if not os.path.exists(self.tmpdir):
@@ -771,7 +799,7 @@ class BaseImageCreator(object):
             fs.makedirs(self._instroot + d)
 
         if self.target_arch and self.target_arch.startswith("arm") or \
-            self.target_arch == "aarch64":
+            self.target_arch == "aarch64" or self.target_arch == "mipsel" :
             self.qemu_emulator = misc.setup_qemu_emulator(self._instroot,
                                                           self.target_arch)
 
@@ -1301,22 +1329,32 @@ class BaseImageCreator(object):
             os.rename(_rpath(f), _rpath(newf))
             outimages.append(_rpath(newf))
 
-        # generate MD5SUMS
-        with open(_rpath("MD5SUMS"), "w") as wf:
-            for f in os.listdir(destdir):
-                if f == "MD5SUMS":
-                    continue
+        # generate MD5SUMS SHA1SUMS SHA256SUMS
+        def generate_hashsum(hash_name, hash_method):
+            with open(_rpath(hash_name), "w") as wf:
+                for f in os.listdir(destdir):
+                    if f.endswith('SUMS'):
+                        continue
 
-                if os.path.isdir(os.path.join(destdir, f)):
-                    continue
+                    if os.path.isdir(os.path.join(destdir, f)):
+                        continue
 
-                md5sum = misc.get_md5sum(_rpath(f))
-                # There needs to be two spaces between the sum and
-                # filepath to match the syntax with md5sum.
-                # This way also md5sum -c MD5SUMS can be used by users
-                wf.write("%s  %s\n" % (md5sum, f))
+                    hash_value = hash_method(_rpath(f))
+                    # There needs to be two spaces between the sum and
+                    # filepath to match the syntax with md5sum,sha1sum,
+                    # sha256sum. This way also *sum -c *SUMS can be used.
+                    wf.write("%s  %s\n" % (hash_value, f))
 
-        outimages.append("%s/MD5SUMS" % destdir)
+            outimages.append("%s/%s" % (destdir, hash_name))
+
+        hash_dict = {
+                     'MD5SUMS'    : misc.get_md5sum,
+                     'SHA1SUMS'   : misc.get_sha1sum,
+                     'SHA256SUMS' : misc.get_sha256sum
+                    }
+
+        for k, v in hash_dict.items():
+            generate_hashsum(k, v)
 
         # Filter out the nonexist file
         for fp in outimages[:]:
@@ -1352,4 +1390,32 @@ class BaseImageCreator(object):
     def get_pkg_manager(self):
         return self.pkgmgr(target_arch = self.target_arch,
                            instroot = self._instroot,
-                           cachedir = self.cachedir)
+                           cachedir = self.cachedir,
+                           strict_mode = self.strict_mode)
+
+    def create_manifest(self):
+        def get_pack_suffix():
+            return '.' + self.pack_to.split('.', 1)[1]
+
+        if not os.path.exists(self.destdir):
+            os.makedirs(self.destdir)
+
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        manifest_dict = {'version': VERSION,
+                         'created': now}
+        if self.img_format:
+            manifest_dict.update({'format': self.img_format})
+
+        if hasattr(self, 'logfile') and self.logfile:
+            manifest_dict.update({'log_file': self.logfile})
+
+        if self.image_files:
+            if self.pack_to:
+                self.image_files.update({'pack': get_pack_suffix()})
+            manifest_dict.update({self.img_format: self.image_files})
+
+        msger.info('Creating manifest file...')
+        manifest_file_path = os.path.join(self.destdir, 'manifest.json')
+        with open(manifest_file_path, 'w') as fest_file:
+            json.dump(manifest_dict, fest_file, indent=4)
+        self.outimage.append(manifest_file_path)

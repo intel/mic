@@ -54,10 +54,11 @@ from mic.pluginbase import BackendPlugin
 class Zypp(BackendPlugin):
     name = 'zypp'
 
-    def __init__(self, target_arch, instroot, cachedir):
+    def __init__(self, target_arch, instroot, cachedir, strict_mode = False):
         self.cachedir = cachedir
         self.instroot  = instroot
         self.target_arch = target_arch
+        self.strict_mode = strict_mode
 
         self.__pkgs_license = {}
         self.__pkgs_content = {}
@@ -136,14 +137,14 @@ class Zypp(BackendPlugin):
     def _zyppQueryPackage(self, pkg):
         query = zypp.PoolQuery()
         query.addKind(zypp.ResKind.package)
-        query.addAttribute(zypp.SolvAttr.name,pkg)
+        query.addAttribute(zypp.SolvAttr.name, pkg)
         query.setMatchExact()
         for pi in query.queryResults(self.Z.pool()):
             return pi
         return None
 
     def _splitPkgString(self, pkg):
-        sp = pkg.rsplit(".",1)
+        sp = pkg.rsplit(".", 1)
         name = sp[0]
         arch = None
         if len(sp) == 2:
@@ -210,15 +211,15 @@ class Zypp(BackendPlugin):
             if endx and startx:
                 pattern = '%s' % (pkg[1:-1])
             q.setMatchRegex()
-            q.addAttribute(zypp.SolvAttr.name,pattern)
+            q.addAttribute(zypp.SolvAttr.name, pattern)
 
         elif arch:
             q.setMatchExact()
-            q.addAttribute(zypp.SolvAttr.name,name)
+            q.addAttribute(zypp.SolvAttr.name, name)
 
         else:
             q.setMatchExact()
-            q.addAttribute(zypp.SolvAttr.name,pkg)
+            q.addAttribute(zypp.SolvAttr.name, pkg)
 
         for pitem in sorted(
                         q.queryResults(self.Z.pool()),
@@ -236,7 +237,7 @@ class Zypp(BackendPlugin):
             obspkg = self.whatObsolete(item)
             if arch:
                 if arch == str(item.arch()):
-                    item.status().setToBeInstalled (zypp.ResStatus.USER)
+                    pitem.status().setToBeInstalled (zypp.ResStatus.USER)
             else:
                 markPoolItem(obspkg, pitem)
             if not ispattern:
@@ -283,17 +284,17 @@ class Zypp(BackendPlugin):
             if not ispattern:
                 if pkgarch:
                     if name == pkgname and str(item.arch()) == pkgarch:
-                        return True;
+                        return True
                 else:
                     if name == pkgname:
-                        return True;
+                        return True
             else:
                 if startx and name.endswith(pkg[1:]):
-                    return True;
+                    return True
                 if endx and name.startswith(pkg[:-1]):
-                    return True;
+                    return True
 
-        return False;
+        return False
 
     def deselectPackage(self, pkg):
         """collect packages should not be installed"""
@@ -303,7 +304,7 @@ class Zypp(BackendPlugin):
         if not self.Z:
             self.__initialize_zypp()
         found = False
-        q=zypp.PoolQuery()
+        q = zypp.PoolQuery()
         q.addKind(zypp.ResKind.pattern)
         for pitem in q.queryResults(self.Z.pool()):
             item = zypp.asKindPattern(pitem)
@@ -380,7 +381,8 @@ class Zypp(BackendPlugin):
             if not ssl_verify:
                 baseurl.setQueryParam("ssl_verify", "no")
             if proxy:
-                scheme, host, path, parm, query, frag = urlparse.urlparse(proxy)
+                host = urlparse.urlparse(proxy)[1]
+                # scheme, host, path, parm, query, frag = urlparse.urlparse(proxy)
 
                 proxyinfo = host.rsplit(":", 1)
                 host = proxyinfo[0]
@@ -566,9 +568,11 @@ class Zypp(BackendPlugin):
             if download_count > 0:
                 msger.info("Downloading packages ...")
             self.downloadPkgs(dlpkgs, download_count)
+        except CreatorError, e:
+            raise CreatorError("Package download failed: %s" %(e,))
 
+        try:
             self.installPkgs(dlpkgs)
-
         except (RepoError, RpmError):
             raise
         except Exception, e:
@@ -712,7 +716,7 @@ class Zypp(BackendPlugin):
     def getLocalPkgPath(self, po):
         repoinfo = po.repoInfo()
         cacheroot = repoinfo.packagesPath()
-        location= po.location()
+        location = po.location()
         rpmpath = str(location.filename())
         pkgpath = "%s/%s" % (cacheroot, os.path.basename(rpmpath))
         return pkgpath
@@ -870,7 +874,8 @@ class Zypp(BackendPlugin):
                 if len(errors) == 0:
                     msger.warning('scriptlet or other non-fatal errors occurred '
                                   'during transaction.')
-
+                    if self.strict_mode:
+                        raise CreatorError("mic failes to install some packages")
                 else:
                     for e in errors:
                         msger.warning(e[0])
@@ -894,7 +899,7 @@ class Zypp(BackendPlugin):
                                   % (package, deppkg))
 
                 elif sense == rpm.RPMDEP_SENSE_CONFLICTS:
-                    msger.warning("[%s] Conflicts with [%s]" %(package,deppkg))
+                    msger.warning("[%s] Conflicts with [%s]" % (package, deppkg))
 
             raise RepoError("Unresolved dependencies, transaction failed.")
 

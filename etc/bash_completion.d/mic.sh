@@ -140,10 +140,12 @@ __mic_complete_val()
     compress_image_values="
         gz
         bz2
+        lzo
     "
     compress_disk_image_values="
         gz
         bz2
+        lzo
     "
 
     declare -F _split_longopt &>/dev/null && _split_longopt

@@ -16,8 +16,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc., 59
 # Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-import os, sys
-import re
+import os
 import tempfile
 import glob
 from string import Template
@@ -32,7 +31,6 @@ from mic.utils.grabber import TextProgress
 from mic.utils.proxy import get_proxy_for
 from mic.utils.errors import CreatorError
 from mic.utils.safeurl import SafeURL
-from mic.imager.baseimager import BaseImageCreator
 
 
 YUMCONF_TEMP = """[main]
@@ -114,12 +112,13 @@ from mic.pluginbase import BackendPlugin
 class Yum(BackendPlugin, yum.YumBase):
     name = 'yum'
 
-    def __init__(self, target_arch, instroot, cachedir):
+    def __init__(self, target_arch, instroot, cachedir, strict_mode = False):
         yum.YumBase.__init__(self)
 
         self.cachedir = cachedir
         self.instroot  = instroot
         self.target_arch = target_arch
+        self.strict_mode = strict_mode
 
         if self.target_arch:
             if not rpmUtils.arch.arches.has_key(self.target_arch):
@@ -387,7 +386,7 @@ class Yum(BackendPlugin, yum.YumBase):
                               % (os.path.basename(local), local))
             else:
                 download_total_size -= int(po.packagesize)
-                cached_count +=1
+                cached_count += 1
 
         cache_avail_size = misc.get_filesystem_avail(self.cachedir)
         if cache_avail_size < download_total_size:
@@ -440,7 +439,9 @@ class Yum(BackendPlugin, yum.YumBase):
 
             installlogfile = "%s/__catched_stderr.buf" % (self.instroot)
             msger.enable_logstderr(installlogfile)
-            self.runTransaction(cb)
+            transactionResult = self.runTransaction(cb)
+            if transactionResult.return_code != 0 and self.strict_mode:
+                raise CreatorError("mic failes to install some packages")
             self._cleanupRpmdbLocks(self.conf.installroot)
 
         except rpmUtils.RpmUtilsError, e:
@@ -453,6 +454,23 @@ class Yum(BackendPlugin, yum.YumBase):
             msger.disable_logstderr()
 
     def getVcsInfo(self):
+        if self.__pkgs_vcsinfo:
+            return self.__pkgs_vcsinfo
+        if not self.ts:
+            self.__initialize_transaction()
+        mi = self.ts.dbMatch()
+        for hdr in mi:
+            lname = misc.RPM_FMT % {
+                        'name': hdr['name'],
+                        'arch': hdr['arch'],
+                        'version': hdr['version'],
+                        'release': hdr['release']
+                    }
+            try:
+                self.__pkgs_vcsinfo[lname] = hdr['VCS']
+            except ValueError, KeyError:
+                self.__pkgs_vcsinfo[lname] = None
+
         return self.__pkgs_vcsinfo
 
     def getAllContent(self):

@@ -23,6 +23,8 @@ from mic import kickstart, msger
 from mic.utils import fs_related, rpmmisc, runner, misc
 from mic.utils.errors import CreatorError
 from mic.imager.loop import LoopImageCreator
+from mic.imager.baseimager import BaseImageCreator
+from mic.archive import packing
 
 
 class LiveImageCreatorBase(LoopImageCreator):
@@ -34,6 +36,8 @@ class LiveImageCreatorBase(LoopImageCreator):
         LiveImageCreator creates a bootable ISO containing the system image,
         bootloader, bootloader configuration, kernel and initramfs.
     """
+
+    img_format = 'livecd'
 
     def __init__(self, creatoropts = None, pkgmgr = None):
         """Initialise a LiveImageCreator instance.
@@ -303,12 +307,16 @@ class LiveImageCreatorBase(LoopImageCreator):
             if self.pack_to:
                 isoimg = os.path.join(self._outdir, self.name + ".iso")
                 packimg = os.path.join(self._outdir, self.pack_to)
-                misc.packing(packimg, isoimg)
+                packing(packimg, isoimg)
                 os.unlink(isoimg)
+                self.image_files.update({'image_files': [self.pack_to]})
+            else:
+                self.image_files.update({'image_files': [self.name + ".iso"]})
 
         finally:
             shutil.rmtree(self.__isodir, ignore_errors = True)
             self.__isodir = None
+
 
 class x86LiveImageCreator(LiveImageCreatorBase):
     """ImageCreator for x86 machines"""

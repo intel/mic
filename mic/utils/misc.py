@@ -187,91 +187,6 @@ def extract_rpm(rpmfile, targetdir):
 
     os.chdir(olddir)
 
-def compressing(fpath, method):
-    comp_map = {
-        "gz": ["pgzip", "pigz", "gzip"],
-        "bz2": ["pbzip2", "bzip2"],
-    }
-    if method not in comp_map:
-        raise CreatorError("Unsupport compress format: %s, valid values: %s"
-                           % (method, ','.join(comp_map.keys())))
-    cmd = None
-    for cmdname in comp_map[method]:
-        try:
-            cmd = find_binary_path(cmdname)
-            break
-        except CreatorError as err:
-            pass
-    if not cmd:
-        raise CreatorError("Command %s not available" % cmdname)
-    rc = runner.show([cmd, "-f", fpath])
-    if rc:
-        raise CreatorError("Failed to %s file: %s" % (comp_map[method], fpath))
-
-def taring(dstfile, target):
-    import tarfile
-    basen, ext = os.path.splitext(dstfile)
-    comp = {".tar": None,
-            ".gz": "gz", # for .tar.gz
-            ".bz2": "bz2", # for .tar.bz2
-            ".tgz": "gz",
-            ".tbz": "bz2"}[ext]
-
-    # specify tarball file path
-    if not comp:
-        tarpath = dstfile
-    elif basen.endswith(".tar"):
-        tarpath = basen
-    else:
-        tarpath = basen + ".tar"
-    wf = tarfile.open(tarpath, 'w')
-
-    if os.path.isdir(target):
-        for item in os.listdir(target):
-            wf.add(os.path.join(target, item), item)
-    else:
-        wf.add(target, os.path.basename(target))
-    wf.close()
-
-    if comp:
-        compressing(tarpath, comp)
-        # when dstfile ext is ".tgz" and ".tbz", should rename
-        if not basen.endswith(".tar"):
-            shutil.move("%s.%s" % (tarpath, comp), dstfile)
-
-def ziping(dstfile, target):
-    import zipfile
-    wf = zipfile.ZipFile(dstfile, 'w', compression=zipfile.ZIP_DEFLATED)
-    if os.path.isdir(target):
-        for item in os.listdir(target):
-            fpath = os.path.join(target, item)
-            if not os.path.isfile(fpath):
-                continue
-            wf.write(fpath, item, zipfile.ZIP_DEFLATED)
-    else:
-        wf.write(target, os.path.basename(target), zipfile.ZIP_DEFLATED)
-    wf.close()
-
-pack_formats = {
-    ".tar": taring,
-    ".tar.gz": taring,
-    ".tar.bz2": taring,
-    ".tgz": taring,
-    ".tbz": taring,
-    ".zip": ziping,
-}
-
-def packing(dstfile, target):
-    (base, ext) = os.path.splitext(dstfile)
-    if ext in (".gz", ".bz2") and base.endswith(".tar"):
-        ext = ".tar" + ext
-    if ext not in pack_formats:
-        raise CreatorError("Unsupport pack format: %s, valid values: %s"
-                           % (ext, ','.join(pack_formats.keys())))
-    func = pack_formats[ext]
-    # func should be callable
-    func(dstfile, target)
-
 def human_size(size):
     """Return human readable string for Bytes size
     """
@@ -346,6 +261,11 @@ def calc_hashes(file_path, hash_names, start = 0, end = None):
 def get_md5sum(fpath):
     return calc_hashes(fpath, ('md5', ))[0]
 
+def get_sha1sum(fpath):
+    return calc_hashes(fpath, ('sha1', ))[0]
+
+def get_sha256sum(fpath):
+    return calc_hashes(fpath, ('sha256', ))[0]
 
 def normalize_ksfile(ksconf, release, arch):
     '''
@@ -977,17 +897,33 @@ def setup_qemu_emulator(rootdir, arch):
     # qemu_emulator is a special case, we can't use find_binary_path
     # qemu emulator should be a statically-linked executable file
     if arch == "aarch64":
-        arm_binary = "qemu-arm64"
         node = "/proc/sys/fs/binfmt_misc/aarch64"
+        if os.path.exists("/usr/bin/qemu-arm64") and is_statically_linked("/usr/bin/qemu-arm64"):
+            arm_binary = "qemu-arm64"
+        elif os.path.exists("/usr/bin/qemu-aarch64") and is_statically_linked("/usr/bin/qemu-aarch64"):
+            arm_binary = "qemu-aarch64"
+        elif os.path.exists("/usr/bin/qemu-arm64-static"):
+            arm_binary = "qemu-arm64-static"
+        elif os.path.exists("/usr/bin/qemu-aarch64-static"):
+            arm_binary = "qemu-aarch64-static"
+        else:
+            raise CreatorError("Please install a statically-linked %s" % arm_binary)
+    elif arch == "mipsel":
+        node = "/proc/sys/fs/binfmt_misc/mipsel"
+        arm_binary = "qemu-mipsel"
+        if not os.path.exists("/usr/bin/%s" % arm_binary) or not is_statically_linked("/usr/bin/%s"):
+            arm_binary = "qemu-mipsel-static"
+        if not os.path.exists("/usr/bin/%s" % arm_binary):
+            raise CreatorError("Please install a statically-linked %s" % arm_binary)
     else:
-        arm_binary = "qemu-arm"
         node = "/proc/sys/fs/binfmt_misc/arm"
+        arm_binary = "qemu-arm"
+        if not os.path.exists("/usr/bin/qemu-arm") or not is_statically_linked("/usr/bin/qemu-arm"):
+            arm_binary = "qemu-arm-static"
+        if not os.path.exists("/usr/bin/%s" % arm_binary):
+            raise CreatorError("Please install a statically-linked %s" % arm_binary)
 
     qemu_emulator = "/usr/bin/%s" % arm_binary
-    if not os.path.exists(qemu_emulator) or not is_statically_linked(qemu_emulator):
-        qemu_emulator = "/usr/bin/%s-static" % arm_binary
-    if not os.path.exists(qemu_emulator):
-        raise CreatorError("Please install a statically-linked %s" % arm_binary)
 
     if not os.path.exists(rootdir + "/usr/bin"):
         makedirs(rootdir + "/usr/bin")
@@ -1007,9 +943,12 @@ def setup_qemu_emulator(rootdir, arch):
     # register qemu emulator for interpreting other arch executable file
     if not os.path.exists(node):
         if arch == "aarch64":
-            qemu_arm_string = ":aarch64:M::\\x7fELF\\x02\\x01\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x02\\x00\\xb7:\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\x00\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\xfa\\xff\\xff\\xff:%s:\n" % qemu_emulator
+            qemu_arm_string = ":aarch64:M::\\x7fELF\\x02\\x01\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x02\\x00\\xb7:\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\x00\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\xfe\\xff\\xff:%s:\n" % qemu_emulator
+        elif arch == "mipsel":
+            qemu_arm_string = ":mipsel:M::\\x7fELF\\x01\\x01\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x02\\x00\\x08\\x00:\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\x00\\xfe\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\xfe\\xff\\xff\\xff:%s:\n" % qemu_emulator
         else:
             qemu_arm_string = ":arm:M::\\x7fELF\\x01\\x01\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x02\\x00\\x28\\x00:\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\x00\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\xfa\\xff\\xff\\xff:%s:\n" % qemu_emulator
+
         with open("/proc/sys/fs/binfmt_misc/register", "w") as fd:
             fd.write(qemu_arm_string)
 

@@ -1,19 +1,25 @@
-MIC Image Creator 0.24.2 Release Notes
-====================================
-Released June 09 2014
+MIC Image Creator 0.26 Release Notes
+======================================
+Released Oct 14 2014
 
 This release note documents the changes included in the new release. And
 the release contains new features, enhancements and bug fixes.
 
 New Features & Ehancements
 --------------------------
- * enable ssl_verify in config file
+  * add new arch MIPS support
+  * add qcow2 image format support
+  * add strict mode for package installing
+  * enable ssl_verify option in config file
+  * enhance checksums of outputs: md5sum, sha1sum, sha256sum
+  * enhance VCS info in yum backend
 
 Bug Fixes
 ---------
- * fix logfile incompleted issue
- * fix md5sum to be compatible with utility md5sum
- * fix locale issue in systemd service
+  * fix real path of device mapper causing initrd failure
+  * fix qemu arm and arm64 issues
+  * fix AttributeError in zypp backend
+  * fix 'python-xml' depends used by cElements
 
 Resource
 --------

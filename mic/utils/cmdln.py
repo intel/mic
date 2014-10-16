@@ -513,14 +513,14 @@ class RawCmdln(cmd.Cmd):
             cmdname = None
 
         if doc: # *do* have help content, massage and print that
-            doc = self._help_reindent(doc)
-            doc = self._help_preprocess(doc, cmdname)
+            doc = self.help_reindent(doc)
+            doc = self.help_preprocess(doc, cmdname)
             doc = doc.rstrip() + '\n' # trim down trailing space
             self.stdout.write(self._str(doc))
             self.stdout.flush()
     do_help.aliases = ["?"]
 
-    def _help_reindent(self, help, indent=None):
+    def help_reindent(self, help, indent=None):
         """Hook to re-indent help strings before writing to stdout.
 
             "help" is the help content to re-indent
@@ -548,7 +548,7 @@ class RawCmdln(cmd.Cmd):
         lines = [(indent+line).rstrip() for line in lines]
         return '\n'.join(lines)
 
-    def _help_preprocess(self, help, cmdname):
+    def help_preprocess(self, help, cmdname):
         """Hook to preprocess a help string before writing to stdout.
 
             "help" is the help string to process.

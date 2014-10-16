@@ -24,7 +24,7 @@ from mic.utils import fs_related, runner, misc
 from mic.utils.partitionedfs import PartitionedMount
 from mic.utils.errors import CreatorError, MountError
 from mic.imager.baseimager import BaseImageCreator
-
+from mic.archive import packing, compressing
 
 class RawImageCreator(BaseImageCreator):
     """Installs a system into a file containing a partitioned disk image.
@@ -34,6 +34,7 @@ class RawImageCreator(BaseImageCreator):
     and the system installed into an virtual disk. The disk image can
     subsequently be booted in a virtual machine or accessed with kpartx
     """
+    img_format = 'raw'
 
     def __init__(self, creatoropts=None, pkgmgr=None, compress_image=None, generate_bmap=None, fstab_entry="uuid"):
         """Initialize a ApplianceImageCreator instance.
@@ -78,7 +79,7 @@ class RawImageCreator(BaseImageCreator):
 
     def _get_fstab(self):
         s = ""
-        for mp in self.__instloop.mountOrder:
+        for mp in self.__instloop.mount_order:
             p = None
             for p1 in self.__instloop.partitions:
                 if p1['mountpoint'] == mp:
@@ -255,6 +256,8 @@ class RawImageCreator(BaseImageCreator):
         for p in self.__instloop.partitions:
             copy_devnode(p['mapper_device'],
                          self._instroot + p['mapper_device'])
+            copy_devnode(p['mpath_device'],
+                         self._instroot + p['mpath_device'])
 
     def unmount(self):
         """
@@ -267,10 +270,14 @@ class RawImageCreator(BaseImageCreator):
                 path = self._instroot + p['mapper_device']
                 if os.path.exists(path):
                     os.unlink(path)
+            if p['mpath_device']:
+                path = self._instroot + p['mpath_device']
+                if os.path.exists(path):
+                    os.unlink(path)
 
         path = self._instroot + "/dev/mapper"
         if os.path.exists(path):
-            os.rmdir(path)
+            shutil.rmtree(path, ignore_errors=True)
 
         for name in self.__disks.keys():
             if self.__disks[name].device:
@@ -440,18 +447,38 @@ class RawImageCreator(BaseImageCreator):
            write meta data
         """
         self._resparse()
+        self.image_files.update({'disks': self.__disks.keys()})
+
+        if not (self.compress_image or self.pack_to):
+            for imgfile in os.listdir(self.__imgdir):
+                if imgfile.endswith('.raw'):
+                    for disk in self.__disks.keys():
+                        if imgfile.find(disk) != -1:
+                            self.image_files.setdefault(disk, {}).update(
+                                   {'image': imgfile})
+                            self.image_files.setdefault('image_files',
+                                   []).append(imgfile)
 
         if self.compress_image:
             for imgfile in os.listdir(self.__imgdir):
                 if imgfile.endswith('.raw') or imgfile.endswith('bin'):
                     imgpath = os.path.join(self.__imgdir, imgfile)
                     msger.info("Compressing image %s" % imgfile)
-                    misc.compressing(imgpath, self.compress_image)
+                    compressing(imgpath, self.compress_image)
+                if imgfile.endswith('.raw') and not self.pack_to:
+                    for disk in self.__disks.keys():
+                        if imgfile.find(disk) != -1:
+                            imgname = '%s.%s' % (imgfile, self.compress_image)
+                            self.image_files.setdefault(disk, {}).update(
+                                   {'image': imgname})
+                            self.image_files.setdefault('image_files',
+                                    []).append(imgname)
 
         if self.pack_to:
             dst = os.path.join(self._outdir, self.pack_to)
             msger.info("Pack all raw images to %s" % dst)
-            misc.packing(dst, self.__imgdir)
+            packing(dst, self.__imgdir)
+            self.image_files.update({'image_files': self.pack_to})
         else:
             msger.debug("moving disks to stage location")
             for imgfile in os.listdir(self.__imgdir):
@@ -459,6 +486,7 @@ class RawImageCreator(BaseImageCreator):
                 dst = os.path.join(self._outdir, imgfile)
                 msger.debug("moving %s to %s" % (src,dst))
                 shutil.move(src,dst)
+
         self._write_image_xml()
 
     def _write_image_xml(self):
@@ -556,6 +584,8 @@ class RawImageCreator(BaseImageCreator):
         for name in self.__disks.keys():
             image = self._full_path(self.__imgdir, name, self.__disk_format)
             bmap_file = self._full_path(self._outdir, name, "bmap")
+            self.image_files.setdefault(name, {}).update({'bmap': \
+                                            os.path.basename(bmap_file)})
 
             msger.debug("Generating block map file '%s'" % bmap_file)
 
@@ -565,3 +595,8 @@ class RawImageCreator(BaseImageCreator):
                 del creator
             except BmapCreate.Error as err:
                 raise CreatorError("Failed to create bmap file: %s" % str(err))
+
+    def create_manifest(self):
+        if self.compress_image:
+            self.image_files.update({'compress': self.compress_image})
+        super(RawImageCreator, self).create_manifest()

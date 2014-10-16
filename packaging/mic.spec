@@ -8,7 +8,7 @@
 
 Name:       mic
 Summary:    Image Creator for Linux Distributions
-Version:    0.24.2
+Version:    0.26
 Release:    %{?release_prefix}%{?opensuse_bs:<CI_CNT>.<B_CNT>}%{!?opensuse_bs:0}
 Group:      Development/Tools
 License:    GPLv2
@@ -18,6 +18,10 @@ Source0:    %{name}_%{version}.tar.gz
 
 Requires:   python >= 2.6
 Requires:   python-urlgrabber >= 3.9.0
+%if 0%{?suse_version} || 0%{?tizen_version:1}
+Requires:   python-xml
+%endif
+
 %if 0%{?tizen_version:1}
 Requires:   python-rpm
 %else
@@ -64,6 +68,7 @@ Requires:   syslinux-extlinux >= 3.82
 Requires:   squashfs >= 4.0
 Requires:   python-m2crypto
 %else
+Requires:   python-libs
 Requires:   squashfs-tools >= 4.0
 Requires:   m2crypto
 %endif

@@ -1,8 +1,33 @@
-* Wed Jul 09 2014 Gui Chen <gui.chen@intel.com> - 0.24.2
-  * enable ssl_verify in config file
-  * fix logfile incompleted issue
-  * fix md5sum to be compatible with utility md5sum
-  * fix locale issue in systemd service
+* Tue Oct 14 2014 Gui Chen <gui.chen@intel.com> - 0.26
+  * add new arch MIPS support
+  * add qcow2 image format support
+  * add strict mode for package installing
+  * enable ssl_verify option in config file
+  * enhance checksums of outputs: md5sum, sha1sum, sha256sum
+  * enhance VCS info in yum backend
+  * bug fix:
+    - fix real path of device mapper causing initrd failure
+    - fix qemu arm and arm64 issues
+    - fix AttributeError in zypp backend
+    - fix 'python-xml' depends used by cElements
+
+
+* Fri May 28 2014 Gui Chen <gui.chen@intel.com> - 0.25.1
+  * revert bind mount config file to instroot
+  * fix xml requirements
+
+* Fri May 23 2014 Gui Chen <gui.chen@intel.com> - 0.25
+  * new distribution support: Ubuntu 14.04 and Debian 7.0
+  * generate manifest file to describe image information
+  * refactor archive and compress module
+  * support sparse handle for tar command
+  * replace system V with systemd on locale setting
+  * support lzop compress
+  * bug fix:
+    - fix logfile incomplete in release option
+    - fix config file disappear in bootstrap
+    - fix aarch64 bin_format
+    - fix pylint
 
 * Tue Mar 11 2014 Gui Chen <gui.chen@intel.com> - 0.24
   * enhance to handle password with special characters

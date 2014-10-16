@@ -74,6 +74,7 @@ class ConfigMgr(object):
                     "runtime": "bootstrap",
                     "extrarepos": {},
                     "ignore_ksrepo": False,
+                    "strict_mode": False,
                 },
                 'chroot': {
                     "saveto": None,
