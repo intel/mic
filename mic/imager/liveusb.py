@@ -118,6 +118,8 @@ class LiveUSBImageCreator(LiveCDImageCreator):
                 syslinux_path = "/usr/share/syslinux"
             elif  os.path.isfile("/usr/lib/syslinux/isolinux.bin"):
                 syslinux_path = "/usr/lib/syslinux"
+            elif  os.path.isfile("/usr/lib/syslinux/bios/isolinux.bin"):
+                syslinux_path = "/usr/lib/syslinux/bios"
             else:
                 raise CreatorError("syslinux not installed : "
                                    "cannot find syslinux installation path")
@@ -252,11 +254,13 @@ class LiveUSBImageCreator(LiveCDImageCreator):
 
         # Need to do this after image is unmounted and device mapper is closed
         msger.info("set MBR")
-        mbrfile = "/usr/lib/syslinux/mbr.bin"
-        if not os.path.exists(mbrfile):
-            mbrfile = "/usr/share/syslinux/mbr.bin"
-            if not os.path.exists(mbrfile):
-                raise CreatorError("mbr.bin file didn't exist.")
+        found = False
+        for mbrfile in ["/usr/lib/syslinux/mbr.bin", "/usr/lib/syslinux/bios/mbr.bin", "/usr/share/syslinux/mbr.bin"]:
+            if os.path.exists(mbrfile):
+                found = True
+                break
+        if not found:
+            raise CreatorError("mbr.bin file didn't exist.")
         mbrsize = os.path.getsize(mbrfile)
         outimg = "%s/%s.usbimg" % (self._outdir, self.name)
 
