@@ -86,6 +86,7 @@ class BaseImageCreator(object):
         self._local_pkgs_path = None
         self.pack_to = None
         self.repourl = {}
+        self.multiple_partitions = False
 
         # If the kernel is save to the destdir when copy_kernel cmd is called.
         self._need_copy_kernel = False
@@ -151,6 +152,8 @@ class BaseImageCreator(object):
                 if part.fstype and part.fstype == "btrfs":
                     self._dep_checks.append("mkfs.btrfs")
                     break
+            if len(self.ks.handler.partition.partitions) > 1:
+                self.multiple_partitions = True
 
         if self.target_arch:
             if self.target_arch.startswith("arm"):
@@ -1072,6 +1075,11 @@ class BaseImageCreator(object):
                 checksize -= BOOT_SAFEGUARD
             if self.target_arch:
                 pkg_manager._add_prob_flags(rpm.RPMPROB_FILTER_IGNOREARCH)
+
+            # If we have multiple partitions, don't check diskspace when rpm run transaction
+            # because rpm check '/' partition only.
+            if self.multiple_partitions:
+                pkg_manager._add_prob_flags(rpm.RPMPROB_FILTER_DISKSPACE)
             pkg_manager.runInstall(checksize)
         except CreatorError, e:
             raise
