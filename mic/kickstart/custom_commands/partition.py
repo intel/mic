@@ -28,6 +28,7 @@ class Mic_PartData(FC4_PartData):
         self.extopts = kwargs.get("extopts", None)
         self.part_type = kwargs.get("part_type", None)
         self.uuid = kwargs.get("uuid", None)
+        self.exclude_image = kwargs.get("exclude_from_image", False)
 
     def _getArgsAsStr(self):
         retval = FC4_PartData._getArgsAsStr(self)
@@ -40,6 +41,8 @@ class Mic_PartData(FC4_PartData):
             retval += " --part-type=%s" % self.part_type
         if self.uuid:
             retval += " --uuid=%s" % self.uuid
+        if self.exclude_image:
+            retval += " --exclude-from-image"
 
         return retval
 
@@ -58,4 +61,6 @@ class Mic_Partition(FC4_Partition):
         op.add_option("--part-type", type="string", action="store", dest="part_type",
                       default=None)
         op.add_option("--uuid", dest="uuid", action="store", type="string")
+        op.add_option("--exclude-from-image", action="store_true", dest="exclude_image",
+                      default=False)
         return op

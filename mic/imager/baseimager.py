@@ -1214,6 +1214,19 @@ class BaseImageCreator(object):
             f.write("%s  %s" % (md5sum, os.path.basename(image_name)))
         self.outimage.append(image_name+".md5sum")
 
+    def remove_exclude_image(self):
+        for item in self._instloops:
+            if item['exclude_image']:
+                msger.info("Removing %s in image." % item['name'])
+                imgfile = os.path.join(self._imgdir, item['name'])
+                try:
+                    os.remove(imgfile)
+                except OSError as err:
+                    if err.errno == errno.ENOENT:
+                        pass
+                self._instloops.remove(item)
+                continue
+
     def package(self, destdir = "."):
         """Prepares the created image for final delivery.
 
@@ -1226,6 +1239,8 @@ class BaseImageCreator(object):
                    this defaults to the current directory.
 
         """
+        self.remove_exclude_image()
+
         self._stage_final_image()
 
         if not os.path.exists(destdir):

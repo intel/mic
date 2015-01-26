@@ -157,6 +157,7 @@ class LoopImageCreator(BaseImageCreator):
                     'loop': None,  # to be created in _mount_instroot
                     'uuid': part.uuid or None,
                     'kspart' : part,
+                    'exclude_image' : part.exclude_image or None,
                     })
             self._instloops = allloops
 
@@ -329,7 +330,8 @@ class LoopImageCreator(BaseImageCreator):
                  "extopts": None,
                  "loop": None,
                  "uuid": None,
-                 "kspart": None
+                 "kspart": None,
+                 "exclude_image" : None
                  })
 
         self._check_imgdir()
