@@ -158,6 +158,7 @@ class LoopImageCreator(BaseImageCreator):
                     'uuid': part.uuid or None,
                     'kspart' : part,
                     'exclude_image' : part.exclude_image or None,
+                    'ubifsopts': part.ubifsopts or None,
                     })
             self._instloops = allloops
 
@@ -331,7 +332,8 @@ class LoopImageCreator(BaseImageCreator):
                  "loop": None,
                  "uuid": None,
                  "kspart": None,
-                 "exclude_image" : None
+                 "exclude_image" : None,
+                 "ubifsopts": self.ubifsopts or None,
                  })
 
         self._check_imgdir()
@@ -348,6 +350,11 @@ class LoopImageCreator(BaseImageCreator):
                 MyDiskMount = fs.BtrfsDiskMount
             elif fstype in ("vfat", "msdos"):
                 MyDiskMount = fs.VfatDiskMount
+            elif fstype == "ubifs":
+                if not loop['ubifsopts'] and not loop['exclude_image']:
+                    raise CreatorError('Ubifs filesystem requires --ubifsopts option. Please make sure mtdinfo of your MTD device.')
+                fstype = "ext4"
+                MyDiskMount = fs.ExtDiskMount
             else:
                 raise MountError('Cannot support fstype: %s' % fstype)
 
@@ -402,6 +409,16 @@ class LoopImageCreator(BaseImageCreator):
                                 '.'.join([item['name'], self.compress_image]))
             else:
                 self.image_files.setdefault('image_files', []).append(item['name'])
+
+            if item['fstype'] == "ubifs":
+                try:
+                    item['loop'].mount()
+                except MountError, e:
+                    msger.warning('"Failed to mount "%s" to "%s"' % (imgfile, item['loop'].mountdir))
+                    pass
+
+                fs.mkubifs(imgfile, item['loop'].mountdir, item['ubifsopts'])
+                item['loop'].unmount()
 
         if not self.pack_to:
             for item in os.listdir(self._imgdir):

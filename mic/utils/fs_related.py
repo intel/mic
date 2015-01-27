@@ -25,6 +25,7 @@ import random
 import string
 import time
 import uuid
+import shutil
 
 from mic import msger
 from mic.utils import runner
@@ -87,6 +88,27 @@ def resize2fs(fs, size):
         return runner.show([resize2fs, '-M', fs])
     else:
         return runner.show([resize2fs, fs, "%sK" % (size / 1024,)])
+
+def mkubifs(img, mountdir, ubifs_opts):
+    if not os.path.exists(img):
+        msger.warning("mkubifs failed : %s does not exist.\n" % img)
+        return
+
+    label = os.path.splitext(img.split('/')[-1])[0]
+    mkfscmd = find_binary_path("mkfs.ubifs")
+
+    cmdlist = [mkfscmd, '-o', label + '.ubifs', '-r', mountdir]
+    cmdlist.extend(ubifs_opts.split())
+
+    rc = runner.show(cmdlist)
+    if rc != 0:
+        msger.warning("mkubifs failed with error (%d)\n" % rc)
+        return
+
+    if os.path.exists(label + '.ubifs'):
+        shutil.move(label + '.ubifs', img)
+
+    return
 
 class BindChrootMount:
     """Represents a bind mount of a directory into a chroot."""
