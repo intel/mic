@@ -1093,9 +1093,6 @@ class BaseImageCreator(object):
         finally:
             pkg_manager.close()
 
-        # hook post install
-        self.postinstall()
-
         # do some clean up to avoid lvm info leakage.  this sucks.
         for subdir in ("cache", "backup", "archive"):
             lvmdir = self._instroot + "/etc/lvm/" + subdir
@@ -1193,6 +1190,9 @@ class BaseImageCreator(object):
 
         self._create_bootconfig()
         self.__run_post_scripts()
+
+        # hook post install
+        self.postinstall()
 
     def launch_shell(self, launch):
         """Launch a shell in the install root.
