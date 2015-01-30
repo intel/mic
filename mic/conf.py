@@ -75,6 +75,7 @@ class ConfigMgr(object):
                     "extrarepos": {},
                     "ignore_ksrepo": False,
                     "strict_mode": False,
+                    "use_mic_in_bootstrap": "False",
                 },
                 'chroot': {
                     "saveto": None,

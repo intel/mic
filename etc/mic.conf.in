@@ -23,6 +23,9 @@ pkgmgr = auto
 # to skip all ssl verification for repos
 #ssl_verify = no
 
+# to use mic tool in bootstrap
+#use_mic_in_bootstrap = True
+
 [convert]
 ; settings for convert subcommand
 
