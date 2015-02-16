@@ -104,7 +104,9 @@ def bootstrap_mic(argv=None):
             rootdir = os.path.join(rootdir, "bootstrap")
 
         bsenv.dirsetup(rootdir)
-        sync_mic(rootdir, plugin=cropts['plugin_dir'])
+
+        if cropts['use_mic_in_bootstrap'] != 'True':
+            sync_mic(rootdir, plugin=cropts['plugin_dir'])
 
         #FIXME: sync the ks file to bootstrap
         if "/" == os.path.dirname(os.path.abspath(configmgr._ksconf)):

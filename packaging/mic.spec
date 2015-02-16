@@ -91,6 +91,8 @@ Requires:   python-zypp
 Requires:   python-zypp-tizen
 %endif
 
+Requires:   mtd-utils
+
 Requires:   mic
 
 #%if 0%{?suse_version}

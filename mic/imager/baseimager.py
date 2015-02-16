@@ -86,6 +86,7 @@ class BaseImageCreator(object):
         self._local_pkgs_path = None
         self.pack_to = None
         self.repourl = {}
+        self.multiple_partitions = False
 
         # If the kernel is save to the destdir when copy_kernel cmd is called.
         self._need_copy_kernel = False
@@ -151,6 +152,8 @@ class BaseImageCreator(object):
                 if part.fstype and part.fstype == "btrfs":
                     self._dep_checks.append("mkfs.btrfs")
                     break
+            if len(self.ks.handler.partition.partitions) > 1:
+                self.multiple_partitions = True
 
         if self.target_arch:
             if self.target_arch.startswith("arm"):
@@ -1072,6 +1075,11 @@ class BaseImageCreator(object):
                 checksize -= BOOT_SAFEGUARD
             if self.target_arch:
                 pkg_manager._add_prob_flags(rpm.RPMPROB_FILTER_IGNOREARCH)
+
+            # If we have multiple partitions, don't check diskspace when rpm run transaction
+            # because rpm check '/' partition only.
+            if self.multiple_partitions:
+                pkg_manager._add_prob_flags(rpm.RPMPROB_FILTER_DISKSPACE)
             pkg_manager.runInstall(checksize)
         except CreatorError, e:
             raise
@@ -1084,9 +1092,6 @@ class BaseImageCreator(object):
             self.__attachment_packages(pkg_manager)
         finally:
             pkg_manager.close()
-
-        # hook post install
-        self.postinstall()
 
         # do some clean up to avoid lvm info leakage.  this sucks.
         for subdir in ("cache", "backup", "archive"):
@@ -1186,6 +1191,9 @@ class BaseImageCreator(object):
         self._create_bootconfig()
         self.__run_post_scripts()
 
+        # hook post install
+        self.postinstall()
+
     def launch_shell(self, launch):
         """Launch a shell in the install root.
 
@@ -1206,6 +1214,19 @@ class BaseImageCreator(object):
             f.write("%s  %s" % (md5sum, os.path.basename(image_name)))
         self.outimage.append(image_name+".md5sum")
 
+    def remove_exclude_image(self):
+        for item in self._instloops:
+            if item['exclude_image']:
+                msger.info("Removing %s in image." % item['name'])
+                imgfile = os.path.join(self._imgdir, item['name'])
+                try:
+                    os.remove(imgfile)
+                except OSError as err:
+                    if err.errno == errno.ENOENT:
+                        pass
+                self._instloops.remove(item)
+                continue
+
     def package(self, destdir = "."):
         """Prepares the created image for final delivery.
 
@@ -1218,6 +1239,8 @@ class BaseImageCreator(object):
                    this defaults to the current directory.
 
         """
+        self.remove_exclude_image()
+
         self._stage_final_image()
 
         if not os.path.exists(destdir):
