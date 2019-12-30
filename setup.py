@@ -67,6 +67,7 @@ create_conf_file()
 
 setup(name=MOD_NAME,
   version = VERSION,
+  license = "GPLv2+",
   description = 'Image Creator for Linux Distributions',
   author='Jian-feng Ding, Qiang Zhang, Gui Chen',
   author_email='jian-feng.ding@intel.com, qiang.z.zhang@intel.com,\
